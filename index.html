@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Healthcare Wellness Club - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/pages/style.css">
+    
+  </head>
+
+  <body>  
+<!-- navbar-placeholder -->
+<div id="navbar-placeholder"></div>
+<div class="container-fluid mt-0 mb-0 px-0">
+  <div class="card-custom">
+   <!-- Hero Section -->
+<div class="container-fluid hero-section d-flex align-items-center justify-content-center text-center text-white" >
+  <div>
+    <h1 class="display-4 fw-bold">Welcome to <span class="text-success">Healthcare Wellness Club</span></h1>
+    <p class="lead">Your one-stop destination for achieving health and wellness.</p>
+    <a href="services.html" class="btn btn-success btn-lg mt-3">Explore Our Services</a>
+  </div>
+</div>
+</div>
+</div>
+<script>
+  fetch('navbar.html')
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById('navbar-placeholder').innerHTML = data;
+
+      // Highlight current page's link
+      const links = document.querySelectorAll('.nav-link');
+      const currentPage = window.location.pathname.split('/').pop();
+
+      links.forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+          link.classList.add('active');
+        }
+      });
+    });
+</script>
+
+<!-- Floating WhatsApp + Call Buttons -->
+<div class="floating-btns">
+  <a href="https://wa.me/918858302744" target="_blank">📱 Chat on WhatsApp</a>
+  <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+</div>
+<!-- Floating Chat Icon -->
+<div id="chat-toggle-btn"
+     style="position: fixed; bottom: 150px; right: 20px; z-index: 9998; cursor: pointer;">
+  <img src="/chat.png" 
+       alt="Chat with us"
+       width="60" height="60"
+       style="border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
+</div>
+
+<!-- Chatbot iframe (Hidden by default) -->
+<iframe
+  id="chatbot-frame"
+  src="https://www.chatbase.co/chatbot-iframe/rWYfFJUdA4l7XbwTThmpz"
+  width="350"
+  height="500"
+  style="display: none; position: fixed; bottom: 200px; right: 20px; border: none; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+</iframe>
+
+<script>
+  const chatBtn = document.getElementById('chat-toggle-btn');
+  const chatbot = document.getElementById('chatbot-frame');
+  let isOpen = false;
+
+  chatBtn.addEventListener('click', () => {
+    isOpen = !isOpen;
+    chatbot.style.display = isOpen ? 'block' : 'none';
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-B1cnLtjvT0B98BSj1ZtfYkVJADm4vxXUXVqZLuJ0E8dX6iMnWo7hdkRGK3J2ADuM" crossorigin="anonymous"></script>
+<!-- Daily Tip Modal -->
+<div class="modal fade" id="dailyTipModal" tabindex="-1" aria-labelledby="dailyTipLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="dailyTipLabel">🌿 Health Tip of the Day</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p id="dailyTipText">Start your morning with warm water – It helps digestion and detoxifies the body.</p>
+        <p>Do at least 20–30 minutes of exercise like walking, yoga, or stretching.</p>
+
+
+          
+Eat a balanced diet with fruits, vegetables, protein, and fiber.
+
+Drink 2–3 liters of water throughout the day to stay hydrated.
+
+Avoid too much sugar and junk food to maintain energy and weight.
+
+Sleep for 7–8 hours every night for proper body recovery.
+
+Take short breaks from screens to protect your eyes and reduce stress.
+
+Practice deep breathing or meditation for 5–10 minutes daily.
+
+Eat slowly and chew food properly for better digestion.
+
+Stay positive and reduce stress – mental health is as important as physical health. 💧</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Show daily tip modal after 2 seconds
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const tipModal = new bootstrap.Modal(document.getElementById('dailyTipModal'));
+      tipModal.show();
+    }, 2000);
+  });
+</script>
+<!-- Bootstrap JS (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+  <!-- footer-placeholder -->
+<div id="footer-placeholder"></div>
+<!-- Load the footer -->
+<script>
+  fetch('footer.html')
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById('footer-placeholder').innerHTML = data;
+    });
+</script>
+
+</html>

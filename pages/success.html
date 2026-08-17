@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact Us - Healthcare Wellness Club</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="/pages/style.css">
+
+</head>
+<body>
+  <!-- navbar-placeholder -->
+<div id="navbar-placeholder"></div>
+  <div class="container mt-4 mb-5">
+    <div class="card-custom">      
+<!-- Floating WhatsApp + Call Buttons -->
+<div class="floating-btns">
+  <a href="https://wa.me/919876543210" target="_blank">📱 Chat on WhatsApp</a>
+  <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+</div>
+        
+<div class="card p-4 shadow-lg">
+  <h3 class="text-center mb-4">🌟 Real Life Transformations 🌟</h3>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+
+     <!-- Kusum Maurya -->
+     <div class="col">
+      <div class="card h-100 shadow border-success">
+        <img src="/img/kusum-me.jpg" class="card-img-top" alt="Kusum Maurya">
+        <div class="card-body">
+          <h5 class="card-title text-success">Kusum Maurya (Me!)</h5>
+          <p class="card-text">I lost <strong>15 KG in 5 months</strong> and recovered from <strong>5 years of back pain</strong>. After trying many doctors and medicines with no result, Herbalife gave me a new life and purpose. Now I live with a vision to help others transform too! 💚</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+   
+    <!-- Pinki Devi -->
+    <div class="col">
+      <div class="card h-100 shadow">
+        <img src="/success/pinki.jpg" class="card-img-top" alt="Pinki Devi">
+        <div class="card-body">
+          <h5 class="card-title">Pinki Devi</h5>
+          <p class="card-text">Lost <strong>25 KG in 8 months</strong> and gained better health and confidence. She is enjoying a more active and happy life now.</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poonam Maurya -->
+    <div class="col">
+      <div class="card h-100 shadow">
+        <img src="/success/poonam.jpg" class="card-img-top" alt="Poonam Maurya">
+        <div class="card-body">
+          <h5 class="card-title">Poonam Maurya</h5>
+          <p class="card-text">Lost <strong>20 KG in 8 months</strong>. She feels healthier, happier, and is very satisfied with her journey and results.</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ramanand Pandey -->
+    <div class="col">
+      <div class="card h-100 shadow">
+        <img src="/success/Rama.jpg" class="card-img-top" alt="Ramanand Pandey">
+        <div class="card-body">
+          <h5 class="card-title">Ramanand Pandey</h5>
+          <p class="card-text">Lost <strong>50 KG in 15 months</strong>. His blood pressure and sugar levels are now normal, and he has overcome several health challenges.</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shilpa Singh -->
+    <div class="col">
+      <div class="card h-100 shadow">
+        <img src="/success/shilpa.jpg" class="card-img-top" alt="Shilpa Singh">
+        <div class="card-body">
+          <h5 class="card-title">Shilpa Singh</h5>
+          <p class="card-text">Lost <strong>15 KG in 5 months</strong> and now maintains her ideal weight. She is living a healthy, energetic, and confident lifestyle.</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kusum Pandey -->
+    <div class="col">
+      <div class="card h-100 shadow">
+        <img src="/success/Kusum.jpg" class="card-img-top" alt="Kusum Pandey">
+        <div class="card-body">
+          <h5 class="card-title">Kusum Pandey</h5>
+          <p class="card-text">Lost <strong>40 KG in 10 months</strong> and achieved amazing health transformation. She's now full of energy, confidence, and inspiring many others!</p>
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">Updated recently</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<!-- Floating Chat Icon -->
+<div id="chat-toggle-btn"
+     style="position: fixed; bottom: 150px; right: 20px; z-index: 9998; cursor: pointer;">
+  <img src="/chat.png" 
+       alt="Chat with us"
+       width="60" height="60"
+       style="border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
+</div>
+
+<!-- Chatbot iframe (Hidden by default) -->
+<iframe
+  id="chatbot-frame"
+  src="https://www.chatbase.co/chatbot-iframe/rWYfFJUdA4l7XbwTThmpz"
+  width="350"
+  height="500"
+  style="display: none; position: fixed; bottom: 200px; right: 20px; border: none; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+</iframe>
+
+<script>
+  const chatBtn = document.getElementById('chat-toggle-btn');
+  const chatbot = document.getElementById('chatbot-frame');
+  let isOpen = false;
+
+  chatBtn.addEventListener('click', () => {
+    isOpen = !isOpen;
+    chatbot.style.display = isOpen ? 'block' : 'none';
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-B1cnLtjvT0B98BSj1ZtfYkVJADm4vxXUXVqZLuJ0E8dX6iMnWo7hdkRGK3J2ADuM" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    </body>
+     
+    <script>
+        // Load the navbar
+        fetch('navbar.html')
+          .then(res => res.text())
+          .then(data => {
+            document.getElementById('navbar-placeholder').innerHTML = data;
+      
+            const links = document.querySelectorAll('.nav-link');
+            const currentPage = window.location.pathname.split('/').pop();
+      
+            links.forEach(link => {
+              if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+              }
+            });
+          });
+      
+        // ✅ Load the footer
+        fetch('footer.html')
+          .then(res => res.text())
+          .then(data => {
+            document.getElementById('footer-placeholder').innerHTML = data;
+          });
+      </script>
+            <!-- footer-placeholder -->
+<div id="footer-placeholder"></div>
+</html>

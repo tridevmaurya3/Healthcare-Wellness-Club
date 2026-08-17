@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Healthcare Wellness Club</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/pages/style.css">
+  </head>
+  <body>
+    <!-- navbar-placeholder -->
+    <div id="navbar-placeholder"></div>
+
+    <!-- About Section -->
+    <div class="container mt-4 mb-5">
+      <div class="card-custom">        
+        <div class="card p-4 shadow-lg">
+         <div class="container about-section text-center mt-4">
+      <img src="/img/kusum-me.jpg" alt="Kusum Maurya - Wellness Coach" 
+        class="rounded-circle" 
+        style="width: 120px; height: 120px; object-fit: cover; box-shadow: 0 4px 5px rgba(0,0,0,0.2); margin-bottom: 5px;">
+      <h2 class="section-title" style="margin-top: 0;">🌿 About Me as a Wellness Coach</h2>
+      <div class="card-custom mt-2">
+        <p>As a wellness coach for <strong>Herbalife</strong>, I’m more than just a guide—I'm a motivator, educator, and community builder, helping individuals achieve their health goals with purpose and connection. Here's what defines my role:</p>
+      </div>
+    </div>
+  </div>
+      </div>
+    <!-- Role Cards inside one main card -->
+    <div class="container mt-4 mb-5">
+      <div class="card-custom">
+        <h2 class="text-center">🌱 My Mission</h2>
+        <p class="text-center">To empower individuals to lead healthier, happier lives through personalized wellness coaching and community support.</p>
+      <div class="card p-4 shadow-lg">
+        <h3 class="text-center mb-4">🌟 My Role as a Wellness Coach</h3>
+        <div class="row">
+          <!-- Each card -->
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>1. Knowledge Advocate</h5>
+              <p>I educate members about nutrition and Herbalife products, empowering them to make informed decisions.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>2. Support System</h5>
+              <p>I provide encouragement and motivation for members to achieve their wellness goals.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>3. Connector</h5>
+              <p>I create a sense of community, bringing members together to share experiences and grow as a group.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>4. Role Model</h5>
+              <p>I inspire others by embodying a healthy lifestyle and leading by example.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>5. Teacher</h5>
+              <p>I educate members through workshops, seminars, or one-on-one sessions, empowering them with the tools they need to thrive.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>6. Goal Setter</h5>
+              <p>I help members create realistic health goals and support them in achieving milestones.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>7. Community Builder</h5>
+              <p>I advocate for healthy living in the community, hosting events and inspiring change.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>8. Lifelong Learner</h5>
+              <p>I stay updated on the latest health trends, research, and Herbalife innovations.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>9. Impactful Leader</h5>
+              <p>I witness transformations in people’s lives while fostering a culture of wellness.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>10. Content Creator</h5>
+              <p>I craft inspiring content for my club that reflects leadership and enthusiasm.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>11. Motivator</h5>
+              <p>I inspire and motivate members to stay committed to their wellness journeys.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>12. Wellness Advocate</h5>
+              <p>I promote a holistic approach to health—focusing on physical, mental, and emotional well-being.</p>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card-custom">
+              <h5>13. Herbalife Ambassador</h5>
+              <p>I represent the Herbalife brand with passion and integrity, sharing its benefits with the world.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating WhatsApp + Call Buttons -->
+    <div class="floating-btns">
+      <a href="https://wa.me/919876543210" target="_blank">📱 Chat on WhatsApp</a>
+      <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+    </div>
+    <script>
+      // Load the navbar
+      fetch('navbar.html')
+        .then(res => res.text())
+        .then(data => {
+          document.getElementById('navbar-placeholder').innerHTML = data;
+    
+          const links = document.querySelectorAll('.nav-link');
+          const currentPage = window.location.pathname.split('/').pop();
+    
+          links.forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+              link.classList.add('active');
+            }
+          });
+        });    
+    </script>
+
+    <!-- Floating Chat Icon -->
+    <div id="chat-toggle-btn"
+         style="position: fixed; bottom: 150px; right: 20px; z-index: 9998; cursor: pointer;">
+      <img src="/chat.png" 
+           alt="Chat with us"
+           width="60" height="60"
+           style="border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" />
+    </div>
+
+    <!-- Chatbot iframe -->
+    <iframe
+      id="chatbot-frame"
+      src="https://www.chatbase.co/chatbot-iframe/rWYfFJUdA4l7XbwTThmpz"
+      width="350"
+      height="500"
+      style="display: none; position: fixed; bottom: 200px; right: 20px; border: none; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+    </iframe>
+
+    <script>
+      const chatBtn = document.getElementById('chat-toggle-btn');
+      const chatbot = document.getElementById('chatbot-frame');
+      let isOpen = false;
+      chatBtn.addEventListener('click', () => {
+        isOpen = !isOpen;
+        chatbot.style.display = isOpen ? 'block' : 'none';
+      });
+    </script> 
+    <!-- Bootstrap JS (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body> 
+  <!-- footer-placeholder -->
+<div id="footer-placeholder"></div>
+<!-- Load the footer -->
+<script>
+  fetch('footer.html')
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById('footer-placeholder').innerHTML = data;
+    });
+</script>
+</html>
