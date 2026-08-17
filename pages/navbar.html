@@ -1,28 +1,20 @@
-<!-- navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-  <div class="container-fluid">
-    <img src="/img/logo.png" alt="Healthcare Wellness Club Logo" class="logo me-2" height="40">
-    <a class="navbar-brand" href="index.html">Healthcare Wellness Club</a>
+<!-- Shared navigation -->
+<nav class="navbar navbar-expand-lg navbar-light custom-navbar sticky-top">
+  <div class="container-fluid container-lg">
+    <a class="navbar-brand d-flex align-items-center gap-2" data-route="index.html" href="#">
+      <img data-asset="img/logo.png" src="" alt="Healthcare Wellness Club Logo" class="logo" width="50" height="50">
+      <span>Healthcare Wellness Club</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="index.html">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="about.html">About Me</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="services.html">Services</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="success.html">Success Stories</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="contact.html">Contact Us</a>
-        </li>
+        <li class="nav-item"><a class="nav-link" data-route="index.html" href="#">Home</a></li>
+        <li class="nav-item"><a class="nav-link" data-route="pages/about.html" href="#">About Me</a></li>
+        <li class="nav-item"><a class="nav-link" data-route="pages/services.html" href="#">Services</a></li>
+        <li class="nav-item"><a class="nav-link" data-route="pages/success.html" href="#">Success Stories</a></li>
+        <li class="nav-item"><a class="nav-link" data-route="pages/contact.html" href="#">Contact Us</a></li>
       </ul>
     </div>
   </div>
