@@ -58,7 +58,7 @@ try{
     $taxBoundary=str_contains($migration,"tax_status VARCHAR(30) NOT NULL DEFAULT 'not_calculated'")&&str_contains($checkout,'Tax is not calculated');
     $paymentBoundary=(string)($settings['payment_mode']??'')==='review_only'&&str_contains($migration,"payment_status VARCHAR(30) NOT NULL DEFAULT 'not_requested'")&&!str_contains(strtolower($checkout),'pay now');
     $tokenHash=str_contains($service,"hash('sha256',")&&str_contains($service,'status_token_hash')&&str_contains($migration,'status_token_hash CHAR(64)')&&!str_contains($migration,'status_token VARCHAR');
-    $publicNotePrivacy=str_contains($service,'CASE WHEN actor_user_id IS NULL THEN note ELSE NULL END');
+    $publicNotePrivacy=!str_contains($statusPage,"['note']")&&str_contains($statusPage,'Staff-only review notes are intentionally not shown');
     $ipHash=str_contains($service,'ps23_ip_hash')&&str_contains($migration,'ip_hash CHAR(64)');
     $spam=str_contains($service,'honeypot')&&str_contains($service,'too_fast')&&str_contains($service,'INTERVAL 1 HOUR')&&str_contains($service,'ps23_origin_ok');
     $leadLink=str_contains($service,'PUBLIC-STORE')&&str_contains($service,'crm_leads')&&str_contains($service,'crm_lead_activities');
@@ -105,7 +105,7 @@ try{
     a23($checks,'Tax boundary is explicit',$taxBoundary,'tax remains not_calculated');
     a23($checks,'Payment gateway is not faked',$paymentBoundary,'review_only / not_requested');
     a23($checks,'Tracking token stored hash-only',$tokenHash,'SHA-256 token hash');
-    a23($checks,'Staff internal notes are hidden from public tracking',$publicNotePrivacy,'public status masks actor-entered notes');
+    a23($checks,'Staff internal notes are hidden from public tracking',$publicNotePrivacy,'public tracking omits staff-only notes');
     a23($checks,'Public IP stored as one-way hash',$ipHash,'peppered IP hash');
     a23($checks,'Checkout spam/rate/origin protections',$spam,'honeypot • speed • hourly limit • same-origin');
     a23($checks,'Product requests integrate with Lead CRM',$leadLink,'PUBLIC-STORE source + activity');
