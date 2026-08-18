@@ -1,0 +1,53 @@
+name: One-time STEP 19 backward audits v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step19-backward-audits-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch prior audit expectations
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p=Path('business/step17_audit.php')
+          s=p.read_text(encoding='utf-8')
+          pattern=r"\$publicBypass=.*?;\$setupLocked="
+          replacement="$publicBypass=str_contains($securityFile,\"'login.php'\")&&str_contains($securityFile,\"'setup_admin.php'\")&&str_contains($securityFile,\"'logout.php'\")&&str_contains($securityFile,\"'access_denied.php'\")&&str_contains($securityFile,\"'maintenance.php'\")&&str_contains($securityFile,\"'healthz.php'\")&&!preg_match('/\\$public=\\[[^\\]]*password_change\\.php/s',$securityFile);$setupLocked="
+          s2,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit(f'STEP17 public bypass replacement count={n}')
+          s=s2
+          s2,n=re.subn(r"\$indexSecure=str_contains\(\$indexFile,'dashboard_step17\.php'\);", "$indexSecure=str_contains($indexFile,'dashboard_step17.php')||str_contains($indexFile,'dashboard_step18.php')||str_contains($indexFile,'dashboard_step19.php');", s, count=1)
+          if n!=1: raise SystemExit(f'STEP17 index replacement count={n}')
+          s=s2.replace("s17add($checks,'Business OS routes through STEP 17 dashboard',$indexSecure,$indexSecure?'dashboard_step17.php active':'index route not updated');", "s17add($checks,'Business OS remains on a secured STEP 17+ dashboard',$indexSecure,$indexSecure?'secured dashboard route active':'index route not updated');")
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/step18_audit.php')
+          s=p.read_text(encoding='utf-8')
+          s2,n=re.subn(r"\$index18=str_contains\(\$index,'dashboard_step18\.php'\);", "$index18=str_contains($index,'dashboard_step18.php')||str_contains($index,'dashboard_step19.php');", s, count=1)
+          if n!=1: raise SystemExit(f'STEP18 index replacement count={n}')
+          s=s2.replace("b18add($checks,'Business OS routes through STEP 18 dashboard',$index18,$index18?'dashboard_step18.php active':'index route review required');", "b18add($checks,'Business OS remains on a recovery-capable STEP 18+ dashboard',$index18,$index18?'recovery-capable dashboard active':'index route review required');")
+          p.write_text(s,encoding='utf-8')
+      - name: Lint patched audits
+        run: |
+          php -l business/step17_audit.php
+          php -l business/step18_audit.php
+      - name: Commit patched audits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/step17_audit.php business/step18_audit.php
+          git commit -m "STEP 19: preserve prior security and recovery audit compatibility"
+          git push origin main
