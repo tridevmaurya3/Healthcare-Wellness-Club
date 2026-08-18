@@ -1,0 +1,62 @@
+name: STEP 22 MariaDB runtime fix
+on:
+  push:
+    paths:
+      - '.github/workflows/step22-mariadb-runtime-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch MariaDB-safe BI aliases and runtime audit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('business/config/bi_step22.php')
+          s=p.read_text(encoding='utf-8')
+          old="costed_lines,COUNT(*) lines FROM product_order_items"
+          new="costed_lines,COUNT(*) line_count FROM product_order_items"
+          if old not in s:
+              raise SystemExit('Top product lines alias marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/bi_profitability.php')
+          s=p.read_text(encoding='utf-8')
+          old="$r['costed_lines']?> / <?=$r['lines']"
+          new="$r['costed_lines']?> / <?=$r['line_count']"
+          if old not in s:
+              raise SystemExit('Profitability line-count display marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/step22_audit.php')
+          s=p.read_text(encoding='utf-8')
+          marker="$funnel=bi_step22_funnel($pdo,$orgId,$p['start'],$p['end']);$funnelTruth=isset($funnel['submissions'],$funnel['leads'],$funnel['converted']);"
+          insert=marker+"$topProductsRuntime=true;$topCustomersRuntime=true;$topSuppliersRuntime=true;$topProductsError='';$topCustomersError='';$topSuppliersError='';try{bi_step22_top_products($pdo,$orgId,$p['start'],$p['end'],3);}catch(Throwable $e){$topProductsRuntime=false;$topProductsError=$e->getMessage();}try{bi_step22_top_customers($pdo,$orgId,$p['start'],$p['end'],3);}catch(Throwable $e){$topCustomersRuntime=false;$topCustomersError=$e->getMessage();}try{bi_step22_top_suppliers($pdo,$orgId,$p['start'],$p['end'],3);}catch(Throwable $e){$topSuppliersRuntime=false;$topSuppliersError=$e->getMessage();}"
+          if marker not in s:
+              raise SystemExit('Audit runtime insertion marker not found')
+          s=s.replace(marker,insert,1)
+          s=s.replace("d22add($checks,'Top Product analytics engine exists',str_contains($service,'function bi_step22_top_products'),'revenue / VP / verified profit');","d22add($checks,'Top Product analytics query runs on current database',$topProductsRuntime,$topProductsRuntime?'revenue / VP / verified profit query executed':$topProductsError);",1)
+          s=s.replace("d22add($checks,'Top Customer analytics engine exists',str_contains($service,'function bi_step22_top_customers'),'orders / revenue / receivable');","d22add($checks,'Top Customer analytics query runs on current database',$topCustomersRuntime,$topCustomersRuntime?'orders / revenue / receivable query executed':$topCustomersError);",1)
+          s=s.replace("d22add($checks,'Top Supplier analytics engine exists',str_contains($service,'function bi_step22_top_suppliers'),'billed / paid / outstanding');","d22add($checks,'Top Supplier analytics query runs on current database',$topSuppliersRuntime,$topSuppliersRuntime?'billed / paid / outstanding query executed':$topSuppliersError);",1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: PHP lint
+        run: |
+          set -e
+          php -l business/config/bi_step22.php
+          php -l business/bi_profitability.php
+          php -l business/step22_audit.php
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/bi_step22.php business/bi_profitability.php business/step22_audit.php
+          git commit -m "STEP 22: fix MariaDB BI runtime queries"
+          git push origin HEAD:main
