@@ -6,7 +6,8 @@ declare(strict_types=1);
  *
  * It reads cached values from an .xlsx file and never writes business data.
  * Column letters are preserved deliberately because the legacy workbook contains
- * duplicate headings (for example Formula-1 / Afresh / Order Amount / Profit).
+ * duplicate headings (for example Formula-1 / Afresh / Order Amount / Profit)
+ * and a few used columns without headings.
  */
 final class XlsxPreviewReader
 {
@@ -24,6 +25,9 @@ final class XlsxPreviewReader
     {
         if (!class_exists(ZipArchive::class)) {
             throw new RuntimeException('PHP ZIP extension is not enabled. Enable extension=zip in XAMPP PHP before using XLSX preview.');
+        }
+        if (!class_exists(DOMDocument::class)) {
+            throw new RuntimeException('PHP DOM/XML extension is not enabled. Enable the XML extension in XAMPP PHP before using XLSX preview.');
         }
         if (!is_file($xlsxPath) || !is_readable($xlsxPath)) {
             throw new RuntimeException('The uploaded workbook could not be read.');
@@ -70,6 +74,9 @@ final class XlsxPreviewReader
 
         /** @var array<int,array<string,string|null>> $rows */
         $rows = [];
+        /** @var array<string,bool> $allColumns */
+        $allColumns = [];
+
         foreach ($xp->query('//m:sheetData/m:row') ?: [] as $rowNode) {
             if (!$rowNode instanceof DOMElement) {
                 continue;
@@ -84,13 +91,15 @@ final class XlsxPreviewReader
                 if (!preg_match('/^([A-Z]+)/', $ref, $match)) {
                     continue;
                 }
-                $row[$match[1]] = $this->cellValue($cellNode, $xp);
+                $column = $match[1];
+                $allColumns[$column] = true;
+                $row[$column] = $this->cellValue($cellNode, $xp);
             }
             $rows[$rowNumber] = $row;
         }
 
         $headerRow = $rows[1] ?? [];
-        $columns = array_keys($headerRow);
+        $columns = array_keys($allColumns);
         usort($columns, static fn(string $a, string $b): int => self::columnNumber($a) <=> self::columnNumber($b));
 
         $headers = [];
@@ -206,7 +215,8 @@ final class XlsxPreviewReader
             return $text;
         }
 
-        $valueNode = $xp->query('./m:v', $cell)?->item(0);
+        $nodes = $xp->query('./m:v', $cell);
+        $valueNode = $nodes !== false ? $nodes->item(0) : null;
         $value = $valueNode?->textContent;
         if ($value === null) {
             return null;
