@@ -3,39 +3,164 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Healthcare Wellness Club wellness coaching, services, success stories and contact information.">
+  <meta name="description" content="Healthcare Wellness Club wellness coaching, services, success stories, product guidance and professional wellness support.">
   <title>Healthcare Wellness Club - Home</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet" href="pages/style.css">
+  <link rel="stylesheet" href="pages/design-system.css">
+  <link rel="stylesheet" href="pages/home.css">
   <link rel="stylesheet" href="pages/xampp-fixes.css">
 </head>
-<body>
+<body class="home-page">
   <div id="navbar-placeholder"></div>
 
   <main>
-    <section class="container-fluid hero-section d-flex align-items-center justify-content-center text-center text-white">
-      <div>
-        <h1 class="display-4 fw-bold">Welcome to <span class="text-success">Healthcare Wellness Club</span></h1>
-        <p class="lead">Your one-stop destination for achieving health and wellness.</p>
-        <a href="pages/services.html" class="btn btn-success btn-lg mt-3">Explore Our Services</a>
+    <section class="home-hero">
+      <div class="home-shell home-hero-grid">
+        <div>
+          <div class="home-eyebrow"><span class="home-eyebrow-dot"></span> Personal wellness. Professional guidance.</div>
+          <h1>Build a healthier routine with <span>Healthcare Wellness Club.</span></h1>
+          <p class="home-hero-lead">A modern wellness space for personalised guidance, healthy routine support, community motivation and easy access to services — designed to keep your wellness journey simple, organised and consistent.</p>
+          <div class="home-hero-actions">
+            <a class="home-primary-btn" href="pages/services.html">Explore Wellness Services <span aria-hidden="true">→</span></a>
+            <a class="home-secondary-btn" href="pages/contact.html">Contact the Club</a>
+          </div>
+          <div class="home-trust-row" aria-label="Club highlights">
+            <div class="home-trust-item"><span class="home-trust-check">✓</span> Personal guidance</div>
+            <div class="home-trust-item"><span class="home-trust-check">✓</span> Simple follow-up</div>
+            <div class="home-trust-item"><span class="home-trust-check">✓</span> Wellness-first approach</div>
+          </div>
+        </div>
+
+        <div class="home-visual" aria-label="Wellness Club preview">
+          <div class="home-photo-main"><img src="img/service1.jpg" alt="Healthcare Wellness Club wellness service" loading="eager"></div>
+          <div class="home-float-card home-float-one">
+            <div class="home-float-icon">✓</div>
+            <strong>Guided Wellness</strong>
+            <span>Personal support & follow-up</span>
+          </div>
+          <div class="home-float-card home-float-two">
+            <div class="home-float-icon">✦</div>
+            <strong>Smart & Organised</strong>
+            <span>One connected wellness platform</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="home-shell">
+        <div class="home-section-heading">
+          <div>
+            <div class="home-kicker">One Connected Platform</div>
+            <h2>Wellness today. Smarter management tomorrow.</h2>
+          </div>
+          <p>The platform is being built as a complete ecosystem: a public wellness portal, secure business tracking and a smart product-and-price system — all under one professional design language.</p>
+        </div>
+
+        <div class="home-three-grid">
+          <article class="home-pillar">
+            <div class="home-pillar-icon">♥</div>
+            <h3>Wellness Club</h3>
+            <p>Learn about the club, wellness support, services, success stories and ways to connect for guidance.</p>
+            <a class="home-pillar-link" href="pages/services.html">View services <span>→</span></a>
+          </article>
+
+          <article class="home-pillar home-pillar-blue">
+            <div class="home-pillar-icon">▦</div>
+            <h3>Business Intelligence</h3>
+            <p>A secure management layer for member tracking, renewals, volume points, income, royalty, orders and smart reports.</p>
+            <span class="home-pillar-link">Professional system in development</span>
+          </article>
+
+          <article class="home-pillar home-pillar-gold">
+            <div class="home-pillar-icon">◇</div>
+            <h3>Products & Pricing</h3>
+            <p>A structured product catalogue with pictures, price levels, discount calculation, VP and future ordering tools.</p>
+            <span class="home-pillar-link">Smart catalogue in development</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section home-section-soft">
+      <div class="home-shell home-feature-grid">
+        <div class="home-feature-panel">
+          <div class="home-kicker">Designed for clarity</div>
+          <h2>A professional wellness experience without unnecessary complexity.</h2>
+          <p>Every part of the website is being organised around simple navigation, clean information and fast access to the things that matter most.</p>
+
+          <div class="home-feature-list">
+            <div class="home-feature-item">
+              <div class="home-feature-number">01</div>
+              <div><strong>Clear wellness information</strong><span>Services and guidance presented in an easy-to-understand structure.</span></div>
+            </div>
+            <div class="home-feature-item">
+              <div class="home-feature-number">02</div>
+              <div><strong>Responsive on every screen</strong><span>Desktop, tablet and mobile layouts built from one consistent Fluent design system.</span></div>
+            </div>
+            <div class="home-feature-item">
+              <div class="home-feature-number">03</div>
+              <div><strong>Ready for secure business tools</strong><span>The same interface can expand into dashboards, reports, products and management modules.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="home-mini-dashboard" aria-label="Future business system preview">
+          <div class="home-mini-top">
+            <div><strong>Wellness Business OS</strong><br><span>Future secure workspace preview</span></div>
+            <div class="home-mini-badge">Fluent UI</div>
+          </div>
+          <div class="home-mini-kpis">
+            <div class="home-mini-kpi"><small>Member Tracking</small><strong>Connected</strong></div>
+            <div class="home-mini-kpi"><small>Renewal System</small><strong>Smart</strong></div>
+            <div class="home-mini-kpi"><small>Volume Points</small><strong>Analytics</strong></div>
+            <div class="home-mini-kpi"><small>Reports</small><strong>Pro</strong></div>
+          </div>
+          <div class="home-mini-bars">
+            <small>System modules</small>
+            <div class="home-bar-row"><span>Wellness</span><div class="home-bar"><i style="width:96%"></i></div><b>96</b></div>
+            <div class="home-bar-row"><span>Business</span><div class="home-bar"><i style="width:74%"></i></div><b>74</b></div>
+            <div class="home-bar-row"><span>Products</span><div class="home-bar"><i style="width:62%"></i></div><b>62</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="home-shell">
+        <div class="home-cta">
+          <div class="home-cta-grid">
+            <div>
+              <div class="home-kicker">Start here</div>
+              <h2>Explore the club and choose the support you need.</h2>
+              <p>Visit the Services page for available wellness support, read real success stories, or contact the club directly for more information.</p>
+            </div>
+            <div class="home-hero-actions mt-0">
+              <a class="home-primary-btn" href="pages/services.html">Explore Services</a>
+              <a class="home-secondary-btn" href="pages/success.html">Success Stories</a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <div class="floating-btns">
-    <a href="https://wa.me/918858302744" target="_blank" rel="noopener">📱 Chat on WhatsApp</a>
-    <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+  <div class="home-quick-contact" aria-label="Quick contact">
+    <a href="https://wa.me/918858302744" target="_blank" rel="noopener">WhatsApp</a>
+    <a href="pages/contact.html">Contact</a>
   </div>
 
-  <div class="modal fade" id="dailyTipModal" tabindex="-1" aria-labelledby="dailyTipLabel" aria-hidden="true">
+  <div class="modal fade home-tip-modal" id="dailyTipModal" tabindex="-1" aria-labelledby="dailyTipLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title" id="dailyTipLabel">🌿 Health Tip of the Day</h5>
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="dailyTipLabel">Health Tip of the Day</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center">
-          <p>Stay hydrated, include regular movement, balanced meals, enough sleep, and short screen breaks in your daily routine.</p>
+          <div class="home-tip-icon">🌿</div>
+          <p class="mb-0">Stay hydrated, include regular movement, balanced meals, enough sleep, and short screen breaks in your daily routine.</p>
         </div>
       </div>
     </div>
