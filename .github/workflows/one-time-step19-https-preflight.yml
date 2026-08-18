@@ -1,0 +1,89 @@
+name: One-time STEP 19 HTTPS preflight
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step19-https-preflight.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply pre-session production preflight
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('business/config/deployment_step19.php')
+          s=p.read_text(encoding='utf-8')
+          if 'function deployment_step19_preflight_request(PDO $pdo): void' not in s:
+              marker='function deployment_step19_guard_request(PDO $pdo): void\n'
+              pre="""function deployment_step19_preflight_request(PDO $pdo): void
+          {
+              if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg')return;
+              deployment_step19_ensure($pdo);deployment_step19_apply_headers();
+              if(deployment_step19_is_production()&&!deployment_step19_host_allowed()){
+                  http_response_code(421);echo '<!doctype html><meta charset=\"utf-8\"><title>Host rejected</title><h1>Request host is not allowed.</h1>';exit;
+              }
+              $ctx=deployment_step19_context($pdo);$settings=deployment_step19_settings($pdo,(int)$ctx['organization_id']);
+              if(deployment_step19_is_production()&&(int)($settings['require_https_in_production']??1)===1&&!deployment_step19_is_https()){
+                  $host=deployment_step19_request_host();if($host===''){http_response_code(503);echo 'HTTPS configuration is incomplete.';exit;}
+                  $uri=(string)($_SERVER['REQUEST_URI']??'/');header('Location: https://'.$host.$uri,true,308);exit;
+              }
+          }
+
+          """
+              if marker not in s: raise SystemExit('guard marker missing')
+              s=s.replace(marker,pre+marker,1)
+          start=s.index('function deployment_step19_guard_request(PDO $pdo): void')
+          end=s.index('function deployment_step19_set_maintenance',start)
+          old=s[start:end]
+          new="""function deployment_step19_guard_request(PDO $pdo): void
+          {
+              if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg')return;
+              deployment_step19_preflight_request($pdo);$script=basename((string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));
+              $ctx=deployment_step19_context($pdo);$settings=deployment_step19_settings($pdo,(int)$ctx['organization_id']);
+              if((int)($settings['maintenance_enabled']??0)!==1)return;
+              $always=['login.php','logout.php','access_denied.php','maintenance.php','healthz.php','password_change.php'];
+              if(in_array($script,$always,true)||str_starts_with($script,'deployment_')||in_array($script,['production_health.php','multi_device_access.php','offsite_backup.php','migration_center.php','scheduler_center.php','step19_audit.php'],true))return;
+              $user=function_exists('security_step17_session_user')?security_step17_session_user($pdo,false):null;
+              $allowed=$user&&((string)($user['role_code']??'')==='admin'||(function_exists('security_step17_has_permission')&&security_step17_has_permission($pdo,'deployment.manage',$user)));
+              if(!$allowed){header('Location: maintenance.php',true,302);exit;}
+          }
+
+          """
+          s=s[:start]+new+s[end:]
+          p.write_text(s,encoding='utf-8')
+
+          db=Path('business/config/database.php')
+          d=db.read_text(encoding='utf-8')
+          old="    security_step17_guard_request($pdo);\n    deployment_step19_guard_request($pdo);"
+          new="    deployment_step19_preflight_request($pdo);\n    security_step17_guard_request($pdo);\n    deployment_step19_guard_request($pdo);"
+          if old not in d and 'deployment_step19_preflight_request($pdo);' not in d: raise SystemExit('database guard marker missing')
+          d=d.replace(old,new,1)
+          db.write_text(d,encoding='utf-8')
+
+          audit=Path('business/step19_audit.php')
+          a=audit.read_text(encoding='utf-8')
+          a=a.replace("$centralGuard=str_contains($database,'deployment_step19_guard_request($pdo)')&&str_contains($database,\"deployment_step19.php\");", "$centralGuard=str_contains($database,'deployment_step19_preflight_request($pdo)')&&str_contains($database,'security_step17_guard_request($pdo)')&&str_contains($database,'deployment_step19_guard_request($pdo)')&&strpos($database,'deployment_step19_preflight_request($pdo)')<strpos($database,'security_step17_guard_request($pdo)');")
+          a=a.replace("d19add($checks,'Central deployment guard installed',$centralGuard,'database.php executes deployment guard');", "d19add($checks,'Pre-session production guard installed',$centralGuard,'Host/HTTPS preflight runs before the security session guard');")
+          audit.write_text(a,encoding='utf-8')
+      - name: PHP lint
+        run: |
+          php -l business/config/deployment_step19.php
+          php -l business/config/security_step17.php
+          php -l business/config/database.php
+          php -l business/step19_audit.php
+      - name: Commit hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/deployment_step19.php business/config/database.php business/step19_audit.php
+          git commit -m "STEP 19: enforce Host and HTTPS before session creation"
+          git push origin main
