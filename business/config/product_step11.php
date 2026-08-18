@@ -67,7 +67,8 @@ function product_step11_market(PDO $pdo, int $organizationId): array
 
 function product_step11_tiers(PDO $pdo, int $organizationId, int $marketId): array
 {
-    $pdo->prepare("UPDATE product_discount_tiers SET status='inactive' WHERE organization_id=? AND market_id=? AND tier_code IN ('PC15','PC25','PC35','PC42','PC50')")->execute([$organizationId,$marketId]);
+    // Deactivate only obsolete STEP 11A configuration codes. The reviewed PDF model below is the active source-of-truth.
+    $pdo->prepare("UPDATE product_discount_tiers SET status='inactive' WHERE organization_id=? AND market_id=? AND tier_code IN ('PC15','PC25','PC35','PC42','PC50','AS42','AS50')")->execute([$organizationId,$marketId]);
     $tiers=[
       ['PC_BRONZE','Preferred - Bronze','preferred',0,10],['PC_SILVER','Preferred - Silver','preferred',0,20],['PC_GOLD','Preferred - Gold','preferred',0,30],
       ['ASSOC_RETAIL','Associate - Retail Price','associate',0,40],['ASSOC_EARN_BASE','Associate - Earn Base','associate',0,50],
