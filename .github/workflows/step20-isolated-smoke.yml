@@ -1,0 +1,85 @@
+name: STEP 20 isolated smoke
+on:
+  push:
+    paths:
+      - '.github/workflows/step20-isolated-smoke.yml'
+permissions:
+  contents: write
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -prootpass"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Install PHP MySQL
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq php-mysql mysql-client
+      - name: Prepare isolated schema
+        run: |
+          mysql -h127.0.0.1 -uroot -prootpass <<'SQL'
+          DROP DATABASE IF EXISTS hwc_step20_test;
+          CREATE DATABASE hwc_step20_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          USE hwc_step20_test;
+          CREATE TABLE organizations(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_code VARCHAR(80) UNIQUE);
+          CREATE TABLE clubs(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,club_code VARCHAR(80));
+          CREATE TABLE system_users(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,full_name VARCHAR(190),is_active TINYINT NOT NULL DEFAULT 1);
+          CREATE TABLE members(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,full_name VARCHAR(190),mobile VARCHAR(40),source_sheet VARCHAR(190));
+          CREATE TABLE crm_customers(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,member_id BIGINT UNSIGNED NULL,customer_code VARCHAR(80) NOT NULL,customer_name VARCHAR(190) NOT NULL,mobile VARCHAR(40),email VARCHAR(190),customer_type VARCHAR(40) DEFAULT 'retail',notes TEXT,status VARCHAR(30) DEFAULT 'active',UNIQUE KEY uq_cc(organization_id,customer_code));
+          CREATE TABLE schema_meta(meta_key VARCHAR(190) PRIMARY KEY,meta_value TEXT);
+          INSERT INTO organizations(organization_code) VALUES('HWC-001');
+          INSERT INTO clubs(organization_id,club_code) VALUES(1,'GHAZIPUR-001');
+          INSERT INTO members(organization_id,full_name,mobile,source_sheet) VALUES(1,'Existing Member','9999999999','New UMS');
+          SQL
+      - name: Run STEP 20 service smoke
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: hwc_step20_test
+          DB_USER: root
+          DB_PASS: rootpass
+        run: |
+          cat > /tmp/step20_smoke.php <<'PHP'
+          <?php
+          declare(strict_types=1);
+          require getcwd().'/business/config/lead_step20.php';
+          $pdo=new PDO('mysql:host=127.0.0.1;dbname=hwc_step20_test;charset=utf8mb4','root','rootpass',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+          lead_step20_ensure($pdo);
+          $server=['REMOTE_ADDR'=>'127.0.0.2','HTTP_HOST'=>'localhost','HTTP_ORIGIN'=>'http://localhost','HTTP_USER_AGENT'=>'STEP20-SMOKE'];
+          $base=['enquiry_type'=>'wellness','name'=>'Smoke Lead','mobile'=>'9876543210','email'=>'smoke@example.test','message'=>'General wellness enquiry','consent'=>'1','started_at'=>(string)((int)floor(microtime(true)*1000)-5000),'page_path'=>'pages/contact.html'];
+          $a=lead_step20_public_capture($pdo,$base,$server);
+          $b=lead_step20_public_capture($pdo,$base+['message'=>'Repeat enquiry'],$server);
+          if(!$a['ok']||!$b['ok']||$a['lead_code']!==$b['lead_code'])throw new RuntimeException('Repeat submission did not deduplicate.');
+          $lead=$pdo->query("SELECT * FROM crm_leads WHERE mobile='9876543210'")->fetch();
+          if(!$lead||(int)$lead['submission_count']!==2)throw new RuntimeException('Submission count mismatch.');
+          $guard=false;try{lead_step20_update_stage($pdo,1,(int)$lead['id'],'converted','normal',null);}catch(RuntimeException $e){$guard=true;}if(!$guard)throw new RuntimeException('Converted stage guard failed.');
+          lead_step20_add_task($pdo,1,(int)$lead['id'],'call','Smoke follow-up',date('Y-m-d H:i:s',time()+3600),null,null,'');
+          lead_step20_create_appointment($pdo,1,(int)$lead['id'],date('Y-m-d H:i:s',time()+7200),'club','Smoke appointment',null,null,'');
+          lead_step20_link_member($pdo,1,(int)$lead['id'],1,null,'Explicit smoke member link');
+          $base2=$base;$base2['name']='Customer Smoke';$base2['mobile']='9123456780';$base2['email']='customer@example.test';
+          $c=lead_step20_public_capture($pdo,$base2,$server);$lead2=$pdo->query("SELECT * FROM crm_leads WHERE mobile='9123456780'")->fetch();
+          $customerId=lead_step20_convert_customer($pdo,1,(int)$lead2['id'],null,null,'Smoke customer conversion');if($customerId<=0)throw new RuntimeException('Customer conversion failed.');
+          $spam=$base;$spam['name']='Bot';$spam['mobile']='9000000000';$spam['website']='https://spam.invalid';$spam['started_at']=(string)((int)floor(microtime(true)*1000)-5000);lead_step20_public_capture($pdo,$spam,$server);
+          $counts=['tables'=>0,'leads'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_leads')->fetchColumn(),'submissions'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_submissions')->fetchColumn(),'blocked'=>(int)$pdo->query("SELECT COUNT(*) FROM crm_lead_submissions WHERE spam_status='blocked'")->fetchColumn(),'tasks'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_tasks')->fetchColumn(),'appointments'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_appointments')->fetchColumn(),'conversions'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_conversions')->fetchColumn()];
+          foreach(lead_step20_tables() as $t){$q=$pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');$q->execute([$t]);$counts['tables']+=(int)$q->fetchColumn();}
+          if($counts['tables']!==7||$counts['leads']!==2||$counts['submissions']!==4||$counts['blocked']!==1||$counts['tasks']!==1||$counts['appointments']!==1||$counts['conversions']!==2)throw new RuntimeException('Smoke count mismatch: '.json_encode($counts));
+          echo "STEP20_MYSQL_SMOKE=PASS\n";foreach($counts as $k=>$v)echo strtoupper($k).'='.$v."\n";
+          PHP
+          php /tmp/step20_smoke.php | tee business/config/step20_smoke_report.txt
+      - name: Commit PASS report
+        run: |
+          grep -q 'STEP20_MYSQL_SMOKE=PASS' business/config/step20_smoke_report.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/step20_smoke_report.txt
+          git commit -m "STEP 20: capture isolated Lead CRM MySQL smoke proof"
+          git push origin HEAD:main
