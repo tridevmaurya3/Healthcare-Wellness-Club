@@ -1,0 +1,63 @@
+name: One-time STEP 14 finalize
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step14-finalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add STEP 14 commands to Global Search
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('business/global_search.php')
+          text = path.read_text(encoding='utf-8')
+          if "['Purchase Center','purchase supplier po bill receipt payable return'" not in text:
+              needle = "['STEP 13 Inventory Audit','step 13 inventory audit stock ledger fefo','Verify the complete Inventory & Stock system.','step13_audit.php','STEP 13'],"
+              addition = needle + "\n ['Purchase Center','purchase supplier po bill receipt payable return','Complete supplier-to-inventory purchasing workflow.','purchase_center.php','PURCHASE'],['Supplier Center','supplier vendor gstin payment terms outstanding','Supplier master and balance history.','supplier_center.php','SUPPLIER'],['Purchase Orders','purchase order po supplier commitment','Create and manage supplier purchase orders.','purchase_orders.php','PO'],['Supplier Bills','purchase bill invoice due payable','Record actual supplier invoices and bill lines.','purchase_bills.php','BILL'],['Goods Receipts','purchase receipt grn batch expiry inventory inward','Receive supplier goods into batch inventory.','purchase_receipts.php','GRN'],['Supplier Payables','supplier payment outstanding due overdue','Track and settle supplier payables.','supplier_payments.php','PAYABLE'],['Purchase Returns','purchase return supplier credit stock return','Return received stock to supplier.','purchase_returns.php','RETURN'],['Purchase Analytics','purchase analytics supplier spend overdue outstanding','Supplier exposure and purchase trends.','purchase_analytics.php','ANALYTICS'],['STEP 14 Purchase Audit','step 14 purchase supplier audit','Verify the complete Purchase & Supplier system.','step14_audit.php','STEP 14'],"
+              if needle not in text:
+                  raise SystemExit('STEP 13 tool anchor not found in global_search.php')
+              text = text.replace(needle, addition, 1)
+              path.write_text(text, encoding='utf-8')
+
+      - name: PHP syntax check STEP 14
+        run: |
+          php -l business/config/purchase_step14.php
+          php -l business/purchase_center.php
+          php -l business/supplier_center.php
+          php -l business/supplier_detail.php
+          php -l business/purchase_orders.php
+          php -l business/purchase_bills.php
+          php -l business/purchase_receipts.php
+          php -l business/supplier_payments.php
+          php -l business/purchase_returns.php
+          php -l business/purchase_analytics.php
+          php -l business/purchase_export.php
+          php -l business/step14_audit.php
+          php -l business/dashboard_step14.php
+          php -l business/index.php
+          php -l business/global_search.php
+
+      - name: Commit final integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No patch needed; lint passed."
+          else
+            git add business/global_search.php
+            git commit -m "STEP 14: finalize linted purchase integration and global search"
+            git push origin main
+          fi
