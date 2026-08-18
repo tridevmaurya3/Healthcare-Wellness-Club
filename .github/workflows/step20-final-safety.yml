@@ -1,0 +1,64 @@
+name: STEP 20 final safety
+on:
+  push:
+    paths:
+      - '.github/workflows/step20-final-safety.yml'
+permissions:
+  contents: write
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply safety patches
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('business/config/security_step17.php')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("'customers.view','customers.manage','leads.view','leads.manage','leads.view','leads.manage','finance.view','audit.view',", "'customers.view','customers.manage','leads.view','leads.manage','finance.view','audit.view',")
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/config/lead_step20.php')
+          s=p.read_text(encoding='utf-8')
+          old="$lead=lead_step20_get($pdo,$orgId,$leadId);$pdo->beginTransaction();try{"
+          new="$lead=lead_step20_get($pdo,$orgId,$leadId);if($stage==='converted'&&empty($lead['converted_customer_id'])&&empty($lead['converted_member_id']))throw new RuntimeException('Use explicit Customer or Member conversion before marking a Lead converted.');$pdo->beginTransaction();try{"
+          if old not in s: raise SystemExit('Lead stage safety marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+
+          for path in ['business/step17_audit.php','business/step18_audit.php','business/step19_audit.php']:
+              p=Path(path);s=p.read_text(encoding='utf-8')
+              if path.endswith('step17_audit.php'):
+                  s=s.replace("str_contains($indexFile,'dashboard_step19.php')", "str_contains($indexFile,'dashboard_step19.php')||str_contains($indexFile,'dashboard_step20.php')")
+              elif path.endswith('step18_audit.php'):
+                  s=s.replace("str_contains($index,'dashboard_step18.php')||str_contains($index,'dashboard_step19.php')", "str_contains($index,'dashboard_step18.php')||str_contains($index,'dashboard_step19.php')||str_contains($index,'dashboard_step20.php')")
+              else:
+                  s=s.replace("$index19=str_contains($index,'dashboard_step19.php');", "$index19=str_contains($index,'dashboard_step19.php')||str_contains($index,'dashboard_step20.php');")
+              p.write_text(s,encoding='utf-8')
+
+          p=Path('business/step20_audit.php')
+          s=p.read_text(encoding='utf-8')
+          old="$formConnected=str_contains($contact,'../business/public_lead_submit.php')&&!str_contains($contact,'formspree.io');$typesReady=true;"
+          new="$pubStart=strpos($service,'function lead_step20_public_capture');$pubEnd=strpos($service,'function lead_step20_metrics');$pubBody=($pubStart!==false&&$pubEnd!==false&&$pubEnd>$pubStart)?substr($service,$pubStart,$pubEnd-$pubStart):'';$formConnected=str_contains($contact,'../business/public_lead_submit.php')&&!str_contains($contact,'formspree.io');$typesReady=true;"
+          if old not in s: raise SystemExit('Audit public-body marker not found')
+          s=s.replace(old,new,1)
+          s=s.replace("$appointmentBoundary=str_contains($service,'requested_appointment_at')&&!preg_match('/public_capture[\\s\\S]{0,12000}INSERT INTO crm_appointments/i',$service);", "$appointmentBoundary=str_contains($pubBody,'requested_appointment_at')&&!str_contains($pubBody,'INSERT INTO crm_appointments');")
+          s=s.replace("$conversionExplicit=str_contains($service,'matching customer already exists')&&str_contains($service,'lead_step20_link_member')&&!preg_match('/public_capture[\\s\\S]{0,12000}INSERT INTO crm_customers/i',$service);", "$conversionExplicit=str_contains($service,'matching customer already exists')&&str_contains($service,'lead_step20_link_member')&&!str_contains($pubBody,'INSERT INTO crm_customers');")
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: PHP lint all STEP 20 and prior audits
+        run: |
+          set -e
+          for f in business/config/lead_step20.php business/public_lead_submit.php business/lead_center.php business/lead_detail.php business/lead_followups.php business/lead_appointments.php business/lead_analytics.php business/lead_export.php business/dashboard_step20.php business/step20_audit.php business/config/security_step17.php business/global_search.php business/index.php business/step17_audit.php business/step18_audit.php business/step19_audit.php; do php -l "$f"; done
+      - name: Commit safety pass
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/security_step17.php business/config/lead_step20.php business/step17_audit.php business/step18_audit.php business/step19_audit.php business/step20_audit.php
+          git diff --cached --quiet && exit 0
+          git commit -m "STEP 20: finalize conversion safety and audit compatibility"
+          git push origin HEAD:main
