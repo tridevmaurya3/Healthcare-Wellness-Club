@@ -1,0 +1,39 @@
+name: STEP 23 audit PDO literal fix
+on:
+  push:
+    paths:
+      - '.github/workflows/step23-audit-pdo-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Fix PDO literal checks and lint
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('business/step23_audit.php')
+          s=p.read_text(encoding='utf-8')
+          replacements={
+            '$guardCenter=str_contains($center,"ps23_guard($pdo,\'storefront.view\'");': "$guardCenter=str_contains($center,'ps23_guard($pdo,\\'storefront.view\\'');",
+            '$guardDetail=str_contains($detail,"ps23_guard($pdo,\'storefront.view\'")&&str_contains($detail,"ps23_guard($pdo,\'storefront.manage\'");': "$guardDetail=str_contains($detail,'ps23_guard($pdo,\\'storefront.view\\'')&&str_contains($detail,'ps23_guard($pdo,\\'storefront.manage\\'');",
+            '$guardExport=str_contains($exportPage,"ps23_guard($pdo,\'storefront.export\'");': "$guardExport=str_contains($exportPage,'ps23_guard($pdo,\\'storefront.export\\'');",
+          }
+          for old,new in replacements.items():
+              if old not in s:
+                  raise SystemExit('Expected audit marker not found: '+old)
+              s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          php -l business/step23_audit.php
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/step23_audit.php
+          git commit -m "STEP 23: fix PDO literal audit crash"
+          git push origin HEAD:main
