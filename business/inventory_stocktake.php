@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 session_start();
-require_once __DIR__ . '/config/inventory_step13.php';
+require_once __DIR__ . '/config/inventory_step13_stocktake.php';
 if(empty($_SESSION['inventory_count_csrf']))$_SESSION['inventory_count_csrf']=bin2hex(random_bytes(24));
 $csrf=(string)$_SESSION['inventory_count_csrf'];$error=null;$success=null;$rows=[];$counts=[];
 try{
@@ -9,7 +9,7 @@ try{
  if($_SERVER['REQUEST_METHOD']==='POST'){
   if(!hash_equals($csrf,(string)($_POST['csrf']??'')))throw new RuntimeException('Security token mismatch.');
   $productId=(int)($_POST['product_id']??0);$counted=(float)($_POST['counted_quantity']??-1);$date=(string)($_POST['count_date']??date('Y-m-d'));$ref=trim((string)($_POST['reference_no']??''));$notes=trim((string)($_POST['notes']??''));
-  $countId=inventory_step13_post_stock_count($pdo,$productId,$counted,$date,$ref,$notes);$success='Physical stock count #'.$countId.' posted.';
+  $countId=inventory_step13_post_stock_count_atomic($pdo,$productId,$counted,$date,$ref,$notes);$success='Physical stock count #'.$countId.' posted.';
  }
  $rows=inventory_step13_stock_rows($pdo,$orgId,$locationId);
  $stmt=$pdo->prepare("SELECT c.id,c.count_date,c.reference_no,l.system_quantity,l.counted_quantity,l.variance_quantity,p.product_name,p.sku FROM inventory_stock_counts c JOIN inventory_stock_count_lines l ON l.stock_count_id=c.id JOIN products p ON p.id=l.product_id WHERE c.organization_id=? ORDER BY c.id DESC LIMIT 80");$stmt->execute([$orgId]);$counts=$stmt->fetchAll();

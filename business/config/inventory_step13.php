@@ -266,7 +266,7 @@ function inventory_step13_stock_rows(PDO $pdo, int $orgId, int $locationId): arr
 function inventory_step13_batch_code(int $listingId, string $batchCode): string
 {
     $batchCode = trim($batchCode);
-    return $batchCode !== '' ? mb_substr($batchCode, 0, 120, 'UTF-8') : 'UNBATCHED-' . $listingId;
+    return $batchCode !== '' ? (function_exists('mb_substr') ? mb_substr($batchCode, 0, 120, 'UTF-8') : substr($batchCode, 0, 120)) : 'UNBATCHED-' . $listingId;
 }
 
 function inventory_step13_add_stock(
