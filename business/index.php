@@ -32,8 +32,11 @@ $isReady = (bool)$status['connected'] && (string)$status['schema_version'] === '
         <h1>One source of business truth, with live calculations instead of duplicate formula sheets.</h1>
         <p>The system is prepared for multiple organizations, clubs, countries, currencies and data sources. Operational records become the source of truth; the first six workbook sheets are rebuilt as live derived reports.</p>
       </div>
-      <div class="biz-status <?= $isReady ? 'ready' : '' ?>">
-        <i></i><?= htmlspecialchars($isReady ? 'World-Ready Schema Active' : 'Database Setup Pending', ENT_QUOTES, 'UTF-8') ?>
+      <div style="display:flex;flex-direction:column;align-items:stretch;gap:10px">
+        <div class="biz-status <?= $isReady ? 'ready' : '' ?>">
+          <i></i><?= htmlspecialchars($isReady ? 'World-Ready Schema Active' : 'Database Setup Pending', ENT_QUOTES, 'UTF-8') ?>
+        </div>
+        <a class="biz-back" href="import.php" style="background:#19764a;border-color:#19764a;color:#fff">Preview Excel Import →</a>
       </div>
     </section>
 
@@ -60,8 +63,8 @@ $isReady = (bool)$status['connected'] && (string)$status['schema_version'] === '
         <h2>Architecture status</h2>
         <p>The foundation is ready for local development now and cloud deployment later.</p>
         <div class="biz-steps">
-          <div class="biz-step"><div class="biz-step-num">01</div><div><b>Activate MySQL schema</b><span>Run the same world-ready schema locally in XAMPP.</span></div></div>
-          <div class="biz-step"><div class="biz-step-num">02</div><div><b>Import source sheets only</b><span>Preserve original Google Form/Excel rows before normalization.</span></div></div>
+          <div class="biz-step"><div class="biz-step-num">01</div><div><b>Activate MySQL schema</b><span>World-ready schema is active locally in XAMPP.</span></div></div>
+          <div class="biz-step"><div class="biz-step-num">02</div><div><b>Preview source sheets safely</b><span>Inspect Sheets 7–14 before any database write.</span></div></div>
           <div class="biz-step"><div class="biz-step-num">03</div><div><b>Formula analysis</b><span>Translate workbook sheets 1-6 formulas into versioned calculation rules.</span></div></div>
           <div class="biz-step"><div class="biz-step-num">04</div><div><b>Live Business Dashboard</b><span>KPIs, filters, trends, renewals, VP and income from one database.</span></div></div>
         </div>
