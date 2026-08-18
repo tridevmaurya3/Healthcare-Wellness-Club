@@ -1,0 +1,29 @@
+name: One-time STEP 14 lint proof
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step14-lint-proof.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: PHP lint current STEP 14 main
+        run: |
+          for f in business/config/purchase_step14.php business/purchase_center.php business/supplier_center.php business/supplier_detail.php business/purchase_orders.php business/purchase_bills.php business/purchase_receipts.php business/supplier_payments.php business/purchase_returns.php business/purchase_analytics.php business/purchase_export.php business/step14_audit.php business/dashboard_step14.php business/index.php business/global_search.php; do php -l "$f"; done
+      - name: Commit lint proof
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf 'STEP 14 PHP lint passed on current main.\n' > business/config/step14_lint_ok.txt
+          git add business/config/step14_lint_ok.txt
+          git commit -m "STEP 14: confirm final PHP lint passes"
+          git push origin main
