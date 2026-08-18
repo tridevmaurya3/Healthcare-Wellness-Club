@@ -1,1 +1,118 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact Us - Healthcare Wellness Club</title><link rel="stylesheet" href="../css/bootstrap.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="xampp-fixes.css"></head><body><div id="navbar-placeholder"></div><main class="container mt-4 mb-5"><section class="contact-section"><div class="contact-header"><h1 class="h2">Contact Us</h1><p>We’d love to hear from you. Fill out the form and we’ll get back shortly.</p></div><div class="row g-4"><div class="col-md-6"><form id="contact-form" action="https://formspree.io/f/xkgjqdyz" method="POST"><div class="mb-3"><label class="form-label" for="name">Your Name</label><input class="form-control" id="name" name="name" required></div><div class="mb-3"><label class="form-label" for="mobile">Your Mobile</label><input class="form-control" type="tel" id="mobile" name="mobile" required></div><div class="mb-3"><label class="form-label" for="email">Your Email</label><input class="form-control" type="email" id="email" name="_replyto" required></div><div class="mb-3"><label class="form-label" for="message">Your Message</label><textarea class="form-control" id="message" name="message" rows="5" required></textarea></div><div id="form-alert" class="alert d-none" role="alert"></div><button class="btn btn-success" type="submit">Send Message</button></form></div><div class="col-md-6"><h2 class="h5">Contact Details</h2><p><strong>Phone:</strong> <a href="tel:+915483561586">+91-5483561586</a></p><p><strong>Email:</strong> <a href="mailto:healthcare.wellnessclub@gmail.com">healthcare.wellnessclub@gmail.com</a></p><p><strong>Location:</strong> Wellness Center, Ghazipur, Uttar Pradesh, India</p><div class="ratio ratio-16x9"><iframe src="https://maps.google.com/maps?q=Ghazipur,India&t=&z=13&ie=UTF8&iwloc=&output=embed" title="Ghazipur map" loading="lazy" allowfullscreen></iframe></div></div></div></section></main><div class="floating-btns"><a href="https://wa.me/919876543210" target="_blank" rel="noopener">📱 Chat on WhatsApp</a><a href="tel:+919876543210" class="call-btn">📞 Call Now</a></div><div id="footer-placeholder"></div><script src="../js/bootstrap.bundle.min.js"></script><script src="../js/site.js"></script><script>document.getElementById('contact-form').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,a=document.getElementById('form-alert'),b=f.querySelector('button');b.disabled=true;try{const r=await fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}});if(!r.ok)throw 0;a.className='alert alert-success';a.textContent='Thanks for your message! We’ll get back to you soon.';f.reset()}catch(x){a.className='alert alert-danger';a.textContent='Something went wrong. Please try again.'}finally{a.classList.remove('d-none');b.disabled=false}});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Contact Healthcare Wellness Club for wellness service information, club guidance and general enquiries.">
+  <title>Contact Us - Healthcare Wellness Club</title>
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="public-pages.css">
+  <link rel="stylesheet" href="xampp-fixes.css">
+</head>
+<body class="public-page">
+  <div id="navbar-placeholder"></div>
+
+  <header class="pub-hero">
+    <div class="pub-shell pub-hero-grid">
+      <div>
+        <div class="pub-kicker">Contact the club</div>
+        <h1>Have a question? Start with a simple conversation.</h1>
+        <p>Send your enquiry using the form or use the contact details below. The club can explain available services, support options and general wellness activities.</p>
+      </div>
+      <div class="pub-hero-chip">Ghazipur • Uttar Pradesh • India</div>
+    </div>
+  </header>
+
+  <main class="pub-main">
+    <div class="pub-shell">
+      <section class="pub-contact-grid">
+        <article class="pub-card pub-form-card">
+          <div class="pub-kicker">Send a message</div>
+          <h2 class="pub-section-title">Tell us how we can help.</h2>
+          <p class="pub-section-copy">Complete the form and we’ll get back to you as soon as possible.</p>
+
+          <form id="contact-form" action="https://formspree.io/f/xkgjqdyz" method="POST" class="mt-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="name">Your Name</label>
+                <input class="form-control" id="name" name="name" autocomplete="name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="mobile">Your Mobile</label>
+                <input class="form-control" type="tel" id="mobile" name="mobile" autocomplete="tel" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="email">Your Email</label>
+                <input class="form-control" type="email" id="email" name="_replyto" autocomplete="email" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="message">Your Message</label>
+                <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+              </div>
+            </div>
+            <div id="form-alert" class="alert d-none mt-3" role="alert" aria-live="polite"></div>
+            <button class="pub-submit mt-3" type="submit">Send Message <span aria-hidden="true">→</span></button>
+          </form>
+        </article>
+
+        <aside class="pub-card pub-info-card">
+          <div class="pub-kicker">Club details</div>
+          <h2 class="pub-section-title">Healthcare Wellness Club</h2>
+          <p class="pub-section-copy">Use whichever contact method is most convenient for your enquiry.</p>
+
+          <div class="pub-info-list">
+            <div class="pub-info-item"><div class="pub-info-icon">☎</div><div><small>Phone</small><a href="tel:+915483561586">+91-5483561586</a></div></div>
+            <div class="pub-info-item"><div class="pub-info-icon">✉</div><div><small>Email</small><a href="mailto:healthcare.wellnessclub@gmail.com">healthcare.wellnessclub@gmail.com</a></div></div>
+            <div class="pub-info-item"><div class="pub-info-icon">⌖</div><div><small>Location</small><strong>Wellness Center, Ghazipur, Uttar Pradesh, India</strong></div></div>
+          </div>
+
+          <div class="pub-map">
+            <iframe src="https://maps.google.com/maps?q=Ghazipur,India&t=&z=13&ie=UTF8&iwloc=&output=embed" title="Map showing Ghazipur, Uttar Pradesh, India" loading="lazy" allowfullscreen></iframe>
+          </div>
+        </aside>
+      </section>
+
+      <section class="pub-card pub-card-pad mt-4">
+        <div class="pub-kicker">Before you visit</div>
+        <h2 class="pub-section-title">General wellness support, not medical treatment.</h2>
+        <p class="pub-section-copy">The club provides general wellness education, motivation and community support. For symptoms, diagnosis, treatment or medical concerns, please consult an appropriately qualified healthcare professional.</p>
+      </section>
+    </div>
+  </main>
+
+  <div class="floating-btns">
+    <a href="https://wa.me/919876543210" target="_blank" rel="noopener">📱 Chat on WhatsApp</a>
+    <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+  </div>
+  <div id="footer-placeholder"></div>
+
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="../js/site.js"></script>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit',async event=>{
+      event.preventDefault();
+      const form=event.currentTarget;
+      const alertBox=document.getElementById('form-alert');
+      const button=form.querySelector('button[type="submit"]');
+      button.disabled=true;
+      button.textContent='Sending…';
+      try{
+        const response=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{Accept:'application/json'}});
+        if(!response.ok) throw new Error('Submission failed');
+        alertBox.className='alert alert-success mt-3';
+        alertBox.textContent='Thanks for your message! We’ll get back to you soon.';
+        form.reset();
+      }catch(error){
+        alertBox.className='alert alert-danger mt-3';
+        alertBox.textContent='Something went wrong. Please try again.';
+      }finally{
+        alertBox.classList.remove('d-none');
+        button.disabled=false;
+        button.innerHTML='Send Message <span aria-hidden="true">→</span>';
+      }
+    });
+  </script>
+</body>
+</html>
