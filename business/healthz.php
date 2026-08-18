@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/config/deployment_step19.php';
+header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store, private');
+$local=in_array((string)($_SERVER['REMOTE_ADDR']??''),['127.0.0.1','::1'],true)&&deployment_step19_env()==='local';
+if(!$local){$expected=(string)(getenv('HWC_HEALTH_TOKEN')?:'');$provided=(string)($_SERVER['HTTP_X_HWC_HEALTH_TOKEN']??'');if(strlen($expected)<24||$provided===''||!hash_equals($expected,$provided)){http_response_code(404);echo json_encode(['ok'=>false,'status'=>'not_found']);exit;}}
+try{require_once __DIR__.'/config/database.php';$pdo=business_db();require_once __DIR__.'/config/backup_step18.php';deployment_step19_ensure($pdo);$health=deployment_step19_health($pdo,false);$db=(string)$pdo->query('SELECT DATABASE()')->fetchColumn();$version=business_table_exists($pdo,'schema_meta')?(string)($pdo->query("SELECT COALESCE((SELECT meta_value FROM schema_meta WHERE meta_key='deployment_step19_version' LIMIT 1),'unknown')")->fetchColumn()):'unknown';$ok=($health['status']??'review')==='pass';http_response_code($ok?200:503);echo json_encode(['ok'=>$ok,'status'=>$health['status']??'review','environment'=>deployment_step19_env(),'application'=>'Healthcare Wellness Club','database_connected'=>$db!=='','step19_version'=>$version,'time'=>gmdate(DATE_ATOM)],JSON_UNESCAPED_SLASHES);}catch(Throwable $e){http_response_code(503);echo json_encode(['ok'=>false,'status'=>'failed','environment'=>deployment_step19_env(),'time'=>gmdate(DATE_ATOM)]);}
