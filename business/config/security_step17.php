@@ -93,6 +93,9 @@ function security_step17_permission_catalog(): array
         ['security.roles.manage','Security Roles & Permissions','security','critical','Change Manager/Staff/Viewer permission matrix and user overrides.'],
         ['security.audit.view','Security Audit','security','critical','View login failures, security events and access history.'],
         ['security.sessions.manage','Security Sessions','security','critical','View and revoke active sessions.'],
+        ['backup.view','Backup: View','backup','critical','View encrypted backup history, recovery health and disaster-recovery readiness.'],
+        ['backup.manage','Backup: Manage','backup','critical','Create encrypted backups, verify packages and manage retention/scheduler policy.'],
+        ['backup.restore','Backup: Restore','backup','critical','Validate and execute full database restore with rollback protection.'],
     ];
 }
 
@@ -396,6 +399,10 @@ function security_step17_route_permission(string $script,string $method='GET'): 
     if(in_array($script,['permission_matrix.php','security_settings.php'],true))return 'security.roles.manage';
     if(in_array($script,['security_center.php','security_audit.php','step17_audit.php'],true))return 'security.audit.view';
     if($script==='security_sessions.php')return 'security.sessions.manage';
+    if($script==='backup_restore.php')return 'backup.restore';
+    if(in_array($script,['backup_create.php','backup_policy.php'],true))return 'backup.manage';
+    if(str_starts_with($script,'backup_')||in_array($script,['disaster_recovery.php','cloud_readiness.php','step18_audit.php'],true))return 'backup.view';
+    if($script==='dashboard_step18.php')return 'dashboard.view';
     if($script==='dashboard_step16.php')return 'finance.view';
     if($script==='dashboard_step15.php')return 'customers.view';
     if($script==='dashboard_step14.php')return 'purchases.view';
