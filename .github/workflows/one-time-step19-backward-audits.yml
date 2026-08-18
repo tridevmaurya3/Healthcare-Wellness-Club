@@ -1,0 +1,55 @@
+name: One-time STEP 19 backward audit compatibility
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step19-backward-audits.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Keep STEP 17 and STEP 18 audits forward-compatible
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p=Path('business/step17_audit.php')
+          s=p.read_text(encoding='utf-8')
+          old="$publicBypass=str_contains($securityFile,\"['login.php','setup_admin.php','logout.php','access_denied.php']\")&&!str_contains($securityFile,\"'password_change.php','access_denied.php'\");"
+          new="$publicBypass=str_contains($securityFile,\"'login.php'\")&&str_contains($securityFile,\"'setup_admin.php'\")&&str_contains($securityFile,\"'logout.php'\")&&str_contains($securityFile,\"'access_denied.php'\")&&str_contains($securityFile,\"'maintenance.php'\")&&str_contains($securityFile,\"'healthz.php'\")&&!preg_match('/\\$public=\\[[^\\]]*password_change\\.php/s',$securityFile);"
+          if old not in s: raise SystemExit('STEP17 public bypass marker missing')
+          s=s.replace(old,new,1)
+          old="$indexSecure=str_contains($indexFile,'dashboard_step17.php');"
+          new="$indexSecure=str_contains($indexFile,'dashboard_step17.php')||str_contains($indexFile,'dashboard_step18.php')||str_contains($indexFile,'dashboard_step19.php');"
+          if old not in s: raise SystemExit('STEP17 dashboard marker missing')
+          s=s.replace(old,new,1)
+          s=s.replace("s17add($checks,'Business OS routes through STEP 17 dashboard',$indexSecure,$indexSecure?'dashboard_step17.php active':'index route not updated');", "s17add($checks,'Business OS remains on a secured STEP 17+ dashboard',$indexSecure,$indexSecure?'secured dashboard route active':'index route not updated');")
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/step18_audit.php')
+          s=p.read_text(encoding='utf-8')
+          old="$index18=str_contains($index,'dashboard_step18.php');"
+          new="$index18=str_contains($index,'dashboard_step18.php')||str_contains($index,'dashboard_step19.php');"
+          if old not in s: raise SystemExit('STEP18 dashboard marker missing')
+          s=s.replace(old,new,1)
+          s=s.replace("b18add($checks,'Business OS routes through STEP 18 dashboard',$index18,$index18?'dashboard_step18.php active':'index route review required');", "b18add($checks,'Business OS remains on a recovery-capable STEP 18+ dashboard',$index18,$index18?'recovery-capable dashboard active':'index route review required');")
+          p.write_text(s,encoding='utf-8')
+      - name: PHP lint
+        run: |
+          php -l business/step17_audit.php
+          php -l business/step18_audit.php
+      - name: Commit compatibility patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/step17_audit.php business/step18_audit.php
+          git commit -m "STEP 19: keep prior security and recovery audits forward-compatible"
+          git push origin main
