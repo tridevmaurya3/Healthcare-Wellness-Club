@@ -1,0 +1,93 @@
+name: One-time STEP 18 finalize
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step18-finalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Integrate STEP 18 RBAC and search
+        shell: python
+        run: |
+          from pathlib import Path
+
+          sec = Path('business/config/security_step17.php')
+          s = sec.read_text(encoding='utf-8')
+          if "['backup.view','Backup: View'" not in s:
+              marker = "        ['security.sessions.manage','Security Sessions','security','critical','View and revoke active sessions.'],\n"
+              block = marker + "        ['backup.view','Backup: View','backup','critical','View encrypted backup history, recovery health and disaster-recovery readiness.'],\n        ['backup.manage','Backup: Manage','backup','critical','Create encrypted backups, verify packages and manage retention/scheduler policy.'],\n        ['backup.restore','Backup: Restore','backup','critical','Validate and execute full database restore with rollback protection.'],\n"
+              if marker not in s:
+                  raise SystemExit('Security permission insertion marker missing')
+              s = s.replace(marker, block, 1)
+          if "if($script==='backup_restore.php')return 'backup.restore';" not in s:
+              marker = "    if($script==='security_sessions.php')return 'security.sessions.manage';\n"
+              block = marker + "    if($script==='backup_restore.php')return 'backup.restore';\n    if(in_array($script,['backup_create.php','backup_policy.php'],true))return 'backup.manage';\n    if(str_starts_with($script,'backup_')||in_array($script,['disaster_recovery.php','cloud_readiness.php','step18_audit.php'],true))return 'backup.view';\n    if($script==='dashboard_step18.php')return 'dashboard.view';\n"
+              if marker not in s:
+                  raise SystemExit('Security route insertion marker missing')
+              s = s.replace(marker, block, 1)
+          sec.write_text(s, encoding='utf-8')
+
+          gs = Path('business/global_search.php')
+          g = gs.read_text(encoding='utf-8')
+          if "['Backup Center','backup disaster recovery encrypted'" not in g:
+              marker = " ['Today Center','today daily command followup quick activity'"
+              block = " ['Backup Center','backup disaster recovery encrypted recovery point','Encrypted backup and recovery command center.','backup_center.php','BACKUP'],['Create Encrypted Backup','backup create verify aes encrypted package','Create and cryptographically verify a portable recovery package.','backup_create.php','CREATE'],['Backup History','backup history download verify sha256','Review, verify and download encrypted recovery copies.','backup_history.php','HISTORY'],['Restore Center','backup restore preview rollback disaster recovery','Validate and restore a package with automatic rollback protection.','backup_restore.php','RESTORE'],['Backup Policy','backup scheduled retention cron task scheduler','Configure retention and scheduled-backup policy.','backup_policy.php','POLICY'],['Disaster Recovery','disaster recovery server loss database corruption runbook','Open the recovery sequence and evidence checklist.','disaster_recovery.php','DR'],['Cloud Readiness','cloud production backup https secrets offsite','Review production and cloud backup readiness.','cloud_readiness.php','CLOUD'],['STEP 18 Backup Audit','step 18 backup restore disaster recovery audit','Verify encrypted backup and disaster-recovery integrity.','step18_audit.php','STEP 18'],\n"
+              if marker not in g:
+                  raise SystemExit('Global Search Today marker missing')
+              g = g.replace(marker, block + marker, 1)
+          gs.write_text(g, encoding='utf-8')
+
+          health = Path('business/health_center.php')
+          h = health.read_text(encoding='utf-8')
+          h = h.replace('Business OS • System Health & Backup Readiness','Business OS • System Health + STEP 18 Recovery Readiness')
+          h = h.replace('<a class="os-btn" href="export_center.php">Export</a>','<a class="os-btn" href="backup_center.php">Backup Center</a>')
+          h = h.replace('STEP 10 prepares safe export and environment visibility; it does not silently schedule server backups.','STEP 18 now provides encrypted backup, verification, staged restore and scheduler readiness; operating-system scheduling remains explicit.')
+          h = h.replace('<b>Production Backup</b><small>Configure hosting/database scheduled backups when cloud deployment begins.</small></div><span class="s10-badge warn">DEPLOYMENT</span>','<b>Encrypted Recovery</b><small>Use STEP 18 Backup Center for encrypted packages, verification and restore preview.</small></div><a class="s10-link" href="backup_center.php">Open →</a>')
+          health.write_text(h, encoding='utf-8')
+
+      - name: PHP syntax lint
+        shell: bash
+        run: |
+          set -e
+          for f in \
+            business/config/security_step17.php \
+            business/config/backup_step18.php \
+            business/global_search.php \
+            business/health_center.php \
+            business/backup_center.php \
+            business/backup_create.php \
+            business/backup_history.php \
+            business/backup_download.php \
+            business/backup_restore.php \
+            business/backup_policy.php \
+            business/disaster_recovery.php \
+            business/cloud_readiness.php \
+            business/step17_audit.php \
+            business/step18_audit.php \
+            business/dashboard_step18.php \
+            business/cli/backup_step18.php \
+            business/index.php; do
+              php -l "$f"
+          done
+
+      - name: Commit STEP 18 final integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/security_step17.php business/global_search.php business/health_center.php
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "STEP 18: finalize RBAC search health integration and PHP lint"
+          git push origin main
