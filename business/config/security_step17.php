@@ -110,7 +110,7 @@ function security_step17_role_defaults(): array
     $manager = [
         'dashboard.view','members.view','members.manage','business.view','business.manage','reports.view','reports.export',
         'products.view','products.manage','sales.view','sales.manage','inventory.view','inventory.manage',
-        'purchases.view','purchases.manage','customers.view','customers.manage','leads.view','leads.manage','leads.view','leads.manage','finance.view','audit.view',
+        'purchases.view','purchases.manage','customers.view','customers.manage','leads.view','leads.manage','finance.view','audit.view',
     ];
     $staff = [
         'dashboard.view','members.view','business.view','business.manage','reports.view',
