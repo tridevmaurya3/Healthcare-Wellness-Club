@@ -50,6 +50,15 @@ function business_table_exists(PDO $pdo, string $tableName): bool
     return (int)$statement->fetchColumn() > 0;
 }
 
+function business_column_exists(PDO $pdo, string $tableName, string $columnName): bool
+{
+    $statement = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+    );
+    $statement->execute([$tableName, $columnName]);
+    return (int)$statement->fetchColumn() > 0;
+}
+
 function business_safe_count(PDO $pdo, string $tableName): int
 {
     if (!business_table_exists($pdo, $tableName)) {
