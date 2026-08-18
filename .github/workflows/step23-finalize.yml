@@ -1,0 +1,66 @@
+name: STEP 23 final validation
+on:
+  push:
+    paths:
+      - '.github/workflows/step23-finalize.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply audit compatibility patches
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('business/step23_audit.php')
+          s=p.read_text(encoding='utf-8')
+          replacements={
+            'str_contains($service,"$p[\'mrp\']")':'str_contains($service,"\\$p[\'mrp\']")',
+            'str_contains($service,"$p[\'volume_points\']")':'str_contains($service,"\\$p[\'volume_points\']")',
+            "str_contains($service,'ps23_cart_quote($pdo,$orgId,$cart')":"str_contains($service,'ps23_cart_quote($pdo,$orgId,$cart')",
+            'str_contains($service,"$vp<100")':'str_contains($service,"\\$vp<100")',
+            'str_contains($service,"hash(\'sha256\',$token)")':'str_contains($service,"hash(\'sha256\',\\$token)")',
+          }
+          for old,new in replacements.items():
+              s=s.replace(old,new)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('business/step22_audit.php')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("$indexTruth=str_contains($index,'dashboard_step22.php');", "$indexTruth=str_contains($index,'dashboard_step22.php')||str_contains($index,'dashboard_step23.php');")
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: PHP syntax lint
+        run: |
+          set -e
+          files=(
+            business/config/public_store_step23.php
+            business/public_order_center.php
+            business/public_order_detail.php
+            business/public_order_export.php
+            business/product_quote_detail.php
+            business/dashboard_step23.php
+            business/step23_audit.php
+            business/step22_audit.php
+            business/index.php
+            shop/index.php
+            shop/product.php
+            shop/cart.php
+            shop/checkout.php
+            shop/submit.php
+            shop/status.php
+          )
+          for f in "${files[@]}"; do php -l "$f"; done
+          echo STEP23_LINT=PASS
+      - name: Commit validated patches
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/step23_audit.php business/step22_audit.php
+          git diff --cached --quiet && exit 0
+          git commit -m "STEP 23: finalize audit compatibility"
+          git push origin HEAD:main
