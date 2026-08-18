@@ -97,6 +97,8 @@ function security_step17_permission_catalog(): array
         ['backup.view','Backup: View','backup','critical','View encrypted backup history, recovery health and disaster-recovery readiness.'],
         ['backup.manage','Backup: Manage','backup','critical','Create encrypted backups, verify packages and manage retention/scheduler policy.'],
         ['backup.restore','Backup: Restore','backup','critical','Validate and execute full database restore with rollback protection.'],
+        ['leads.view','Public Leads: View','leads','sensitive','View public website leads, follow-ups, appointments and lead analytics.'],
+        ['leads.manage','Public Leads: Manage','leads','sensitive','Manage lead stages, assignment, follow-ups, appointments and explicit conversions.'],
         ['deployment.view','Deployment: View','deployment','critical','View environment, production health, releases, migration and multi-device readiness.'],
         ['deployment.manage','Deployment: Manage','deployment','critical','Control maintenance, releases, migration plans, scheduler and offsite copy.'],
         ['deployment.release','Production Release','deployment','critical','Authorize production release and rollback status.'],
@@ -108,12 +110,12 @@ function security_step17_role_defaults(): array
     $manager = [
         'dashboard.view','members.view','members.manage','business.view','business.manage','reports.view','reports.export',
         'products.view','products.manage','sales.view','sales.manage','inventory.view','inventory.manage',
-        'purchases.view','purchases.manage','customers.view','customers.manage','finance.view','audit.view',
+        'purchases.view','purchases.manage','customers.view','customers.manage','leads.view','leads.manage','leads.view','leads.manage','finance.view','audit.view',
     ];
     $staff = [
         'dashboard.view','members.view','business.view','business.manage','reports.view',
         'products.view','sales.view','sales.manage','inventory.view','inventory.manage',
-        'purchases.view','purchases.manage','customers.view','customers.manage',
+        'purchases.view','purchases.manage','customers.view','customers.manage','leads.view','leads.manage',
     ];
     $viewer = ['dashboard.view','members.view','business.view','reports.view','products.view','sales.view'];
     return ['manager'=>$manager,'staff'=>$staff,'viewer'=>$viewer];
@@ -406,6 +408,8 @@ function security_step17_route_permission(string $script,string $method='GET'): 
     if($script==='backup_restore.php')return 'backup.restore';
     if(in_array($script,['backup_create.php','backup_policy.php'],true))return 'backup.manage';
     if(str_starts_with($script,'backup_')||in_array($script,['disaster_recovery.php','cloud_readiness.php','step18_audit.php'],true))return 'backup.view';
+    if(str_starts_with($script,'lead_')||$script==='step20_audit.php')return $write?'leads.manage':'leads.view';
+    if($script==='dashboard_step20.php')return 'dashboard.view';
     if($script==='dashboard_step19.php')return 'dashboard.view';
     if($script==='step19_audit.php')return 'deployment.view';
     if(in_array($script,['deployment_center.php','environment_center.php','multi_device_access.php','scheduler_center.php'],true))return 'deployment.view';
@@ -456,7 +460,7 @@ function security_step17_guard_request(PDO $pdo): void
 {
     if(security_step17_is_cli())return;
     security_step17_ensure($pdo);security_step17_session_start();$script=security_step17_script();
-    $public=['login.php','setup_admin.php','logout.php','access_denied.php','maintenance.php','healthz.php'];
+    $public=['login.php','setup_admin.php','logout.php','access_denied.php','maintenance.php','healthz.php','public_lead_submit.php'];
     if(in_array($script,$public,true))return;
     if(security_step17_total_users($pdo)===0){header('Location: setup_admin.php');exit;}
     $user=security_step17_session_user($pdo,true);
