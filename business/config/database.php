@@ -4,6 +4,36 @@ declare(strict_types=1);
 require_once __DIR__ . '/report_runtime.php';
 
 /**
+ * PDO compatibility adapter used only by Correction Center.
+ *
+ * The original audit-history LIKE ... ESCAPE expression is valid in intent but the
+ * PHP/MariaDB backslash layers can turn its ESCAPE literal into an unterminated SQL
+ * string on some XAMPP/MariaDB builds. Replace only that one read query with an
+ * equivalent REGEXP expression; all correction writes and all other SQL stay intact.
+ */
+class BusinessCorrectionPDO extends PDO
+{
+    public function prepare(string $query, array $options = []): PDOStatement|false
+    {
+        if (
+            str_contains($query, 'FROM audit_logs')
+            && str_contains($query, 'event_type LIKE')
+            && str_contains($query, '_corrected')
+            && str_contains($query, 'LIMIT 80')
+        ) {
+            $query = "SELECT id,event_type,entity_type,entity_id,details_json,created_at
+                      FROM audit_logs
+                      WHERE organization_id=?
+                        AND event_type REGEXP '^manual_.*_corrected$'
+                      ORDER BY id DESC
+                      LIMIT 80";
+        }
+
+        return parent::prepare($query, $options);
+    }
+}
+
+/**
  * Healthcare Wellness Club Business OS database connection.
  *
  * Local XAMPP defaults:
@@ -40,10 +70,15 @@ function business_db(): PDO
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
 
+    $currentScript = basename((string)($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? ''));
+
     // Only the six workbook-derived reports use the read-only runtime adapter.
-    // All CRUD/import/data-entry pages continue to use plain PDO and unchanged SQL.
+    // Correction Center gets a tiny MariaDB compatibility adapter for its audit-history query.
+    // All other CRUD/import/data-entry pages continue to use plain PDO and unchanged SQL.
     if (business_report_runtime_enabled()) {
         $pdo = new BusinessReportPDO($dsn, $user, $pass, $pdoOptions);
+    } elseif ($currentScript === 'correction_center.php') {
+        $pdo = new BusinessCorrectionPDO($dsn, $user, $pass, $pdoOptions);
     } else {
         $pdo = new PDO($dsn, $user, $pass, $pdoOptions);
     }
