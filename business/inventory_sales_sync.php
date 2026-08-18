@@ -1,0 +1,23 @@
+<?php
+declare(strict_types=1);
+session_start();
+require_once __DIR__ . '/config/inventory_step13.php';
+if(empty($_SESSION['inventory_sync_csrf']))$_SESSION['inventory_sync_csrf']=bin2hex(random_bytes(24));
+$csrf=(string)$_SESSION['inventory_sync_csrf'];$error=null;$success=null;$pending=[];
+try{
+ $pdo=business_db();inventory_step13_ensure($pdo);$ctx=inventory_step13_context($pdo);$orgId=(int)$ctx['organization_id'];
+ if($_SERVER['REQUEST_METHOD']==='POST'){
+  if(!hash_equals($csrf,(string)($_POST['csrf']??'')))throw new RuntimeException('Security token mismatch.');
+  $orderId=(int)($_POST['order_id']??0);inventory_step13_post_sale($pdo,$orderId);$success='Inventory allocation posted for Product Sale Order #'.$orderId.'.';
+ }
+ $pending=inventory_step13_pending_sales($pdo,$orgId);
+}catch(Throwable $e){$error=$e->getMessage();}
+function ss_h(mixed $v):string{return htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
+?>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Sale Stock Sync - Healthcare Wellness Club</title><link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/product_pro.css"></head><body>
+<header class="os-topbar"><div class="os-topbar-inner"><a class="os-brand" href="inventory_center.php"><img src="../img/logo.png" alt="logo"><span><strong>Healthcare Wellness Club</strong><small>STEP 13 • Sale Stock Sync</small></span></a><div class="os-top-actions"><a class="os-btn" href="product_sales_center.php">Product Sales</a><a class="os-btn" href="inventory_inward.php">+ Stock</a><a class="os-btn primary" href="inventory_center.php">Inventory</a></div></div></header>
+<div class="os-layout"><aside class="os-sidebar"><div class="os-nav-label">Inventory</div><nav class="os-nav"><a href="inventory_center.php"><i class="dot"></i>Inventory Center</a><a href="inventory_inward.php"><i class="dot"></i>Stock Inward</a><a href="inventory_adjustments.php"><i class="dot"></i>Damage / Returns</a><a href="inventory_stocktake.php"><i class="dot"></i>Physical Stocktake</a><a href="inventory_settings.php"><i class="dot"></i>Reorder Settings</a><a class="active" href="inventory_sales_sync.php"><i class="dot"></i>Sale Stock Sync</a><a href="step13_audit.php"><i class="dot"></i>STEP 13 Audit</a></nav></aside>
+<main class="os-main"><section class="os-hero pp-hero"><div class="os-kicker">STEP 13E • SALES → STOCK RECOVERY QUEUE</div><h1>Recover any post-activation Product Sale that is missing its inventory allocation.</h1><p>Only STEP 13-era active sales appear here. Historical pre-inventory sales are not back-deducted because their opening stock position is unknown.</p><div class="os-status-row"><span class="os-chip <?= $error===null?'good':'' ?>"><?= $error===null?'SALE STOCK SYNC LIVE':'Review required' ?></span><span class="os-chip <?= !$pending?'good':'' ?>"><?= count($pending) ?> pending</span></div></section>
+<?php if($error):?><div class="pp-alert bad"><strong>Sync diagnostic:</strong> <?= ss_h($error) ?></div><?php endif;?><?php if($success):?><div class="pp-alert good"><strong>Posted:</strong> <?= ss_h($success) ?></div><?php endif;?>
+<?php if(!$error):?><section class="os-card" style="margin-top:14px"><div class="os-title-row"><div><h2>Pending Sales</h2><p>Posting uses the same FEFO and no-negative-stock rules as normal automatic finalization.</p></div></div><div class="pp-table-wrap"><table class="pp-table"><thead><tr><th>Order</th><th>Date</th><th>Quote</th><th>Customer</th><th>Created</th><th>Action</th></tr></thead><tbody><?php foreach($pending as $p):?><tr><td><b>#<?= (int)$p['order_id'] ?></b></td><td><?= ss_h($p['order_date']) ?></td><td><?= ss_h($p['quote_code']) ?></td><td><?= ss_h($p['customer_name']?:'—') ?></td><td><?= ss_h($p['created_at']) ?></td><td><form method="post"><input type="hidden" name="csrf" value="<?= ss_h($csrf) ?>"><input type="hidden" name="order_id" value="<?= (int)$p['order_id'] ?>"><button>Post Stock Allocation →</button></form></td></tr><?php endforeach;?><?php if(!$pending):?><tr><td colspan="6"><b>All post-activation active Product Sales are inventory-synchronized.</b></td></tr><?php endif;?></tbody></table></div></section><?php endif;?>
+<div class="os-footer-note"><strong>Recovery rule:</strong> this page is not a historical backfill tool. It only repairs missing inventory allocation for Product Sales created after STEP 13 activation.</div></main></div></body></html>
