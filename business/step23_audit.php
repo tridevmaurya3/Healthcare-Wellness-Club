@@ -67,9 +67,9 @@ try{
     $requestNotSale=!str_contains($service,'INSERT INTO orders(')&&!str_contains($submit,'product_step12_finalize_quote');
     $events=str_contains($service,'public_order_events')&&str_contains($service,'status_changed');
     $exportReady=str_contains($exportPage,'text/csv')&&str_contains($service,'public_store_exports');
-    $guardCenter=str_contains($center,"ps23_guard($pdo,'storefront.view'");
-    $guardDetail=str_contains($detail,"ps23_guard($pdo,'storefront.view'")&&str_contains($detail,"ps23_guard($pdo,'storefront.manage'");
-    $guardExport=str_contains($exportPage,"ps23_guard($pdo,'storefront.export'");
+    $guardCenter=str_contains($center,'ps23_guard($pdo,\'storefront.view\'');
+    $guardDetail=str_contains($detail,'ps23_guard($pdo,\'storefront.view\'')&&str_contains($detail,'ps23_guard($pdo,\'storefront.manage\'');
+    $guardExport=str_contains($exportPage,'ps23_guard($pdo,\'storefront.export\'');
     $indexOk=str_contains($index,'dashboard_step23.php');
     $noFakeOrders=!preg_match('/INSERT\s+INTO\s+public_order_requests/i',$migration);
 
