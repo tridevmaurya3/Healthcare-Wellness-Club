@@ -128,7 +128,7 @@ $liveReports = [
     </a>
     <div class="os-top-actions">
       <a class="os-btn" href="../index.html">Public Website</a>
-      <a class="os-btn" href="data_entry_center.php">+ Data Entry</a>
+      <a class="os-btn" href="data_management.php">Data Management</a>
       <a class="os-btn" href="operations_center.php">Operations</a>
       <a class="os-btn primary" href="report_center.php">Report Center</a>
     </div>
@@ -140,7 +140,7 @@ $liveReports = [
     <div class="os-nav-label">Business OS</div>
     <nav class="os-nav">
       <a class="active" href="index.php"><i class="dot"></i>Dashboard</a>
-      <a href="data_entry_center.php"><i class="dot"></i>Data Entry Center</a>
+      <a href="data_management.php"><i class="dot"></i>Data Management</a>
       <a href="operations_center.php"><i class="dot"></i>Operations Center</a>
       <a href="members.php"><i class="dot"></i>Members & Network</a>
       <a href="member_profile.php"><i class="dot"></i>Member Profile 360°</a>
@@ -163,9 +163,9 @@ $liveReports = [
 
   <main class="os-main">
     <section class="os-hero">
-      <div class="os-kicker">Step 10F • Professional Business OS</div>
-      <h1>Historical Excel data and new daily business entries now share one connected source-of-truth architecture.</h1>
-      <p>The reconciled workbook remains traceable historical evidence, while Smart Data Entry can create New UMS, VP, Orders, Renewals, Income and Royalty directly inside Business OS with raw-source trace and audit logging.</p>
+      <div class="os-kicker">Step 10M • Professional Business OS</div>
+      <h1>Historical Excel evidence, daily operations and every manual data change now follow one connected workflow.</h1>
+      <p>The reconciled workbook remains traceable historical evidence. New records and later corrections, reversals, restores and audits are organized through one compact Data Management control center.</p>
       <div class="os-status-row">
         <span class="os-chip <?= $businessReady ? 'good' : '' ?>"><?= $businessReady ? 'BUSINESS OS LIVE' : 'Review required' ?></span>
         <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 legacy source mapped</span>
@@ -180,23 +180,22 @@ $liveReports = [
     <?php endif; ?>
 
     <section class="os-grid">
-      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Imported + manual member records</span></article>
+      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Imported + active manual member records</span></article>
       <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>All normalized VP sources</span></article>
-      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>All normalized order facts</span></article>
-      <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Imported + manual renewals</span></article>
+      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Active normalized order facts</span></article>
+      <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Imported + active manual renewals</span></article>
 
       <article class="os-card os-section">
         <div class="os-title-row">
-          <div><h2>Daily Business Entry</h2><p>Stop adding new operational rows to Excel; enter them directly into the normalized system.</p></div>
-          <a class="os-btn primary" href="data_entry_center.php">Open Data Entry</a>
+          <div><h2>Data Management</h2><p>One central workflow for creating, correcting, reversing, restoring and auditing daily MANUAL business facts.</p></div>
+          <a class="os-btn primary" href="data_management.php">Open Data Management</a>
         </div>
         <div class="os-report-grid">
-          <a class="os-report" href="data_entry_center.php?tab=new_ums"><div class="os-report-head"><b>New UMS</b><em>WRITE</em></div><span>Create member + UMS lifecycle with optional verified sponsor.</span><small>Add New UMS →</small></a>
-          <a class="os-report" href="data_entry_center.php?tab=vp"><div class="os-report-head"><b>Volume Points</b><em>WRITE</em></div><span>Add a verified member-linked VP fact.</span><small>Add VP →</small></a>
-          <a class="os-report" href="data_entry_center.php?tab=order"><div class="os-report-head"><b>Order</b><em>WRITE</em></div><span>Capture value, discount, profit and VP.</span><small>Add Order →</small></a>
-          <a class="os-report" href="data_entry_center.php?tab=renewal"><div class="os-report-head"><b>Renewal</b><em>WRITE</em></div><span>Record renewal against a verified member.</span><small>Add Renewal →</small></a>
-          <a class="os-report" href="data_entry_center.php?tab=income"><div class="os-report-head"><b>Income</b><em>WRITE</em></div><span>Retail, Check, Club or Other income.</span><small>Add Income →</small></a>
-          <a class="os-report" href="data_entry_center.php?tab=royalty"><div class="os-report-head"><b>Royalty</b><em>WRITE</em></div><span>Capture royalty amount and optional VP.</span><small>Add Royalty →</small></a>
+          <a class="os-report" href="data_entry_center.php"><div class="os-report-head"><b>Smart Data Entry</b><em>WRITE</em></div><span>Create New UMS, VP, Orders, Renewals, Income and Royalty.</span><small>Create / Add →</small></a>
+          <a class="os-report" href="correction_center.php"><div class="os-report-head"><b>Correction Center</b><em>SAFE EDIT</em></div><span>Correct MANUAL values while preserving before/after evidence.</span><small>Correct →</small></a>
+          <a class="os-report" href="reversal_center.php"><div class="os-report-head"><b>Reverse / Cancel</b><em>NO DELETE</em></div><span>Remove business effect without deleting raw or normalized evidence.</span><small>Reverse →</small></a>
+          <a class="os-report" href="restore_center.php"><div class="os-report-head"><b>Restore Center</b><em>RECOVER</em></div><span>Recover a reversed fact after duplicate/conflict safety checks.</span><small>Restore →</small></a>
+          <a class="os-report" href="audit_center.php"><div class="os-report-head"><b>Unified Audit</b><em>READ ONLY</em></div><span>Review Create → Correct → Reverse → Restore history.</span><small>Open Timeline →</small></a>
         </div>
       </article>
 
@@ -223,7 +222,7 @@ $liveReports = [
       </article>
 
       <aside class="os-card os-side">
-        <div class="os-title-row"><div><h2>Recent System Activity</h2><p>Latest imports, links and manual-entry audit events.</p></div></div>
+        <div class="os-title-row"><div><h2>Recent System Activity</h2><p>Latest imports, links and manual lifecycle audit events.</p></div><a class="os-btn" href="audit_center.php">Audit</a></div>
         <div class="os-list">
           <?php if (!$recentAudits): ?>
             <div class="os-list-row"><div><b>No recent audit entries</b><span>Activity will appear here when recorded.</span></div></div>
@@ -236,9 +235,9 @@ $liveReports = [
       </aside>
 
       <article class="os-card" style="grid-column:span 12">
-        <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational tools without leaving Business OS.</p></div></div>
+        <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational workspaces without a crowded navigation menu.</p></div></div>
         <div class="os-links">
-          <a class="os-link" href="data_entry_center.php"><div><b>Smart Data Entry Center</b><span>New UMS, VP, Orders, Renewals, Income and Royalty with raw trace + audit</span></div><span>→</span></a>
+          <a class="os-link" href="data_management.php"><div><b>Data Management</b><span>Create, Correct, Reverse, Restore and Audit from one workflow hub</span></div><span>→</span></a>
           <a class="os-link" href="operations_center.php"><div><b>Operations Center</b><span>Orders, VP, Income and Royalty with period/member filters and source trace</span></div><span>→</span></a>
           <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members and inspect identity-safe UMS/network context</span></div><span>→</span></a>
           <a class="os-link" href="member_profile.php"><div><b>Member Profile 360°</b><span>Complete verified member business timeline and lifecycle detail</span></div><span>→</span></a>
@@ -249,7 +248,7 @@ $liveReports = [
       </article>
     </section>
 
-    <div class="os-footer-note"><strong>Source-of-truth status:</strong> the 757-row legacy workbook import remains isolated and reconciled. New daily records can now enter through the MANUAL channel without changing historical raw rows, and every manual save is traceable to its normalized entity and audit event.</div>
+    <div class="os-footer-note"><strong>Source-of-truth status:</strong> the 757-row legacy workbook import remains isolated and reconciled. Daily MANUAL facts now use one consolidated Create → Correct → Reverse → Restore → Audit workflow without changing historical raw rows.</div>
   </main>
 </div>
 </body>
