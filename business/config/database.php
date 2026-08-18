@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/report_runtime.php';
+
 /**
  * Healthcare Wellness Club Business OS database connection.
  *
@@ -32,11 +34,19 @@ function business_db(): PDO
 
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
 
-    $pdo = new PDO($dsn, $user, $pass, [
+    $pdoOptions = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
+    ];
+
+    // Only the six workbook-derived reports use the read-only runtime adapter.
+    // All CRUD/import/data-entry pages continue to use plain PDO and unchanged SQL.
+    if (business_report_runtime_enabled()) {
+        $pdo = new BusinessReportPDO($dsn, $user, $pass, $pdoOptions);
+    } else {
+        $pdo = new PDO($dsn, $user, $pass, $pdoOptions);
+    }
 
     return $pdo;
 }
