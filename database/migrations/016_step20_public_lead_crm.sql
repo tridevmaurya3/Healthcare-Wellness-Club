@@ -1,0 +1,162 @@
+-- STEP 20 COMPLETE — Public Website ↔ Business OS Lead CRM
+-- MySQL 8+ / MariaDB compatible
+USE healthcare_wellness_club;
+
+CREATE TABLE IF NOT EXISTS crm_lead_sources (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  source_code VARCHAR(60) NOT NULL,
+  source_name VARCHAR(150) NOT NULL,
+  channel VARCHAR(40) NOT NULL DEFAULT 'website',
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_source_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_lead_source (organization_id, source_code)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_leads (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_code VARCHAR(80) NOT NULL,
+  source_id BIGINT UNSIGNED NULL,
+  lead_type VARCHAR(40) NOT NULL DEFAULT 'contact',
+  full_name VARCHAR(190) NOT NULL,
+  mobile VARCHAR(40) NULL,
+  email VARCHAR(190) NULL,
+  message TEXT NULL,
+  stage VARCHAR(40) NOT NULL DEFAULT 'new',
+  priority VARCHAR(20) NOT NULL DEFAULT 'normal',
+  consent_to_contact TINYINT(1) NOT NULL DEFAULT 1,
+  assigned_user_id BIGINT UNSIGNED NULL,
+  requested_appointment_at DATETIME NULL,
+  converted_customer_id BIGINT UNSIGNED NULL,
+  converted_member_id BIGINT UNSIGNED NULL,
+  duplicate_key_hash CHAR(64) NULL,
+  submission_count INT UNSIGNED NOT NULL DEFAULT 1,
+  first_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(30) NOT NULL DEFAULT 'active',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_source FOREIGN KEY (source_id) REFERENCES crm_lead_sources(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_user FOREIGN KEY (assigned_user_id) REFERENCES system_users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_customer FOREIGN KEY (converted_customer_id) REFERENCES crm_customers(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_member FOREIGN KEY (converted_member_id) REFERENCES members(id) ON DELETE SET NULL,
+  UNIQUE KEY uq_lead_code (organization_id, lead_code),
+  KEY idx_lead_stage (organization_id, stage, status),
+  KEY idx_lead_mobile (organization_id, mobile),
+  KEY idx_lead_email (organization_id, email),
+  KEY idx_lead_duplicate (organization_id, duplicate_key_hash),
+  KEY idx_lead_last_seen (organization_id, last_seen_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_lead_submissions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_id BIGINT UNSIGNED NULL,
+  source_id BIGINT UNSIGNED NULL,
+  submission_uuid CHAR(36) NOT NULL,
+  lead_type VARCHAR(40) NOT NULL,
+  full_name VARCHAR(190) NOT NULL,
+  mobile VARCHAR(40) NULL,
+  email VARCHAR(190) NULL,
+  message TEXT NULL,
+  requested_appointment_at DATETIME NULL,
+  page_path VARCHAR(255) NULL,
+  referrer_host VARCHAR(190) NULL,
+  ip_hash CHAR(64) NOT NULL,
+  user_agent VARCHAR(500) NULL,
+  spam_status VARCHAR(30) NOT NULL DEFAULT 'accepted',
+  spam_reason VARCHAR(190) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_submission_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_submission_lead FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_submission_source FOREIGN KEY (source_id) REFERENCES crm_lead_sources(id) ON DELETE SET NULL,
+  UNIQUE KEY uq_lead_submission_uuid (submission_uuid),
+  KEY idx_lead_submission_ip (organization_id, ip_hash, created_at),
+  KEY idx_lead_submission_lead (organization_id, lead_id, created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_lead_activities (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_id BIGINT UNSIGNED NOT NULL,
+  activity_type VARCHAR(40) NOT NULL,
+  subject VARCHAR(190) NULL,
+  notes TEXT NULL,
+  old_stage VARCHAR(40) NULL,
+  new_stage VARCHAR(40) NULL,
+  actor_user_id BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_activity_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_activity_lead FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_activity_user FOREIGN KEY (actor_user_id) REFERENCES system_users(id) ON DELETE SET NULL,
+  KEY idx_lead_activity (organization_id, lead_id, created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_lead_tasks (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_id BIGINT UNSIGNED NOT NULL,
+  task_type VARCHAR(40) NOT NULL DEFAULT 'call',
+  subject VARCHAR(190) NOT NULL,
+  due_at DATETIME NOT NULL,
+  assigned_user_id BIGINT UNSIGNED NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'pending',
+  completed_at DATETIME NULL,
+  notes TEXT NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_task_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_task_lead FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_task_assignee FOREIGN KEY (assigned_user_id) REFERENCES system_users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_task_creator FOREIGN KEY (created_by) REFERENCES system_users(id) ON DELETE SET NULL,
+  KEY idx_lead_task_due (organization_id, status, due_at),
+  KEY idx_lead_task_lead (organization_id, lead_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_appointments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_id BIGINT UNSIGNED NOT NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  appointment_code VARCHAR(80) NOT NULL,
+  start_at DATETIME NOT NULL,
+  end_at DATETIME NULL,
+  appointment_mode VARCHAR(40) NOT NULL DEFAULT 'club',
+  purpose VARCHAR(190) NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'scheduled',
+  notes TEXT NULL,
+  assigned_user_id BIGINT UNSIGNED NULL,
+  created_by BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_appointment_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_appointment_lead FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE CASCADE,
+  CONSTRAINT fk_appointment_customer FOREIGN KEY (customer_id) REFERENCES crm_customers(id) ON DELETE SET NULL,
+  CONSTRAINT fk_appointment_assignee FOREIGN KEY (assigned_user_id) REFERENCES system_users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_appointment_creator FOREIGN KEY (created_by) REFERENCES system_users(id) ON DELETE SET NULL,
+  UNIQUE KEY uq_appointment_code (organization_id, appointment_code),
+  KEY idx_appointment_start (organization_id, status, start_at),
+  KEY idx_appointment_lead (organization_id, lead_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS crm_lead_conversions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  lead_id BIGINT UNSIGNED NOT NULL,
+  conversion_type VARCHAR(30) NOT NULL,
+  customer_id BIGINT UNSIGNED NULL,
+  member_id BIGINT UNSIGNED NULL,
+  notes TEXT NULL,
+  converted_by BIGINT UNSIGNED NULL,
+  converted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_lead_conversion_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_conversion_lead FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lead_conversion_customer FOREIGN KEY (customer_id) REFERENCES crm_customers(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_conversion_member FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE SET NULL,
+  CONSTRAINT fk_lead_conversion_user FOREIGN KEY (converted_by) REFERENCES system_users(id) ON DELETE SET NULL,
+  KEY idx_lead_conversion (organization_id, lead_id, converted_at)
+) ENGINE=InnoDB;
