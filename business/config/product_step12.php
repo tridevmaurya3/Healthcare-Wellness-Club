@@ -191,7 +191,7 @@ function product_step12_finalize_quote(PDO $pdo, int $quoteId, ?int $memberId, s
                 'profit_policy'=>'deferred_no_cost_basis_guess','source_record_id'=>$rawId
             ], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
             $audit = $pdo->prepare("INSERT INTO audit_logs(organization_id,club_id,event_type,entity_type,entity_id,details_json,ip_address,user_agent)
-                VALUES(?,?,'product_quote_finalized_to_order','order',?,?,?,?,?)");
+                VALUES(?,?,'product_quote_finalized_to_order','order',?,?,?,?)");
             $audit->execute([$orgId,$clubId,$orderId,$auditDetails,substr((string)($_SERVER['REMOTE_ADDR']??''),0,64),substr((string)($_SERVER['HTTP_USER_AGENT']??''),0,500)]);
         }
 
