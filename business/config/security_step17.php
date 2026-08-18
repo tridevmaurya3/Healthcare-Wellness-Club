@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/deployment_step19.php';
 
 const SECURITY_STEP17_VERSION = '1.0-complete';
 
@@ -29,7 +30,7 @@ function security_step17_h(mixed $value): string
 function security_step17_session_start(): void
 {
     if (security_step17_is_cli()) return;
-    $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+    $secure = function_exists('deployment_step19_is_https') ? deployment_step19_is_https() : ((!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443);
     if (session_status() === PHP_SESSION_ACTIVE) {
         if (session_id() !== '') {
             $p = session_get_cookie_params();
@@ -96,6 +97,9 @@ function security_step17_permission_catalog(): array
         ['backup.view','Backup: View','backup','critical','View encrypted backup history, recovery health and disaster-recovery readiness.'],
         ['backup.manage','Backup: Manage','backup','critical','Create encrypted backups, verify packages and manage retention/scheduler policy.'],
         ['backup.restore','Backup: Restore','backup','critical','Validate and execute full database restore with rollback protection.'],
+        ['deployment.view','Deployment: View','deployment','critical','View environment, production health, releases, migration and multi-device readiness.'],
+        ['deployment.manage','Deployment: Manage','deployment','critical','Control maintenance, releases, migration plans, scheduler and offsite copy.'],
+        ['deployment.release','Production Release','deployment','critical','Authorize production release and rollback status.'],
     ];
 }
 
@@ -402,6 +406,12 @@ function security_step17_route_permission(string $script,string $method='GET'): 
     if($script==='backup_restore.php')return 'backup.restore';
     if(in_array($script,['backup_create.php','backup_policy.php'],true))return 'backup.manage';
     if(str_starts_with($script,'backup_')||in_array($script,['disaster_recovery.php','cloud_readiness.php','step18_audit.php'],true))return 'backup.view';
+    if($script==='dashboard_step19.php')return 'dashboard.view';
+    if($script==='step19_audit.php')return 'deployment.view';
+    if(in_array($script,['deployment_center.php','environment_center.php','multi_device_access.php','scheduler_center.php'],true))return 'deployment.view';
+    if($script==='production_health.php')return $write?'deployment.manage':'deployment.view';
+    if(in_array($script,['maintenance_center.php','migration_center.php','offsite_backup.php'],true))return $write?'deployment.manage':'deployment.view';
+    if($script==='deployment_releases.php')return $write?'deployment.release':'deployment.view';
     if($script==='dashboard_step18.php')return 'dashboard.view';
     if($script==='dashboard_step16.php')return 'finance.view';
     if($script==='dashboard_step15.php')return 'customers.view';
@@ -446,7 +456,7 @@ function security_step17_guard_request(PDO $pdo): void
 {
     if(security_step17_is_cli())return;
     security_step17_ensure($pdo);security_step17_session_start();$script=security_step17_script();
-    $public=['login.php','setup_admin.php','logout.php','access_denied.php'];
+    $public=['login.php','setup_admin.php','logout.php','access_denied.php','maintenance.php','healthz.php'];
     if(in_array($script,$public,true))return;
     if(security_step17_total_users($pdo)===0){header('Location: setup_admin.php');exit;}
     $user=security_step17_session_user($pdo,true);
