@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-$name=trim((string)($_GET['name']??'Product'));$stock=trim((string)($_GET['stock']??''));$cat=trim((string)($_GET['cat']??'Product'));
-$name=mb_substr($name,0,72,'UTF-8');$cat=mb_substr($cat,0,42,'UTF-8');$stock=mb_substr($stock,0,18,'UTF-8');
-header('Content-Type: image/svg+xml; charset=UTF-8');
+function pp_cut(string $value,int $length):string{return function_exists('mb_substr')?mb_substr($value,0,$length,'UTF-8'):substr($value,0,$length);}
 function x(string $v):string{return htmlspecialchars($v,ENT_QUOTES|ENT_XML1,'UTF-8');}
+$name=pp_cut(trim((string)($_GET['name']??'Product')),72);$stock=pp_cut(trim((string)($_GET['stock']??'')),18);$cat=pp_cut(trim((string)($_GET['cat']??'Product')),42);
+header('Content-Type: image/svg+xml; charset=UTF-8');
 echo '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0faf4"/><stop offset="1" stop-color="#e8f3ee"/></linearGradient></defs><rect width="720" height="720" rx="46" fill="url(#g)"/><circle cx="360" cy="240" r="112" fill="#fff" stroke="#cde5d6" stroke-width="4"/><path d="M360 160c-52 31-72 78-54 124 18-53 49-81 92-102-6 43-27 76-64 102 56 0 100-42 100-96 0-10-2-19-5-28-23 0-46 0-69 0z" fill="#2a8b58" opacity=".92"/><text x="360" y="405" text-anchor="middle" font-family="Segoe UI,Arial" font-size="24" font-weight="700" fill="#24513a">'.x($stock?:'IMAGE PENDING').'</text><foreignObject x="80" y="435" width="560" height="120"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Segoe UI,Arial;text-align:center;font-size:25px;line-height:1.25;font-weight:750;color:#1f3429">'.x($name).'</div></foreignObject><text x="360" y="610" text-anchor="middle" font-family="Segoe UI,Arial" font-size="17" fill="#718078">'.x($cat).'</text><text x="360" y="650" text-anchor="middle" font-family="Segoe UI,Arial" font-size="14" fill="#91a097">Product image awaiting verified match</text></svg>';
