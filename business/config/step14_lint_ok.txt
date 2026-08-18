@@ -1,1 +1,0 @@
-STEP 14 PHP lint passed on current main.
