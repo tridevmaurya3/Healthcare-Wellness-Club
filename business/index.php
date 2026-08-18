@@ -22,6 +22,7 @@ $metrics = [
     'income_facts' => 0,
     'royalty_facts' => 0,
     'active_snapshots' => 0,
+    'manual_raw' => 0,
     'reports' => 0,
     'rules' => 0,
 ];
@@ -54,12 +55,12 @@ try {
 
     $queries = [
         'members' => ['members', "SELECT COUNT(*) FROM members WHERE organization_id=?"],
-        'vp_facts' => ['volume_point_entries', "SELECT COUNT(*) FROM volume_point_entries WHERE organization_id=? AND source_sheet='Volume Points'"],
+        'vp_facts' => ['volume_point_entries', "SELECT COUNT(*) FROM volume_point_entries WHERE organization_id=?"],
         'orders' => ['orders', "SELECT COUNT(*) FROM orders WHERE organization_id=?"],
-        'renewals' => ['renewals', "SELECT COUNT(*) FROM renewals WHERE organization_id=? AND source_sheet='Renewal UMS'"],
-        'income_facts' => ['income_entries', "SELECT COUNT(*) FROM income_entries WHERE organization_id=? AND source_sheet='Monthely_Income'"],
-        'royalty_facts' => ['royalty_entries', "SELECT COUNT(*) FROM royalty_entries WHERE organization_id=? AND source_sheet='Royalty_Tracking'"],
-        'active_snapshots' => ['ums_activity_snapshots', "SELECT COUNT(*) FROM ums_activity_snapshots WHERE organization_id=? AND source_sheet='Active UMS Month_Wise'"],
+        'renewals' => ['renewals', "SELECT COUNT(*) FROM renewals WHERE organization_id=?"],
+        'income_facts' => ['income_entries', "SELECT COUNT(*) FROM income_entries WHERE organization_id=?"],
+        'royalty_facts' => ['royalty_entries', "SELECT COUNT(*) FROM royalty_entries WHERE organization_id=?"],
+        'active_snapshots' => ['ums_activity_snapshots', "SELECT COUNT(*) FROM ums_activity_snapshots WHERE organization_id=?"],
         'reports' => ['report_definitions', "SELECT COUNT(*) FROM report_definitions WHERE organization_id=? AND is_active=1"],
         'rules' => ['calculation_rules', "SELECT COUNT(*) FROM calculation_rules WHERE organization_id=? AND is_active=1"],
     ];
@@ -71,6 +72,15 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$organizationId]);
         $metrics[$key] = (int)$stmt->fetchColumn();
+    }
+
+    $manualSourceStmt = $pdo->prepare("SELECT id FROM data_sources WHERE organization_id=? AND source_code='MANUAL' LIMIT 1");
+    $manualSourceStmt->execute([$organizationId]);
+    $manualSourceId = (int)$manualSourceStmt->fetchColumn();
+    if ($manualSourceId > 0) {
+        $manualStmt = $pdo->prepare("SELECT COUNT(*) FROM raw_source_records WHERE organization_id=? AND data_source_id=? AND mapping_status='mapped'");
+        $manualStmt->execute([$organizationId,$manualSourceId]);
+        $metrics['manual_raw'] = (int)$manualStmt->fetchColumn();
     }
 
     if (business_table_exists($pdo, 'audit_logs')) {
@@ -118,7 +128,7 @@ $liveReports = [
     </a>
     <div class="os-top-actions">
       <a class="os-btn" href="../index.html">Public Website</a>
-      <a class="os-btn" href="members.php">Members</a>
+      <a class="os-btn" href="data_entry_center.php">+ Data Entry</a>
       <a class="os-btn" href="operations_center.php">Operations</a>
       <a class="os-btn primary" href="report_center.php">Report Center</a>
     </div>
@@ -130,10 +140,11 @@ $liveReports = [
     <div class="os-nav-label">Business OS</div>
     <nav class="os-nav">
       <a class="active" href="index.php"><i class="dot"></i>Dashboard</a>
+      <a href="data_entry_center.php"><i class="dot"></i>Data Entry Center</a>
+      <a href="operations_center.php"><i class="dot"></i>Operations Center</a>
       <a href="members.php"><i class="dot"></i>Members & Network</a>
       <a href="member_profile.php"><i class="dot"></i>Member Profile 360°</a>
       <a href="sponsor_network.php"><i class="dot"></i>Sponsor Network</a>
-      <a href="operations_center.php"><i class="dot"></i>Operations Center</a>
       <a href="report_center.php"><i class="dot"></i>Report Center</a>
       <a href="final_excel_seeding.php"><i class="dot"></i>Excel Data Center</a>
       <a href="derived_reports_audit.php"><i class="dot"></i>Formula Audit</a>
@@ -146,20 +157,20 @@ $liveReports = [
     </nav>
     <div class="os-sidebar-status">
       <b><?= $businessReady ? 'Business OS operational' : 'Setup review required' ?></b>
-      <span><?= number_format($metrics['source_mapped']) ?> / 757 source rows mapped • <?= number_format($metrics['reports']) ?> / 6 live report definitions.</span>
+      <span><?= number_format($metrics['source_mapped']) ?> / 757 legacy source rows mapped • <?= number_format($metrics['manual_raw']) ?> manual entries.</span>
     </div>
   </aside>
 
   <main class="os-main">
     <section class="os-hero">
-      <div class="os-kicker">Step 10E • Professional Business OS</div>
-      <h1>Your members, operations, network and live reports now run from one connected workspace.</h1>
-      <p>The normalized source layer powers Member Profile 360°, verified sponsor networking, Orders/VP/Income/Royalty operations and all six derived workbook reports without creating duplicate sources of truth.</p>
+      <div class="os-kicker">Step 10F • Professional Business OS</div>
+      <h1>Historical Excel data and new daily business entries now share one connected source-of-truth architecture.</h1>
+      <p>The reconciled workbook remains traceable historical evidence, while Smart Data Entry can create New UMS, VP, Orders, Renewals, Income and Royalty directly inside Business OS with raw-source trace and audit logging.</p>
       <div class="os-status-row">
         <span class="os-chip <?= $businessReady ? 'good' : '' ?>"><?= $businessReady ? 'BUSINESS OS LIVE' : 'Review required' ?></span>
-        <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 source mapped</span>
+        <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 legacy source mapped</span>
         <span class="os-chip good">6 / 6 live reports</span>
-        <span class="os-chip"><?= number_format($metrics['members']) ?> members</span>
+        <span class="os-chip"><?= number_format($metrics['manual_raw']) ?> manual entries</span>
         <span class="os-chip">Schema <?= os_h((string)$status['schema_version']) ?></span>
       </div>
     </section>
@@ -169,60 +180,56 @@ $liveReports = [
     <?php endif; ?>
 
     <section class="os-grid">
-      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Profile 360° + verified network</span></article>
-      <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>Live Operations Center data</span></article>
-      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Normalized operational orders</span></article>
-      <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Renewal UMS history</span></article>
+      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Imported + manual member records</span></article>
+      <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>All normalized VP sources</span></article>
+      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>All normalized order facts</span></article>
+      <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Imported + manual renewals</span></article>
 
       <article class="os-card os-section">
         <div class="os-title-row">
-          <div><h2>Live Report Workspace</h2><p>All six derived workbook sheets are available from one place.</p></div>
-          <a class="os-btn" href="report_center.php">Open Report Center</a>
+          <div><h2>Daily Business Entry</h2><p>Stop adding new operational rows to Excel; enter them directly into the normalized system.</p></div>
+          <a class="os-btn primary" href="data_entry_center.php">Open Data Entry</a>
         </div>
         <div class="os-report-grid">
-          <?php foreach ($liveReports as $report): ?>
-            <a class="os-report" href="<?= os_h($report['file']) ?>">
-              <div class="os-report-head"><b><?= os_h($report['name']) ?></b><em>LIVE</em></div>
-              <span><?= os_h($report['desc']) ?></span>
-              <small>Open report →</small>
-            </a>
-          <?php endforeach; ?>
+          <a class="os-report" href="data_entry_center.php?tab=new_ums"><div class="os-report-head"><b>New UMS</b><em>WRITE</em></div><span>Create member + UMS lifecycle with optional verified sponsor.</span><small>Add New UMS →</small></a>
+          <a class="os-report" href="data_entry_center.php?tab=vp"><div class="os-report-head"><b>Volume Points</b><em>WRITE</em></div><span>Add a verified member-linked VP fact.</span><small>Add VP →</small></a>
+          <a class="os-report" href="data_entry_center.php?tab=order"><div class="os-report-head"><b>Order</b><em>WRITE</em></div><span>Capture value, discount, profit and VP.</span><small>Add Order →</small></a>
+          <a class="os-report" href="data_entry_center.php?tab=renewal"><div class="os-report-head"><b>Renewal</b><em>WRITE</em></div><span>Record renewal against a verified member.</span><small>Add Renewal →</small></a>
+          <a class="os-report" href="data_entry_center.php?tab=income"><div class="os-report-head"><b>Income</b><em>WRITE</em></div><span>Retail, Check, Club or Other income.</span><small>Add Income →</small></a>
+          <a class="os-report" href="data_entry_center.php?tab=royalty"><div class="os-report-head"><b>Royalty</b><em>WRITE</em></div><span>Capture royalty amount and optional VP.</span><small>Add Royalty →</small></a>
         </div>
       </article>
 
       <aside class="os-card os-side">
         <h2>Source & Engine Health</h2>
-        <p>Every operational module depends on the same reconciled source layer.</p>
+        <p>Historical import remains frozen/reconciled while new entries use the MANUAL source channel.</p>
         <div class="os-list">
-          <div class="os-list-row"><div><b>Operational rows</b><span>Excel Sheets 7–14</span></div><strong><?= number_format($metrics['source_mapped']) ?>/<?= number_format($metrics['source_total']) ?></strong></div>
-          <div class="os-list-row"><div><b>Pending source</b><span>Must remain zero</span></div><strong><?= number_format($metrics['source_pending']) ?></strong></div>
+          <div class="os-list-row"><div><b>Legacy operational rows</b><span>Excel Sheets 7–14</span></div><strong><?= number_format($metrics['source_mapped']) ?>/<?= number_format($metrics['source_total']) ?></strong></div>
+          <div class="os-list-row"><div><b>Legacy pending</b><span>Must remain zero</span></div><strong><?= number_format($metrics['source_pending']) ?></strong></div>
+          <div class="os-list-row"><div><b>Manual raw entries</b><span>Business OS write channel</span></div><strong><?= number_format($metrics['manual_raw']) ?></strong></div>
           <div class="os-list-row"><div><b>Derived reports</b><span>Workbook Sheets 1–6</span></div><strong><?= number_format($metrics['reports']) ?>/6</strong></div>
-          <div class="os-list-row"><div><b>Calculation rules</b><span>Versioned business rules</span></div><strong><?= number_format($metrics['rules']) ?></strong></div>
         </div>
         <div class="os-progress"><i style="width:<?= $businessReady ? '100' : '0' ?>%"></i></div>
       </aside>
 
       <article class="os-card os-section">
-        <div class="os-title-row"><div><h2>Business Fact Snapshot</h2><p>Normalized facts currently available to operational tools and reporting.</p></div><a class="os-btn" href="operations_center.php">Open Operations</a></div>
+        <div class="os-title-row"><div><h2>Business Fact Snapshot</h2><p>Normalized facts available to operations, member profiles and reporting engines.</p></div><a class="os-btn" href="operations_center.php">Open Operations</a></div>
         <div class="os-list">
-          <div class="os-list-row"><div><b>Monthly Income Facts</b><span>Retail, Check and Club income components</span></div><strong><?= number_format($metrics['income_facts']) ?></strong></div>
-          <div class="os-list-row"><div><b>Royalty Facts</b><span>Royalty tracking periods</span></div><strong><?= number_format($metrics['royalty_facts']) ?></strong></div>
+          <div class="os-list-row"><div><b>Income Facts</b><span>Retail, Check, Club and future manual entries</span></div><strong><?= number_format($metrics['income_facts']) ?></strong></div>
+          <div class="os-list-row"><div><b>Royalty Facts</b><span>Historical + manual royalty facts</span></div><strong><?= number_format($metrics['royalty_facts']) ?></strong></div>
           <div class="os-list-row"><div><b>Active UMS Snapshots</b><span>Monthly active-member snapshots</span></div><strong><?= number_format($metrics['active_snapshots']) ?></strong></div>
-          <div class="os-list-row"><div><b>Data Trace</b><span>Raw source → normalized facts → operations/reports</span></div><strong><?= $sourceReady ? 'PASS' : 'CHECK' ?></strong></div>
+          <div class="os-list-row"><div><b>Trace Architecture</b><span>Raw source → normalized fact → audit/report</span></div><strong><?= $sourceReady ? 'PASS' : 'CHECK' ?></strong></div>
         </div>
       </article>
 
       <aside class="os-card os-side">
-        <div class="os-title-row"><div><h2>Recent System Activity</h2><p>Latest import and normalization audit events.</p></div></div>
+        <div class="os-title-row"><div><h2>Recent System Activity</h2><p>Latest imports, links and manual-entry audit events.</p></div></div>
         <div class="os-list">
           <?php if (!$recentAudits): ?>
             <div class="os-list-row"><div><b>No recent audit entries</b><span>Activity will appear here when recorded.</span></div></div>
           <?php else: ?>
             <?php foreach ($recentAudits as $audit): ?>
-              <div class="os-list-row">
-                <div><b><?= os_h(str_replace('_', ' ', (string)$audit['event_type'])) ?></b><span><?= os_h((string)($audit['entity_type'] ?? 'system')) ?></span></div>
-                <strong><?= os_h(substr((string)$audit['created_at'], 0, 16)) ?></strong>
-              </div>
+              <div class="os-list-row"><div><b><?= os_h(str_replace('_', ' ', (string)$audit['event_type'])) ?></b><span><?= os_h((string)($audit['entity_type'] ?? 'system')) ?></span></div><strong><?= os_h(substr((string)$audit['created_at'], 0, 16)) ?></strong></div>
             <?php endforeach; ?>
           <?php endif; ?>
         </div>
@@ -231,19 +238,18 @@ $liveReports = [
       <article class="os-card" style="grid-column:span 12">
         <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational tools without leaving Business OS.</p></div></div>
         <div class="os-links">
-          <a class="os-link" href="operations_center.php"><div><b>Operations Center</b><span>Orders, VP, Income and Royalty with period/member filters and raw-source trace</span></div><span>→</span></a>
-          <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members, inspect UMS lifecycle and identity-safe sponsor/team context</span></div><span>→</span></a>
-          <a class="os-link" href="member_profile.php"><div><b>Member Profile 360°</b><span>Complete verified member business timeline, KPIs and lifecycle detail</span></div><span>→</span></a>
+          <a class="os-link" href="data_entry_center.php"><div><b>Smart Data Entry Center</b><span>New UMS, VP, Orders, Renewals, Income and Royalty with raw trace + audit</span></div><span>→</span></a>
+          <a class="os-link" href="operations_center.php"><div><b>Operations Center</b><span>Orders, VP, Income and Royalty with period/member filters and source trace</span></div><span>→</span></a>
+          <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members and inspect identity-safe UMS/network context</span></div><span>→</span></a>
+          <a class="os-link" href="member_profile.php"><div><b>Member Profile 360°</b><span>Complete verified member business timeline and lifecycle detail</span></div><span>→</span></a>
           <a class="os-link" href="sponsor_network.php"><div><b>Sponsor Network</b><span>Verified sponsor links and interactive network tree</span></div><span>→</span></a>
           <a class="os-link" href="report_center.php"><div><b>Report Center</b><span>Open all six live derived reports</span></div><span>→</span></a>
-          <a class="os-link" href="derived_reports_audit.php"><div><b>Formula Audit</b><span>Review the 280 formula-cell mapping and legacy-rule controls</span></div><span>→</span></a>
-          <a class="os-link" href="final_excel_seeding.php"><div><b>Excel Data Center</b><span>Review final source reconciliation and normalized fact counts</span></div><span>→</span></a>
-          <a class="os-link" href="../index.html"><div><b>Public Wellness Portal</b><span>Return to the public-facing Healthcare Wellness Club website</span></div><span>→</span></a>
+          <a class="os-link" href="final_excel_seeding.php"><div><b>Excel Data Center</b><span>Historical source reconciliation and normalized fact counts</span></div><span>→</span></a>
         </div>
       </article>
     </section>
 
-    <div class="os-footer-note"><strong>Architecture status:</strong> operational workbook data is normalized and traceable, Member Profile 360° and verified Sponsor Network use safe Member IDs, Orders/VP/Income/Royalty are available from one Operations Center, and Sheets 1–6 run as live derived reports.</div>
+    <div class="os-footer-note"><strong>Source-of-truth status:</strong> the 757-row legacy workbook import remains isolated and reconciled. New daily records can now enter through the MANUAL channel without changing historical raw rows, and every manual save is traceable to its normalized entity and audit event.</div>
   </main>
 </div>
 </body>
