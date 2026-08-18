@@ -1,0 +1,177 @@
+name: One-time STEP 17 finalize
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step17-finalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Integrate central security guard and compatibility patches
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # 1) Harden/bridge the security session engine and route map.
+          p = Path('business/config/security_step17.php')
+          s = p.read_text(encoding='utf-8')
+          session_fn = r"function security_step17_session_start\(\): void\n\{.*?\n\}\n\nfunction security_step17_run_migration"
+          replacement = '''function security_step17_session_start(): void
+          {
+              if (security_step17_is_cli()) return;
+              $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+              if (session_status() === PHP_SESSION_ACTIVE) {
+                  if (session_id() !== '') {
+                      $p = session_get_cookie_params();
+                      setcookie(session_name(), session_id(), [
+                          'expires'=>0,'path'=>$p['path'] ?: '/','domain'=>$p['domain'] ?? '',
+                          'secure'=>$secure,'httponly'=>true,'samesite'=>'Lax'
+                      ]);
+                  }
+                  return;
+              }
+              @ini_set('session.use_strict_mode', '1');
+              @ini_set('session.use_only_cookies', '1');
+              @ini_set('session.cookie_httponly', '1');
+              @ini_set('session.cookie_samesite', 'Lax');
+              session_set_cookie_params([
+                  'lifetime'=>0,'path'=>'/','domain'=>'','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax'
+              ]);
+              session_start();
+          }
+
+          function security_step17_run_migration'''
+          s2, n = re.subn(session_fn, replacement, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('Could not patch security session compatibility')
+          s = s2
+
+          throttle_fn = r"function security_step17_assert_not_throttled\(PDO \$pdo,int \$orgId,string \$email\): void\n\{.*?\n\}\n\nfunction security_step17_login"
+          throttle_replacement = '''function security_step17_assert_not_throttled(PDO $pdo,int $orgId,string $email): void
+          {
+              $limit=security_step17_setting($pdo,$orgId,'login_attempt_limit',5);
+              $window=security_step17_setting($pdo,$orgId,'login_window_seconds',900);
+              $lock=security_step17_setting($pdo,$orgId,'login_lock_seconds',900);
+              $hash=security_step17_identifier_hash($email);$ip=substr((string)($_SERVER['REMOTE_ADDR']??''),0,64);
+              $windowCutoff=(new DateTimeImmutable())->modify('-'.$window.' seconds');
+              $stmt=$pdo->prepare("SELECT MAX(attempted_at) FROM security_login_attempts WHERE identifier_hash=? AND was_successful=1");
+              $stmt->execute([$hash]);$lastSuccess=$stmt->fetchColumn();
+              $cutoff=$windowCutoff;
+              if($lastSuccess){$successTime=new DateTimeImmutable((string)$lastSuccess);if($successTime>$cutoff)$cutoff=$successTime;}
+              $stmt=$pdo->prepare("SELECT COUNT(*) failures,MAX(attempted_at) last_failure FROM security_login_attempts WHERE attempted_at>=? AND was_successful=0 AND (identifier_hash=? OR (?<>'' AND ip_address=?))");
+              $stmt->execute([$cutoff->format('Y-m-d H:i:s'),$hash,$ip,$ip]);$row=$stmt->fetch()?:[];
+              if((int)($row['failures']??0)>=$limit && !empty($row['last_failure'])){
+                  $unlock=(new DateTimeImmutable((string)$row['last_failure']))->modify('+'.$lock.' seconds');
+                  if($unlock>new DateTimeImmutable())throw new RuntimeException('Too many sign-in attempts. Please wait before trying again.');
+              }
+          }
+
+          function security_step17_login'''
+          s2, n = re.subn(throttle_fn, throttle_replacement, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('Could not patch login throttling')
+          s = s2
+
+          old_route = "if($script==='permission_matrix.php')return 'security.roles.manage';\n    if(in_array($script,['security_center.php','security_audit.php'],true))return 'security.audit.view';\n    if($script==='security_sessions.php')return 'security.sessions.manage';\n    if(str_starts_with($script,'finance_')||$script==='step16_audit.php')return $write?'finance.manage':'finance.view';"
+          new_route = "if(in_array($script,['permission_matrix.php','security_settings.php'],true))return 'security.roles.manage';\n    if(in_array($script,['security_center.php','security_audit.php','step17_audit.php'],true))return 'security.audit.view';\n    if($script==='security_sessions.php')return 'security.sessions.manage';\n    if($script==='dashboard_step16.php')return 'finance.view';\n    if($script==='dashboard_step15.php')return 'customers.view';\n    if($script==='dashboard_step14.php')return 'purchases.view';\n    if($script==='dashboard_step13.php')return 'inventory.view';\n    if($script==='step12_audit.php')return 'sales.view';\n    if(str_starts_with($script,'finance_')||$script==='step16_audit.php')return $write?'finance.manage':'finance.view';"
+          if old_route not in s:
+              raise SystemExit('Security route insertion point not found')
+          s = s.replace(old_route, new_route, 1)
+
+          # Cleanup stale absolute/idle expired sessions whenever security initializes.
+          marker = "foreach ($settings as $k => $v) $settingStmt->execute([$orgId,$k,$v]);\n\n    if (business_table_exists($pdo, 'schema_meta'))"
+          cleanup = "foreach ($settings as $k => $v) $settingStmt->execute([$orgId,$k,$v]);\n\n    $idleCutoff=(new DateTimeImmutable())->modify('-'.security_step17_setting($pdo,$orgId,'idle_timeout_seconds',1800).' seconds')->format('Y-m-d H:i:s');\n    $pdo->prepare(\"UPDATE security_sessions SET revoked_at=NOW(),revoke_reason=COALESCE(revoke_reason,'session_timeout_cleanup') WHERE organization_id=? AND revoked_at IS NULL AND (expires_at<=NOW() OR last_seen_at<?)\")->execute([$orgId,$idleCutoff]);\n\n    if (business_table_exists($pdo, 'schema_meta'))"
+          if marker not in s:
+              raise SystemExit('Security cleanup insertion point not found')
+          s = s.replace(marker, cleanup, 1)
+          p.write_text(s, encoding='utf-8')
+
+          # 2) Central route guard in the DB gateway, so all database-backed Business OS pages are protected.
+          p = Path('business/config/database.php')
+          s = p.read_text(encoding='utf-8')
+          require_marker = "require_once __DIR__ . '/report_runtime.php';"
+          if "security_step17.php" not in s:
+              if require_marker not in s: raise SystemExit('database.php require marker missing')
+              s = s.replace(require_marker, require_marker + "\nrequire_once __DIR__ . '/security_step17.php';", 1)
+          return_marker = "    return $pdo;\n}\n\nfunction business_table_exists"
+          if "security_step17_guard_request($pdo);" not in s:
+              if return_marker not in s: raise SystemExit('database.php return marker missing')
+              s = s.replace(return_marker, "    security_step17_guard_request($pdo);\n    return $pdo;\n}\n\nfunction business_table_exists", 1)
+          p.write_text(s, encoding='utf-8')
+
+          # 3) Main Business OS route.
+          p = Path('business/index.php')
+          p.write_text("<?php\ndeclare(strict_types=1);\nrequire __DIR__ . '/dashboard_step17.php';\n", encoding='utf-8')
+
+          # 4) Global Search security commands.
+          p = Path('business/global_search.php')
+          s = p.read_text(encoding='utf-8')
+          if "['Security Center','security users roles permissions sessions audit'" not in s:
+              marker = " ['Today Center','today daily command followup quick activity'"
+              block = " ['Security Center','security users roles permissions sessions audit','Identity, RBAC and session security command center.','security_center.php','SECURITY'],['User Management','security user login admin manager staff viewer','Create and manage Business OS users and roles.','user_management.php','USERS'],['Permission Matrix','security permission matrix rbac access finance','Configure role and user-specific module permissions.','permission_matrix.php','RBAC'],['Security Sessions','security active sessions revoke login device','View and revoke active authenticated sessions.','security_sessions.php','SESSIONS'],['Security Audit','security audit failed login access denied','Review authentication and access-control events.','security_audit.php','AUDIT'],['Security Settings','security timeout failed login lock policy','Configure session and login security policy.','security_settings.php','POLICY'],['STEP 17 Security Audit','step 17 security users roles audit','Verify final authentication, RBAC and route security.','step17_audit.php','STEP 17'],\n"
+              if marker not in s: raise SystemExit('Global Search Today marker missing')
+              s = s.replace(marker, block + marker, 1)
+          p.write_text(s, encoding='utf-8')
+
+          # 5) Add Settings link to Security Center navigation.
+          p = Path('business/security_center.php')
+          s = p.read_text(encoding='utf-8')
+          nav = '<a href="permission_matrix.php"><i class="dot"></i>Permissions</a><a href="security_sessions.php"><i class="dot"></i>Sessions</a>'
+          if 'security_settings.php' not in s and nav in s:
+              s = s.replace(nav, '<a href="permission_matrix.php"><i class="dot"></i>Permissions</a><a href="security_settings.php"><i class="dot"></i>Policy Settings</a><a href="security_sessions.php"><i class="dot"></i>Sessions</a>', 1)
+          p.write_text(s, encoding='utf-8')
+
+      - name: PHP syntax lint
+        run: |
+          set -e
+          for f in \
+            business/config/security_step17.php \
+            business/config/database.php \
+            business/setup_admin.php \
+            business/login.php \
+            business/logout.php \
+            business/access_denied.php \
+            business/password_change.php \
+            business/security_center.php \
+            business/user_management.php \
+            business/permission_matrix.php \
+            business/security_sessions.php \
+            business/security_audit.php \
+            business/security_settings.php \
+            business/dashboard_step17.php \
+            business/step17_audit.php \
+            business/global_search.php \
+            business/index.php; do
+              php -l "$f"
+          done
+
+      - name: Static security checks
+        run: |
+          set -e
+          grep -q "security_step17_guard_request(\$pdo)" business/config/database.php
+          grep -q "dashboard_step17.php" business/index.php
+          grep -q "STEP 17 Security Audit" business/global_search.php
+          if grep -R -n -E "(default_password|password[[:space:]]*=[[:space:]]*['\"][^$])" business/config/security_step17.php business/setup_admin.php business/login.php; then
+            echo "Potential plaintext/default password literal detected" >&2
+            exit 1
+          fi
+
+      - name: Commit final STEP 17 integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/security_step17.php business/config/database.php business/index.php business/global_search.php business/security_center.php
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "STEP 17: finalize central auth RBAC route guards and PHP lint"
+          git push origin main
