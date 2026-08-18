@@ -1,3 +1,12 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# STEP 19 production secrets / local overrides
+.env
+.env.*
+!.env.example
+*.local.env
+config.local.php
+storage/deployment-runtime/*
+!storage/deployment-runtime/.gitignore
