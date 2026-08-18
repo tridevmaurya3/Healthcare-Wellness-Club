@@ -1,0 +1,176 @@
+-- STEP 16: Finance, Cashbook & Accounting Integration
+-- Ledger-first, double-entry, source-traceable accounting. No guessed bank identities or tax treatment.
+
+CREATE TABLE IF NOT EXISTS finance_ledger_accounts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  account_code VARCHAR(50) NOT NULL,
+  account_name VARCHAR(160) NOT NULL,
+  account_class VARCHAR(30) NOT NULL,
+  normal_balance VARCHAR(10) NOT NULL,
+  system_role VARCHAR(60) NULL,
+  is_system TINYINT(1) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  notes TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_ledger_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_fin_ledger_code (organization_id,account_code),
+  UNIQUE KEY uq_fin_ledger_role (organization_id,system_role),
+  KEY idx_fin_ledger_class (organization_id,account_class,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_cash_accounts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  ledger_account_id BIGINT UNSIGNED NOT NULL,
+  account_code VARCHAR(60) NOT NULL,
+  account_name VARCHAR(160) NOT NULL,
+  account_type VARCHAR(30) NOT NULL,
+  institution_name VARCHAR(160) NULL,
+  account_last4 VARCHAR(8) NULL,
+  opening_balance DECIMAL(16,2) NOT NULL DEFAULT 0,
+  opening_date DATE NULL,
+  is_system_clearing TINYINT(1) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  notes TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_cash_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_cash_ledger FOREIGN KEY (ledger_account_id) REFERENCES finance_ledger_accounts(id),
+  UNIQUE KEY uq_fin_cash_code (organization_id,account_code),
+  UNIQUE KEY uq_fin_cash_ledger (organization_id,ledger_account_id),
+  KEY idx_fin_cash_type (organization_id,account_type,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_journals (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  club_id BIGINT UNSIGNED NULL,
+  journal_number VARCHAR(80) NOT NULL,
+  journal_date DATE NOT NULL,
+  journal_type VARCHAR(50) NOT NULL,
+  memo VARCHAR(500) NULL,
+  source_code VARCHAR(60) NULL,
+  source_type VARCHAR(80) NULL,
+  source_id BIGINT UNSIGNED NULL,
+  source_hash CHAR(64) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'posted',
+  reversal_of_id BIGINT UNSIGNED NULL,
+  raw_source_id BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_journal_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_journal_club FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_journal_reversal FOREIGN KEY (reversal_of_id) REFERENCES finance_journals(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_journal_raw FOREIGN KEY (raw_source_id) REFERENCES raw_source_records(id) ON DELETE SET NULL,
+  UNIQUE KEY uq_fin_journal_number (organization_id,journal_number),
+  KEY idx_fin_journal_date (organization_id,journal_date),
+  KEY idx_fin_journal_source (organization_id,source_type,source_id),
+  KEY idx_fin_journal_status (organization_id,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_journal_lines (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  journal_id BIGINT UNSIGNED NOT NULL,
+  ledger_account_id BIGINT UNSIGNED NOT NULL,
+  cash_account_id BIGINT UNSIGNED NULL,
+  line_no SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+  debit_amount DECIMAL(16,2) NOT NULL DEFAULT 0,
+  credit_amount DECIMAL(16,2) NOT NULL DEFAULT 0,
+  line_memo VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_line_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_line_journal FOREIGN KEY (journal_id) REFERENCES finance_journals(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_line_ledger FOREIGN KEY (ledger_account_id) REFERENCES finance_ledger_accounts(id),
+  CONSTRAINT fk_fin_line_cash FOREIGN KEY (cash_account_id) REFERENCES finance_cash_accounts(id) ON DELETE SET NULL,
+  UNIQUE KEY uq_fin_line_no (journal_id,line_no),
+  KEY idx_fin_line_account (organization_id,ledger_account_id),
+  KEY idx_fin_line_cash (organization_id,cash_account_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_source_links (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  source_type VARCHAR(80) NOT NULL,
+  source_id BIGINT UNSIGNED NOT NULL,
+  event_key VARCHAR(80) NOT NULL,
+  source_hash CHAR(64) NOT NULL,
+  journal_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_source_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_source_journal FOREIGN KEY (journal_id) REFERENCES finance_journals(id),
+  UNIQUE KEY uq_fin_source_event (organization_id,source_type,source_id,event_key),
+  KEY idx_fin_source_status (organization_id,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_manual_transactions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  club_id BIGINT UNSIGNED NULL,
+  transaction_date DATE NOT NULL,
+  transaction_type VARCHAR(30) NOT NULL,
+  amount DECIMAL(16,2) NOT NULL,
+  category_ledger_account_id BIGINT UNSIGNED NULL,
+  from_cash_account_id BIGINT UNSIGNED NULL,
+  to_cash_account_id BIGINT UNSIGNED NULL,
+  memo VARCHAR(500) NOT NULL,
+  journal_id BIGINT UNSIGNED NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active',
+  reversal_reason VARCHAR(500) NULL,
+  raw_source_id BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_manual_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_manual_club FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_manual_cat FOREIGN KEY (category_ledger_account_id) REFERENCES finance_ledger_accounts(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_manual_from FOREIGN KEY (from_cash_account_id) REFERENCES finance_cash_accounts(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_manual_to FOREIGN KEY (to_cash_account_id) REFERENCES finance_cash_accounts(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_manual_journal FOREIGN KEY (journal_id) REFERENCES finance_journals(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_manual_raw FOREIGN KEY (raw_source_id) REFERENCES raw_source_records(id) ON DELETE SET NULL,
+  KEY idx_fin_manual_date (organization_id,transaction_date),
+  KEY idx_fin_manual_status (organization_id,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_statement_lines (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  cash_account_id BIGINT UNSIGNED NOT NULL,
+  statement_date DATE NOT NULL,
+  amount_signed DECIMAL(16,2) NOT NULL,
+  description VARCHAR(500) NULL,
+  reference_no VARCHAR(190) NULL,
+  matched_journal_line_id BIGINT UNSIGNED NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  raw_source_id BIGINT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_stmt_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_stmt_cash FOREIGN KEY (cash_account_id) REFERENCES finance_cash_accounts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_stmt_jline FOREIGN KEY (matched_journal_line_id) REFERENCES finance_journal_lines(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fin_stmt_raw FOREIGN KEY (raw_source_id) REFERENCES raw_source_records(id) ON DELETE SET NULL,
+  KEY idx_fin_stmt_date (organization_id,cash_account_id,statement_date),
+  KEY idx_fin_stmt_status (organization_id,status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS finance_reconciliations (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  organization_id BIGINT UNSIGNED NOT NULL,
+  cash_account_id BIGINT UNSIGNED NOT NULL,
+  period_start DATE NOT NULL,
+  period_end DATE NOT NULL,
+  statement_ending_balance DECIMAL(16,2) NOT NULL,
+  calculated_ending_balance DECIMAL(16,2) NOT NULL DEFAULT 0,
+  difference_amount DECIMAL(16,2) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  notes TEXT NULL,
+  completed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fin_rec_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  CONSTRAINT fk_fin_rec_cash FOREIGN KEY (cash_account_id) REFERENCES finance_cash_accounts(id) ON DELETE CASCADE,
+  KEY idx_fin_rec_period (organization_id,cash_account_id,period_end),
+  KEY idx_fin_rec_status (organization_id,status)
+) ENGINE=InnoDB;
