@@ -119,7 +119,7 @@ $liveReports = [
     <div class="os-top-actions">
       <a class="os-btn" href="../index.html">Public Website</a>
       <a class="os-btn" href="members.php">Members</a>
-      <a class="os-btn" href="final_excel_seeding.php">Data Center</a>
+      <a class="os-btn" href="operations_center.php">Operations</a>
       <a class="os-btn primary" href="report_center.php">Report Center</a>
     </div>
   </div>
@@ -131,6 +131,9 @@ $liveReports = [
     <nav class="os-nav">
       <a class="active" href="index.php"><i class="dot"></i>Dashboard</a>
       <a href="members.php"><i class="dot"></i>Members & Network</a>
+      <a href="member_profile.php"><i class="dot"></i>Member Profile 360°</a>
+      <a href="sponsor_network.php"><i class="dot"></i>Sponsor Network</a>
+      <a href="operations_center.php"><i class="dot"></i>Operations Center</a>
       <a href="report_center.php"><i class="dot"></i>Report Center</a>
       <a href="final_excel_seeding.php"><i class="dot"></i>Excel Data Center</a>
       <a href="derived_reports_audit.php"><i class="dot"></i>Formula Audit</a>
@@ -149,9 +152,9 @@ $liveReports = [
 
   <main class="os-main">
     <section class="os-hero">
-      <div class="os-kicker">Step 10B • Professional Business OS</div>
-      <h1>Your business data, members, reports and lifecycle tracking now run from one connected system.</h1>
-      <p>The Excel source is normalized into traceable database facts, all six derived workbook reports are live, and Members & Network now provides a dedicated identity-safe member workspace.</p>
+      <div class="os-kicker">Step 10E • Professional Business OS</div>
+      <h1>Your members, operations, network and live reports now run from one connected workspace.</h1>
+      <p>The normalized source layer powers Member Profile 360°, verified sponsor networking, Orders/VP/Income/Royalty operations and all six derived workbook reports without creating duplicate sources of truth.</p>
       <div class="os-status-row">
         <span class="os-chip <?= $businessReady ? 'good' : '' ?>"><?= $businessReady ? 'BUSINESS OS LIVE' : 'Review required' ?></span>
         <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 source mapped</span>
@@ -166,9 +169,9 @@ $liveReports = [
     <?php endif; ?>
 
     <section class="os-grid">
-      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Open Members & Network for lifecycle detail</span></article>
-      <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>Live VP data layer</span></article>
-      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Normalized order facts</span></article>
+      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Profile 360° + verified network</span></article>
+      <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>Live Operations Center data</span></article>
+      <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Normalized operational orders</span></article>
       <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Renewal UMS history</span></article>
 
       <article class="os-card os-section">
@@ -200,12 +203,12 @@ $liveReports = [
       </aside>
 
       <article class="os-card os-section">
-        <div class="os-title-row"><div><h2>Business Fact Snapshot</h2><p>Normalized facts currently available to reporting and future automation.</p></div></div>
+        <div class="os-title-row"><div><h2>Business Fact Snapshot</h2><p>Normalized facts currently available to operational tools and reporting.</p></div><a class="os-btn" href="operations_center.php">Open Operations</a></div>
         <div class="os-list">
           <div class="os-list-row"><div><b>Monthly Income Facts</b><span>Retail, Check and Club income components</span></div><strong><?= number_format($metrics['income_facts']) ?></strong></div>
           <div class="os-list-row"><div><b>Royalty Facts</b><span>Royalty tracking periods</span></div><strong><?= number_format($metrics['royalty_facts']) ?></strong></div>
           <div class="os-list-row"><div><b>Active UMS Snapshots</b><span>Monthly active-member snapshots</span></div><strong><?= number_format($metrics['active_snapshots']) ?></strong></div>
-          <div class="os-list-row"><div><b>Data Trace</b><span>Raw source → normalized facts → live reports</span></div><strong><?= $sourceReady ? 'PASS' : 'CHECK' ?></strong></div>
+          <div class="os-list-row"><div><b>Data Trace</b><span>Raw source → normalized facts → operations/reports</span></div><strong><?= $sourceReady ? 'PASS' : 'CHECK' ?></strong></div>
         </div>
       </article>
 
@@ -228,7 +231,10 @@ $liveReports = [
       <article class="os-card" style="grid-column:span 12">
         <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational tools without leaving Business OS.</p></div></div>
         <div class="os-links">
-          <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members, inspect UMS lifecycle and review identity-safe sponsor/team context</span></div><span>→</span></a>
+          <a class="os-link" href="operations_center.php"><div><b>Operations Center</b><span>Orders, VP, Income and Royalty with period/member filters and raw-source trace</span></div><span>→</span></a>
+          <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members, inspect UMS lifecycle and identity-safe sponsor/team context</span></div><span>→</span></a>
+          <a class="os-link" href="member_profile.php"><div><b>Member Profile 360°</b><span>Complete verified member business timeline, KPIs and lifecycle detail</span></div><span>→</span></a>
+          <a class="os-link" href="sponsor_network.php"><div><b>Sponsor Network</b><span>Verified sponsor links and interactive network tree</span></div><span>→</span></a>
           <a class="os-link" href="report_center.php"><div><b>Report Center</b><span>Open all six live derived reports</span></div><span>→</span></a>
           <a class="os-link" href="derived_reports_audit.php"><div><b>Formula Audit</b><span>Review the 280 formula-cell mapping and legacy-rule controls</span></div><span>→</span></a>
           <a class="os-link" href="final_excel_seeding.php"><div><b>Excel Data Center</b><span>Review final source reconciliation and normalized fact counts</span></div><span>→</span></a>
@@ -237,7 +243,7 @@ $liveReports = [
       </article>
     </section>
 
-    <div class="os-footer-note"><strong>Architecture status:</strong> operational workbook data is normalized and traceable, Sheets 1–6 run as live derived reports, and Members & Network now exposes the member lifecycle without unsafe identity merging. Future website forms, Google Forms and APIs can feed the same source layer.</div>
+    <div class="os-footer-note"><strong>Architecture status:</strong> operational workbook data is normalized and traceable, Member Profile 360° and verified Sponsor Network use safe Member IDs, Orders/VP/Income/Royalty are available from one Operations Center, and Sheets 1–6 run as live derived reports.</div>
   </main>
 </div>
 </body>
