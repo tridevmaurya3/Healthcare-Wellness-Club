@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/report_runtime.php';
+require_once __DIR__ . '/security_step17.php';
 
 const BUSINESS_REVERSED_SOURCE_SHEET = 'Manual Entry • Reversed';
 
@@ -210,6 +211,7 @@ function business_db(): PDO
         $pdo = new PDO($dsn, $user, $pass, $pdoOptions);
     }
 
+    security_step17_guard_request($pdo);
     return $pdo;
 }
 

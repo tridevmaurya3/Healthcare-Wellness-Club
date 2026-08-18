@@ -28,20 +28,24 @@ function security_step17_h(mixed $value): string
 
 function security_step17_session_start(): void
 {
-    if (security_step17_is_cli() || session_status() === PHP_SESSION_ACTIVE) return;
+    if (security_step17_is_cli()) return;
+    $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        if (session_id() !== '') {
+            $p = session_get_cookie_params();
+            setcookie(session_name(), session_id(), [
+                'expires'=>0,'path'=>$p['path'] ?: '/','domain'=>$p['domain'] ?? '',
+                'secure'=>$secure,'httponly'=>true,'samesite'=>'Lax'
+            ]);
+        }
+        return;
+    }
     @ini_set('session.use_strict_mode', '1');
     @ini_set('session.use_only_cookies', '1');
     @ini_set('session.cookie_httponly', '1');
     @ini_set('session.cookie_samesite', 'Lax');
-    $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
-    session_name('HWCSESSID');
     session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'domain' => '',
-        'secure' => $secure,
-        'httponly' => true,
-        'samesite' => 'Lax',
+        'lifetime'=>0,'path'=>'/','domain'=>'','secure'=>$secure,'httponly'=>true,'samesite'=>'Lax'
     ]);
     session_start();
 }
@@ -161,6 +165,9 @@ function security_step17_ensure(PDO $pdo): void
     ];
     $settingStmt = $pdo->prepare("INSERT IGNORE INTO security_settings(organization_id,setting_key,setting_value) VALUES(?,?,?)");
     foreach ($settings as $k => $v) $settingStmt->execute([$orgId,$k,$v]);
+
+    $idleCutoff=(new DateTimeImmutable())->modify('-'.security_step17_setting($pdo,$orgId,'idle_timeout_seconds',1800).' seconds')->format('Y-m-d H:i:s');
+    $pdo->prepare("UPDATE security_sessions SET revoked_at=NOW(),revoke_reason=COALESCE(revoke_reason,'session_timeout_cleanup') WHERE organization_id=? AND revoked_at IS NULL AND (expires_at<=NOW() OR last_seen_at<?)")->execute([$orgId,$idleCutoff]);
 
     if (business_table_exists($pdo, 'schema_meta')) {
         $stmt = $pdo->prepare("INSERT INTO schema_meta(meta_key,meta_value) VALUES('security_step17_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)");
@@ -282,11 +289,19 @@ function security_step17_assert_not_throttled(PDO $pdo,int $orgId,string $email)
 {
     $limit=security_step17_setting($pdo,$orgId,'login_attempt_limit',5);
     $window=security_step17_setting($pdo,$orgId,'login_window_seconds',900);
-    $cutoff=(new DateTimeImmutable())->modify('-'.$window.' seconds')->format('Y-m-d H:i:s');
+    $lock=security_step17_setting($pdo,$orgId,'login_lock_seconds',900);
     $hash=security_step17_identifier_hash($email);$ip=substr((string)($_SERVER['REMOTE_ADDR']??''),0,64);
-    $stmt=$pdo->prepare("SELECT COUNT(*) FROM security_login_attempts WHERE attempted_at>=? AND was_successful=0 AND (identifier_hash=? OR (?<>'' AND ip_address=?))");
-    $stmt->execute([$cutoff,$hash,$ip,$ip]);
-    if((int)$stmt->fetchColumn()>=$limit) throw new RuntimeException('Too many sign-in attempts. Please wait before trying again.');
+    $windowCutoff=(new DateTimeImmutable())->modify('-'.$window.' seconds');
+    $stmt=$pdo->prepare("SELECT MAX(attempted_at) FROM security_login_attempts WHERE identifier_hash=? AND was_successful=1");
+    $stmt->execute([$hash]);$lastSuccess=$stmt->fetchColumn();
+    $cutoff=$windowCutoff;
+    if($lastSuccess){$successTime=new DateTimeImmutable((string)$lastSuccess);if($successTime>$cutoff)$cutoff=$successTime;}
+    $stmt=$pdo->prepare("SELECT COUNT(*) failures,MAX(attempted_at) last_failure FROM security_login_attempts WHERE attempted_at>=? AND was_successful=0 AND (identifier_hash=? OR (?<>'' AND ip_address=?))");
+    $stmt->execute([$cutoff->format('Y-m-d H:i:s'),$hash,$ip,$ip]);$row=$stmt->fetch()?:[];
+    if((int)($row['failures']??0)>=$limit && !empty($row['last_failure'])){
+        $unlock=(new DateTimeImmutable((string)$row['last_failure']))->modify('+'.$lock.' seconds');
+        if($unlock>new DateTimeImmutable())throw new RuntimeException('Too many sign-in attempts. Please wait before trying again.');
+    }
 }
 
 function security_step17_login(PDO $pdo,string $email,string $password): array
@@ -378,9 +393,14 @@ function security_step17_route_permission(string $script,string $method='GET'): 
 {
     $write=strtoupper($method)==='POST';
     if(in_array($script,['user_management.php'],true))return $write?'security.users.manage':'security.users.view';
-    if($script==='permission_matrix.php')return 'security.roles.manage';
-    if(in_array($script,['security_center.php','security_audit.php'],true))return 'security.audit.view';
+    if(in_array($script,['permission_matrix.php','security_settings.php'],true))return 'security.roles.manage';
+    if(in_array($script,['security_center.php','security_audit.php','step17_audit.php'],true))return 'security.audit.view';
     if($script==='security_sessions.php')return 'security.sessions.manage';
+    if($script==='dashboard_step16.php')return 'finance.view';
+    if($script==='dashboard_step15.php')return 'customers.view';
+    if($script==='dashboard_step14.php')return 'purchases.view';
+    if($script==='dashboard_step13.php')return 'inventory.view';
+    if($script==='step12_audit.php')return 'sales.view';
     if(str_starts_with($script,'finance_')||$script==='step16_audit.php')return $write?'finance.manage':'finance.view';
     if(str_starts_with($script,'inventory_')||$script==='step13_audit.php')return $write?'inventory.manage':'inventory.view';
     if(str_starts_with($script,'purchase_')||str_starts_with($script,'supplier_')||$script==='step14_audit.php')return $write?'purchases.manage':'purchases.view';
