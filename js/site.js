@@ -21,6 +21,7 @@
       target.innerHTML = await response.text();
       configureRootLinks(target);
       highlightCurrentNavigation(target);
+      updateCurrentYear(target);
     } catch (error) {
       console.error(`Unable to load ${relativePath}:`, error);
     }
@@ -45,6 +46,13 @@
         link.classList.add('active');
         link.setAttribute('aria-current', 'page');
       }
+    });
+  }
+
+  function updateCurrentYear(container = document) {
+    const year = new Date().getFullYear();
+    container.querySelectorAll('[data-current-year]').forEach((element) => {
+      element.textContent = String(year);
     });
   }
 
@@ -76,6 +84,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    configureRootLinks(document);
+    updateCurrentYear(document);
     loadFragment('navbar-placeholder', 'pages/navbar.html');
     loadFragment('footer-placeholder', 'pages/footer.html');
     createChatbot();
