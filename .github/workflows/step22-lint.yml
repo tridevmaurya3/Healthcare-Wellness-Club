@@ -1,0 +1,33 @@
+name: STEP 22 one-time PHP lint
+on:
+  push:
+    paths:
+      - '.github/workflows/step22-lint.yml'
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: PHP syntax lint
+        run: |
+          set -e
+          files=(
+            business/config/bi_step22.php
+            business/executive_bi.php
+            business/bi_targets.php
+            business/bi_trends.php
+            business/bi_funnel.php
+            business/bi_profitability.php
+            business/bi_exposure.php
+            business/bi_action_center.php
+            business/bi_export.php
+            business/dashboard_step22.php
+            business/step22_audit.php
+            business/index.php
+          )
+          for f in "${files[@]}"; do php -l "$f"; done
+          echo 'STEP22_LINT=PASS'
