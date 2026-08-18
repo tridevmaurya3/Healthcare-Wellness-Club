@@ -1,0 +1,83 @@
+name: STEP 20 smoke diagnostic
+on:
+  push:
+    paths:
+      - '.github/workflows/step20-smoke-diagnostic.yml'
+permissions:
+  contents: write
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -prootpass"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Run diagnostic
+        shell: bash
+        run: |
+          set +e
+          {
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq php-mysql mysql-client
+            echo "PHP=$(php -v | head -1)"
+            echo "PDO_MYSQL=$(php -m | grep -ci pdo_mysql)"
+            mysql -h127.0.0.1 -uroot -prootpass <<'SQL'
+          DROP DATABASE IF EXISTS hwc_step20_test;
+          CREATE DATABASE hwc_step20_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          USE hwc_step20_test;
+          CREATE TABLE organizations(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_code VARCHAR(80) UNIQUE);
+          CREATE TABLE clubs(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,club_code VARCHAR(80));
+          CREATE TABLE system_users(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,full_name VARCHAR(190),is_active TINYINT NOT NULL DEFAULT 1);
+          CREATE TABLE members(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,full_name VARCHAR(190),mobile VARCHAR(40),source_sheet VARCHAR(190));
+          CREATE TABLE crm_customers(id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,member_id BIGINT UNSIGNED NULL,customer_code VARCHAR(80) NOT NULL,customer_name VARCHAR(190) NOT NULL,mobile VARCHAR(40),email VARCHAR(190),customer_type VARCHAR(40) DEFAULT 'retail',notes TEXT,status VARCHAR(30) DEFAULT 'active',UNIQUE KEY uq_cc(organization_id,customer_code));
+          CREATE TABLE schema_meta(meta_key VARCHAR(190) PRIMARY KEY,meta_value TEXT);
+          INSERT INTO organizations(organization_code) VALUES('HWC-001');
+          INSERT INTO clubs(organization_id,club_code) VALUES(1,'GHAZIPUR-001');
+          INSERT INTO members(organization_id,full_name,mobile,source_sheet) VALUES(1,'Existing Member','9999999999','New UMS');
+          SQL
+            cat > /tmp/step20_diag.php <<'PHP'
+          <?php
+          declare(strict_types=1);
+          require getcwd().'/business/config/lead_step20.php';
+          $pdo=new PDO('mysql:host=127.0.0.1;dbname=hwc_step20_test;charset=utf8mb4','root','rootpass',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+          echo "ENSURE_START\n";lead_step20_ensure($pdo);echo "ENSURE_OK\n";
+          $server=['REMOTE_ADDR'=>'127.0.0.2','HTTP_HOST'=>'localhost','HTTP_ORIGIN'=>'http://localhost','HTTP_USER_AGENT'=>'STEP20-DIAG'];
+          $base=['enquiry_type'=>'wellness','name'=>'Smoke Lead','mobile'=>'9876543210','email'=>'smoke@example.test','message'=>'General wellness enquiry','consent'=>'1','started_at'=>(string)((int)floor(microtime(true)*1000)-5000),'page_path'=>'pages/contact.html'];
+          echo "CAPTURE1\n";$a=lead_step20_public_capture($pdo,$base,$server);var_export($a);echo "\n";
+          echo "CAPTURE2\n";$b=lead_step20_public_capture($pdo,$base,$server);var_export($b);echo "\n";
+          $lead=$pdo->query("SELECT * FROM crm_leads WHERE mobile='9876543210'")->fetch();echo 'LEAD1='.json_encode($lead)."\n";
+          $guard=false;try{lead_step20_update_stage($pdo,1,(int)$lead['id'],'converted','normal',null);}catch(RuntimeException $e){$guard=true;echo 'CONVERT_GUARD='.$e->getMessage()."\n";}if(!$guard)throw new RuntimeException('Converted stage guard failed.');
+          echo "TASK\n";lead_step20_add_task($pdo,1,(int)$lead['id'],'call','Smoke follow-up',date('Y-m-d H:i:s',time()+3600),null,null,'');
+          echo "APPOINTMENT\n";lead_step20_create_appointment($pdo,1,(int)$lead['id'],date('Y-m-d H:i:s',time()+7200),'club','Smoke appointment',null,null,'');
+          echo "MEMBER_LINK\n";lead_step20_link_member($pdo,1,(int)$lead['id'],1,null,'Explicit smoke member link');
+          $base2=$base;$base2['name']='Customer Smoke';$base2['mobile']='9123456780';$base2['email']='customer@example.test';echo "CAPTURE3\n";$c=lead_step20_public_capture($pdo,$base2,$server);var_export($c);echo "\n";$lead2=$pdo->query("SELECT * FROM crm_leads WHERE mobile='9123456780'")->fetch();
+          echo "CUSTOMER_CONVERT\n";$customerId=lead_step20_convert_customer($pdo,1,(int)$lead2['id'],null,null,'Smoke customer conversion');echo "CUSTOMER_ID=$customerId\n";
+          $spam=$base;$spam['name']='Bot';$spam['mobile']='9000000000';$spam['website']='https://spam.invalid';$spam['started_at']=(string)((int)floor(microtime(true)*1000)-5000);echo "SPAM\n";lead_step20_public_capture($pdo,$spam,$server);
+          $counts=['tables'=>0,'leads'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_leads')->fetchColumn(),'submissions'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_submissions')->fetchColumn(),'blocked'=>(int)$pdo->query("SELECT COUNT(*) FROM crm_lead_submissions WHERE spam_status='blocked'")->fetchColumn(),'tasks'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_tasks')->fetchColumn(),'appointments'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_appointments')->fetchColumn(),'conversions'=>(int)$pdo->query('SELECT COUNT(*) FROM crm_lead_conversions')->fetchColumn()];
+          foreach(lead_step20_tables() as $t){$q=$pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');$q->execute([$t]);$counts['tables']+=(int)$q->fetchColumn();}
+          echo 'COUNTS='.json_encode($counts)."\n";
+          if($a['lead_code']!==$b['lead_code']||(int)$lead['submission_count']!==2||$counts!==['tables'=>7,'leads'=>2,'submissions'=>4,'blocked'=>1,'tasks'=>1,'appointments'=>1,'conversions'=>2])throw new RuntimeException('Final smoke assertion failed.');
+          echo "STEP20_MYSQL_SMOKE=PASS\n";
+          PHP
+            php /tmp/step20_diag.php
+            echo "PHP_EXIT=$?"
+          } > business/config/step20_smoke_diagnostic.txt 2>&1
+          cat business/config/step20_smoke_diagnostic.txt
+          exit 0
+      - name: Commit diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/step20_smoke_diagnostic.txt
+          git commit -m "STEP 20: capture isolated MySQL smoke diagnostic"
+          git push origin HEAD:main
