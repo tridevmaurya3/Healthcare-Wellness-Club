@@ -246,12 +246,12 @@ function sales_step15_finalize_quote(PDO $pdo,int $quoteId,?int $memberId,string
 
 function sales_step15_cancel_sale(PDO $pdo,int $orderId,string $reason): void
 {
-    sales_step15_assert_cancellable($pdo,$orderId);product_step12_bridge_cancel($pdo,$orderId,$reason);if(business_table_exists($pdo,'sales_fulfillment_ledger'))sales_step15_sync_ledger($pdo,$orderId);
+    sales_step15_assert_cancellable($pdo,$orderId);product_step12_bridge_cancel($pdo,$orderId,$reason);if(business_table_exists($pdo,'sales_invoices'))$pdo->prepare("UPDATE sales_invoices SET status='cancelled' WHERE organization_id=? AND order_id=?")->execute([(int)product_step12_context($pdo)['organization_id'],$orderId]);if(business_table_exists($pdo,'sales_fulfillment_ledger'))sales_step15_sync_ledger($pdo,$orderId);
 }
 
 function sales_step15_restore_sale(PDO $pdo,int $orderId,string $reason): void
 {
-    product_step12_bridge_restore($pdo,$orderId,$reason);sales_step15_ensure($pdo);sales_step15_backfill($pdo);sales_step15_sync_ledger($pdo,$orderId);
+    product_step12_bridge_restore($pdo,$orderId,$reason);sales_step15_ensure($pdo);$pdo->prepare("UPDATE sales_invoices SET status='active' WHERE organization_id=? AND order_id=?")->execute([(int)product_step12_context($pdo)['organization_id'],$orderId]);sales_step15_backfill($pdo);sales_step15_sync_ledger($pdo,$orderId);
 }
 
 function sales_step15_sales_rows(PDO $pdo,int $orgId): array
