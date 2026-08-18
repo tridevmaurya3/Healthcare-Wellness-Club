@@ -1,0 +1,20 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/config/database.php';
+$error=null;
+try{
+    $pdo=business_db();security_step17_ensure($pdo);
+    if(security_step17_total_users($pdo)>0){header('Location: login.php');exit;}
+    if(!security_step17_setup_allowed())throw new RuntimeException('First-admin setup is restricted to localhost unless HWC_SETUP_KEY is configured for remote setup.');
+    $csrf=security_step17_csrf();
+    if($_SERVER['REQUEST_METHOD']==='POST'){
+        security_step17_verify_csrf((string)($_POST['csrf']??''));
+        $password=(string)($_POST['password']??'');$confirm=(string)($_POST['confirm_password']??'');
+        if(!hash_equals($password,$confirm))throw new RuntimeException('Password confirmation does not match.');
+        $email=(string)($_POST['email']??'');
+        security_step17_create_first_admin($pdo,(string)($_POST['full_name']??''),$email,(string)($_POST['mobile']??''),$password);
+        security_step17_login($pdo,$email,$password);
+        header('Location: index.php?security_setup=1');exit;
+    }
+}catch(Throwable $e){$error=$e->getMessage();$csrf=$csrf??'';}
+?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Create First Administrator - Healthcare Wellness Club</title><link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/product_pro.css"><style>body{min-height:100vh;background:#f5f9f6}.auth-shell{max-width:560px;margin:7vh auto;padding:20px}.auth-card{background:#fff;border:1px solid #dbe8df;border-radius:24px;padding:28px;box-shadow:0 18px 50px rgba(25,70,43,.08)}.auth-brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}.auth-brand img{width:54px;height:54px;border-radius:14px}.auth-card h1{font-size:30px;margin:8px 0}.auth-card p{color:#65756b}.auth-card label{display:block;font-weight:700;margin-top:14px}.auth-card input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #cfded3;border-radius:12px;margin-top:6px}.auth-card button{width:100%;margin-top:20px;padding:13px;border:0;border-radius:12px;background:#237a46;color:white;font-weight:800}.rule{background:#f3faf5;border:1px solid #d8eadf;border-radius:12px;padding:12px;margin-top:14px;font-size:13px;color:#52665a}</style></head><body><main class="auth-shell"><section class="auth-card"><div class="auth-brand"><img src="../img/logo.png" alt="Healthcare Wellness Club"><div><strong>Healthcare Wellness Club</strong><div>STEP 17 • Secure Bootstrap</div></div></div><span class="pp-badge">ONE-TIME SETUP</span><h1>Create the first Administrator</h1><p>No default username or password is stored in the project. This form closes permanently after the first system user is created.</p><?php if($error):?><div class="pp-alert bad"><strong>Setup:</strong> <?= security_step17_h($error) ?></div><?php endif;?><?php if(!$error||security_step17_total_users($pdo??new class{} )===0):?><?php endif;?><form method="post" autocomplete="off"><input type="hidden" name="csrf" value="<?= security_step17_h($csrf??'') ?>"><?php if(isset($_GET['setup_key'])):?><input type="hidden" name="setup_key" value="<?= security_step17_h((string)$_GET['setup_key']) ?>"><?php endif;?><label>Administrator Name<input name="full_name" maxlength="150" required autocomplete="name"></label><label>Email / Login ID<input type="email" name="email" maxlength="190" required autocomplete="email"></label><label>Mobile (optional)<input name="mobile" maxlength="30" autocomplete="tel"></label><label>New Password<input type="password" name="password" required autocomplete="new-password"></label><label>Confirm Password<input type="password" name="confirm_password" required autocomplete="new-password"></label><div class="rule"><b>Password rule:</b> minimum 12 characters with uppercase, lowercase, number and special character. The password is stored only as a secure one-way hash.</div><button>Create Administrator & Sign In</button></form></section></main></body></html>
