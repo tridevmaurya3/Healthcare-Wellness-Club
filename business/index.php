@@ -128,6 +128,7 @@ $liveReports = [
     </a>
     <div class="os-top-actions">
       <a class="os-btn" href="../index.html">Public Website</a>
+      <a class="os-btn" href="global_search.php">⌕ Global Search</a>
       <a class="os-btn" href="data_management.php">Data Management</a>
       <a class="os-btn" href="operations_center.php">Operations</a>
       <a class="os-btn primary" href="report_center.php">Report Center</a>
@@ -140,6 +141,7 @@ $liveReports = [
     <div class="os-nav-label">Business OS</div>
     <nav class="os-nav">
       <a class="active" href="index.php"><i class="dot"></i>Dashboard</a>
+      <a href="global_search.php"><i class="dot"></i>Global Search</a>
       <a href="data_management.php"><i class="dot"></i>Data Management</a>
       <a href="operations_center.php"><i class="dot"></i>Operations Center</a>
       <a href="members.php"><i class="dot"></i>Members & Network</a>
@@ -163,12 +165,13 @@ $liveReports = [
 
   <main class="os-main">
     <section class="os-hero">
-      <div class="os-kicker">Step 10M • Professional Business OS</div>
-      <h1>Historical Excel evidence, daily operations and every manual data change now follow one connected workflow.</h1>
-      <p>The reconciled workbook remains traceable historical evidence. New records and later corrections, reversals, restores and audits are organized through one compact Data Management control center.</p>
+      <div class="os-kicker">Step 10N • Professional Business OS</div>
+      <h1>Search the whole Business OS first, then jump directly to the exact member, fact, report or command.</h1>
+      <p>Historical Excel evidence, daily operations and manual lifecycle management remain connected, while the new Global Search provides one read-only command layer across members, transactions, reports and tools.</p>
       <div class="os-status-row">
         <span class="os-chip <?= $businessReady ? 'good' : '' ?>"><?= $businessReady ? 'BUSINESS OS LIVE' : 'Review required' ?></span>
         <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 legacy source mapped</span>
+        <span class="os-chip good">GLOBAL SEARCH LIVE</span>
         <span class="os-chip good">6 / 6 live reports</span>
         <span class="os-chip"><?= number_format($metrics['manual_raw']) ?> manual entries</span>
         <span class="os-chip">Schema <?= os_h((string)$status['schema_version']) ?></span>
@@ -184,6 +187,19 @@ $liveReports = [
       <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>All normalized VP sources</span></article>
       <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Active normalized order facts</span></article>
       <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Imported + active manual renewals</span></article>
+
+      <article class="os-card" style="grid-column:span 12">
+        <div class="os-title-row">
+          <div><h2>Global Search & Command Center</h2><p>Search a member, mobile, transaction, report or command without navigating through multiple pages.</p></div>
+          <a class="os-btn primary" href="global_search.php">Open Global Search</a>
+        </div>
+        <div class="os-links" style="margin-top:12px">
+          <a class="os-link" href="global_search.php?q=add+order"><div><b>Add Order</b><span>Jump directly to the Order entry command</span></div><span>→</span></a>
+          <a class="os-link" href="global_search.php?q=member"><div><b>Find Member</b><span>Search by name, mobile or Member ID</span></div><span>→</span></a>
+          <a class="os-link" href="global_search.php?q=master+tracking"><div><b>Find Report</b><span>Search all six live derived reports by name or purpose</span></div><span>→</span></a>
+          <a class="os-link" href="global_search.php?q=audit"><div><b>Audit Command</b><span>Jump to lifecycle history and audit tools</span></div><span>→</span></a>
+        </div>
+      </article>
 
       <article class="os-card os-section">
         <div class="os-title-row">
@@ -237,6 +253,7 @@ $liveReports = [
       <article class="os-card" style="grid-column:span 12">
         <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational workspaces without a crowded navigation menu.</p></div></div>
         <div class="os-links">
+          <a class="os-link" href="global_search.php"><div><b>Global Search & Command Center</b><span>Universal search across members, business facts, reports and tools</span></div><span>→</span></a>
           <a class="os-link" href="data_management.php"><div><b>Data Management</b><span>Create, Correct, Reverse, Restore and Audit from one workflow hub</span></div><span>→</span></a>
           <a class="os-link" href="operations_center.php"><div><b>Operations Center</b><span>Orders, VP, Income and Royalty with period/member filters and source trace</span></div><span>→</span></a>
           <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members and inspect identity-safe UMS/network context</span></div><span>→</span></a>
@@ -248,7 +265,7 @@ $liveReports = [
       </article>
     </section>
 
-    <div class="os-footer-note"><strong>Source-of-truth status:</strong> the 757-row legacy workbook import remains isolated and reconciled. Daily MANUAL facts now use one consolidated Create → Correct → Reverse → Restore → Audit workflow without changing historical raw rows.</div>
+    <div class="os-footer-note"><strong>Source-of-truth status:</strong> the 757-row legacy workbook import remains isolated and reconciled. Global Search is read-only and reversal-aware; daily MANUAL facts continue to use the consolidated Create → Correct → Reverse → Restore → Audit workflow.</div>
   </main>
 </div>
 </body>
