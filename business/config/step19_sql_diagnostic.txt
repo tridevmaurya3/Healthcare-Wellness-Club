@@ -1,0 +1,36 @@
+Reading package lists...
+Building dependency tree...
+Reading state information...
+mysql-client is already the newest version (8.0.46-0ubuntu0.24.04.3).
+The following NEW packages will be installed:
+  php-mysql
+0 upgraded, 1 newly installed, 0 to remove and 12 not upgraded.
+Need to get 1838 B of archives.
+After this operation, 11.3 kB of additional disk space will be used.
+Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 php-mysql all 2:8.3+93ubuntu2 [1838 B]
+Fetched 1838 B in 0s (20.4 kB/s)
+Selecting previously unselected package php-mysql.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 203139 files and directories currently installed.)
+Preparing to unpack .../php-mysql_2%3a8.3+93ubuntu2_all.deb ...
+Unpacking php-mysql (2:8.3+93ubuntu2) ...
+Setting up php-mysql (2:8.3+93ubuntu2) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+PDO_MYSQL=1
+mysqld is alive
+MYSQL_PING_EXIT=0
+PREREQ_EXIT=0
+STEP19_TABLE_COUNT=8
+ENV=local
+HTTPS_POLICY=1
+STEP19_SQL_DIAGNOSTIC=PASS
+PHP_DIAG_EXIT=0
