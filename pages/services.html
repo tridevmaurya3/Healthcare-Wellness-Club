@@ -1,1 +1,76 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Services - Healthcare Wellness Club</title><link rel="stylesheet" href="../css/bootstrap.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="xampp-fixes.css"></head><body><div id="navbar-placeholder"></div><main class="container mt-4 mb-5"><section class="card-custom"><h1 class="text-center h2">🌿 Our Services</h1><p class="text-center">Services designed to support everyday health and wellness routines.</p><div class="row g-4" id="services"></div></section></main><div class="floating-btns"><a href="https://wa.me/919876543210" target="_blank" rel="noopener">📱 Chat on WhatsApp</a><a href="tel:+919876543210" class="call-btn">📞 Call Now</a></div><div id="footer-placeholder"></div><script src="../js/bootstrap.bundle.min.js"></script><script src="../js/site.js"></script><script>const S=[['Nutrition Consulting','Balanced meals, nutrition habits and product information.'],['Fitness Sessions','Group movement, yoga and guided activity for different ability levels.'],['Weight Management Programs','Support for sustainable routines, progress tracking and regular check-ins.'],['Wellness Workshops','Hydration, sleep, mindfulness, stress management and healthy habits.'],['Community Activities','Walks and community events that encourage connection and activity.'],['Online Support','Virtual coaching, webinars and online groups for tips and encouragement.'],['Health Challenges','Positive challenges around hydration, movement and consistency.'],['Everyday Motivation','Practical encouragement for maintaining useful routines.'],['Mental Well-being Resources','General relaxation, mindfulness and stress-management practices.']];document.getElementById('services').innerHTML=S.map((x,i)=>`<div class="col-md-6 col-lg-4"><div class="card h-100"><img src="../img/service${i+1}.jpg" class="service-logo" alt="${x[0]}"><div class="card-body"><h2 class="card-title h5">${x[0]}</h2><p class="card-text">${x[1]}</p></div></div></div>`).join('');</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Explore Healthcare Wellness Club services including wellness guidance, fitness support, workshops, community activities and online support.">
+  <title>Services - Healthcare Wellness Club</title>
+  <link rel="stylesheet" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="public-pages.css">
+  <link rel="stylesheet" href="xampp-fixes.css">
+</head>
+<body class="public-page">
+  <div id="navbar-placeholder"></div>
+
+  <header class="pub-hero">
+    <div class="pub-shell pub-hero-grid">
+      <div>
+        <div class="pub-kicker">Wellness services</div>
+        <h1>Practical support for healthier everyday routines.</h1>
+        <p>Choose from wellness education, guided activities, community support and follow-up options designed to make healthy routines easier to understand and maintain.</p>
+      </div>
+      <div class="pub-hero-chip">9 wellness support areas</div>
+    </div>
+  </header>
+
+  <main class="pub-main">
+    <div class="pub-shell">
+      <section class="pub-services-grid" id="services" aria-label="Wellness services"></section>
+      <div class="pub-note">These services provide general wellness education and support. They are not a substitute for diagnosis, treatment or personalised medical advice from a qualified healthcare professional.</div>
+
+      <section class="pub-card pub-card-pad mt-4">
+        <div class="pub-kicker">Need help choosing?</div>
+        <h2 class="pub-section-title">Talk to the club before you begin.</h2>
+        <p class="pub-section-copy">Share what kind of wellness support you are looking for and the club can explain the available services and how they work.</p>
+        <div class="pub-cta-row">
+          <a class="pub-cta-link primary" href="contact.html">Contact the Club</a>
+          <a class="pub-cta-link" href="about.html">Meet the Coach</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="floating-btns">
+    <a href="https://wa.me/919876543210" target="_blank" rel="noopener">📱 Chat on WhatsApp</a>
+    <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
+  </div>
+  <div id="footer-placeholder"></div>
+
+  <script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="../js/site.js"></script>
+  <script>
+    const services=[
+      ['Nutrition Consulting','Balanced meals, nutrition habits and general product information.'],
+      ['Fitness Sessions','Group movement, yoga and guided activity for different ability levels.'],
+      ['Wellness Goal Support','Routine planning, progress review and regular check-ins around chosen wellness goals.'],
+      ['Wellness Workshops','Hydration, sleep, mindfulness, stress management and everyday healthy habits.'],
+      ['Community Activities','Walks and community events that encourage connection, consistency and activity.'],
+      ['Online Support','Virtual coaching, webinars and online groups for useful tips and encouragement.'],
+      ['Healthy Habit Challenges','Positive challenges around hydration, movement and consistency.'],
+      ['Everyday Motivation','Practical encouragement and follow-up for maintaining useful routines.'],
+      ['Mental Well-being Resources','General relaxation, mindfulness and stress-management practices.']
+    ];
+    document.getElementById('services').innerHTML=services.map((item,index)=>`
+      <article class="pub-card pub-service">
+        <div class="pub-service-media"><img src="../img/service${index+1}.jpg" alt="${item[0]}" loading="lazy"></div>
+        <div class="pub-service-body">
+          <span class="pub-service-number">SERVICE ${String(index+1).padStart(2,'0')}</span>
+          <h2>${item[0]}</h2>
+          <p>${item[1]}</p>
+        </div>
+      </article>`).join('');
+  </script>
+</body>
+</html>
