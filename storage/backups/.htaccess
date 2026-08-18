@@ -1,0 +1,5 @@
+# STEP 18: encrypted backup packages must only be served through authenticated PHP routes.
+Require all denied
+<IfModule !mod_authz_core.c>
+  Deny from all
+</IfModule>
