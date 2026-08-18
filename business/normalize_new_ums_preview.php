@@ -17,56 +17,56 @@ function nup_trim(?string $value): string
 
 function nup_name_key(?string $value): string
 {
-    $value = preg_replace('/\s+/u', ' ', mb_strtolower(nup_trim($value), 'UTF-8'));
-    return $value === null ? '' : $value;
+    $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(nup_trim($value), 'UTF-8'));
+    return $normalized === null ? '' : $normalized;
 }
 
+/** @return array{raw:string,key:string,state:string} */
 function nup_phone(?string $value): array
 {
     $raw = nup_trim($value);
     $digits = preg_replace('/\D+/', '', $raw) ?? '';
 
+    if ($digits === '') {
+        return ['raw' => $raw, 'key' => '', 'state' => 'missing'];
+    }
     if (strlen($digits) === 12 && str_starts_with($digits, '91')) {
-        return ['raw' => $raw, 'digits' => $digits, 'key' => substr($digits, -10), 'valid' => true];
+        $digits = substr($digits, -10);
+    }
+    if ($digits === '0000000000') {
+        return ['raw' => $raw, 'key' => '', 'state' => 'placeholder'];
     }
     if (strlen($digits) === 10) {
-        return ['raw' => $raw, 'digits' => $digits, 'key' => $digits, 'valid' => true];
+        return ['raw' => $raw, 'key' => $digits, 'state' => 'valid'];
     }
-    if ($digits === '') {
-        return ['raw' => $raw, 'digits' => '', 'key' => '', 'valid' => false];
-    }
-
-    return ['raw' => $raw, 'digits' => $digits, 'key' => '', 'valid' => false];
+    return ['raw' => $raw, 'key' => '', 'state' => 'invalid'];
 }
 
+/** @return array{iso:?string,valid:bool} */
 function nup_excel_date(?string $value): array
 {
     $raw = nup_trim($value);
     if ($raw === '') {
-        return ['raw' => $raw, 'iso' => null, 'valid' => false];
+        return ['iso' => null, 'valid' => false];
     }
-
     if (is_numeric($raw)) {
         $serial = (int)floor((float)$raw);
         if ($serial > 20000 && $serial < 90000) {
             try {
-                $date = (new DateTimeImmutable('1899-12-30'))->modify('+' . $serial . ' days');
-                return ['raw' => $raw, 'iso' => $date->format('Y-m-d'), 'valid' => true];
+                return ['iso' => (new DateTimeImmutable('1899-12-30'))->modify('+' . $serial . ' days')->format('Y-m-d'), 'valid' => true];
             } catch (Throwable) {
-                return ['raw' => $raw, 'iso' => null, 'valid' => false];
+                return ['iso' => null, 'valid' => false];
             }
         }
     }
-
     try {
-        $date = new DateTimeImmutable($raw);
-        return ['raw' => $raw, 'iso' => $date->format('Y-m-d'), 'valid' => true];
+        return ['iso' => (new DateTimeImmutable($raw))->format('Y-m-d'), 'valid' => true];
     } catch (Throwable) {
-        return ['raw' => $raw, 'iso' => null, 'valid' => false];
+        return ['iso' => null, 'valid' => false];
     }
 }
 
-function nup_decode_row(string $json): array
+function nup_values(string $json): array
 {
     $payload = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
     if (!is_array($payload) || !is_array($payload['values'] ?? null)) {
@@ -75,50 +75,25 @@ function nup_decode_row(string $json): array
     return (array)$payload['values'];
 }
 
-function nup_existing_member_index(PDO $pdo, int $organizationId): array
-{
-    $stmt = $pdo->prepare('SELECT id, full_name, mobile, source_key FROM members WHERE organization_id=? ORDER BY id');
-    $stmt->execute([$organizationId]);
-
-    $byPhone = [];
-    $byName = [];
-    foreach ($stmt->fetchAll() as $member) {
-        $phone = nup_phone((string)($member['mobile'] ?? ''));
-        $nameKey = nup_name_key((string)($member['full_name'] ?? ''));
-        if ($phone['valid']) {
-            $byPhone[$phone['key']][] = $member;
-        }
-        if ($nameKey !== '') {
-            $byName[$nameKey][] = $member;
-        }
-    }
-
-    return ['by_phone' => $byPhone, 'by_name' => $byName];
-}
-
 $error = null;
-$batch = null;
 $rows = [];
-$checks = [];
 $summary = [
     'raw_rows' => 0,
-    'safe_create' => 0,
-    'safe_match' => 0,
-    'review' => 0,
-    'missing_name' => 0,
-    'invalid_phone' => 0,
-    'invalid_date' => 0,
-    'duplicate_phone_groups' => 0,
+    'missing_names' => 0,
+    'invalid_dates' => 0,
+    'valid_phones' => 0,
+    'placeholder_phones' => 0,
+    'missing_phones' => 0,
+    'invalid_phones' => 0,
+    'shared_phone_groups' => 0,
     'duplicate_name_groups' => 0,
 ];
-$statusCounts = [];
-$activeFlagCounts = [];
+$phoneGroups = [];
+$nameGroups = [];
 
 try {
     $pdo = business_db();
-
-    $orgStmt = $pdo->query("SELECT id FROM organizations WHERE organization_code='HWC-001' LIMIT 1");
-    $organizationId = (int)$orgStmt->fetchColumn();
+    $organizationId = (int)$pdo->query("SELECT id FROM organizations WHERE organization_code='HWC-001' LIMIT 1")->fetchColumn();
     if ($organizationId <= 0) {
         throw new RuntimeException('Healthcare Wellness Club organization was not found.');
     }
@@ -131,8 +106,7 @@ try {
     }
 
     $batchStmt = $pdo->prepare(
-        "SELECT id, original_file_name, file_sha256, status, imported_rows, failed_rows, completed_at
-         FROM import_batches
+        "SELECT id, original_file_name, status FROM import_batches
          WHERE organization_id=? AND data_source_id=? AND import_type='excel_raw_capture' AND status='completed'
          ORDER BY id DESC LIMIT 1"
     );
@@ -142,163 +116,88 @@ try {
         throw new RuntimeException('No completed raw Excel capture batch was found.');
     }
 
-    $rawStmt = $pdo->prepare(
-        "SELECT id, source_row, external_record_id, record_hash, mapping_status, raw_json
+    $stmt = $pdo->prepare(
+        "SELECT id, source_row, mapping_status, raw_json
          FROM raw_source_records
          WHERE organization_id=? AND data_source_id=? AND import_batch_id=? AND source_dataset='New UMS'
          ORDER BY source_row"
     );
-    $rawStmt->execute([$organizationId, $sourceId, (int)$batch['id']]);
-    $rawRows = $rawStmt->fetchAll();
+    $stmt->execute([$organizationId, $sourceId, (int)$batch['id']]);
+    $rawRows = $stmt->fetchAll();
     $summary['raw_rows'] = count($rawRows);
 
-    $existing = nup_existing_member_index($pdo, $organizationId);
-    $sourcePhoneGroups = [];
-    $sourceNameGroups = [];
-
     foreach ($rawRows as $rawRow) {
-        $values = nup_decode_row((string)$rawRow['raw_json']);
+        $values = nup_values((string)$rawRow['raw_json']);
         $name = nup_trim($values['F'] ?? null);
         $nameKey = nup_name_key($name);
         $phone = nup_phone($values['I'] ?? null);
         $date = nup_excel_date($values['H'] ?? null);
 
-        if ($phone['valid']) {
-            $sourcePhoneGroups[$phone['key']][] = (int)$rawRow['id'];
-        }
-        if ($nameKey !== '') {
-            $sourceNameGroups[$nameKey][] = (int)$rawRow['id'];
-        }
-
-        $statusLabel = nup_trim($values['M'] ?? null);
-        $activeFlag = nup_trim($values['K'] ?? null);
-        $statusCounts[$statusLabel !== '' ? $statusLabel : '(blank)'] = ($statusCounts[$statusLabel !== '' ? $statusLabel : '(blank)'] ?? 0) + 1;
-        $activeFlagCounts[$activeFlag !== '' ? $activeFlag : '(blank)'] = ($activeFlagCounts[$activeFlag !== '' ? $activeFlag : '(blank)'] ?? 0) + 1;
-
         $issues = [];
-        if ($name === '') {
+        $warnings = [];
+
+        if ($name === '' || $nameKey === '') {
+            $summary['missing_names']++;
             $issues[] = 'Missing member name';
-            $summary['missing_name']++;
+        } else {
+            $nameGroups[$nameKey][] = (int)$rawRow['source_row'];
         }
-        if (!$phone['valid']) {
-            $issues[] = $phone['digits'] === '' ? 'Mobile number missing' : 'Mobile format needs review';
-            $summary['invalid_phone']++;
-        }
+
         if (!$date['valid']) {
-            $issues[] = 'UMS date needs review';
-            $summary['invalid_date']++;
+            $summary['invalid_dates']++;
+            $issues[] = 'Invalid UMS date';
         }
 
-        $action = 'CREATE';
-        $matchedMemberId = null;
-
-        if ($phone['valid'] && isset($existing['by_phone'][$phone['key']])) {
-            $candidates = $existing['by_phone'][$phone['key']];
-            if (count($candidates) === 1) {
-                $candidate = $candidates[0];
-                $candidateNameKey = nup_name_key((string)$candidate['full_name']);
-                if ($nameKey !== '' && $candidateNameKey !== $nameKey) {
-                    $issues[] = 'Existing mobile belongs to a different member name';
-                    $action = 'REVIEW';
-                } else {
-                    $action = 'MATCH';
-                    $matchedMemberId = (int)$candidate['id'];
-                }
-            } else {
-                $issues[] = 'Mobile matches multiple existing members';
-                $action = 'REVIEW';
-            }
-        } elseif ($nameKey !== '' && isset($existing['by_name'][$nameKey])) {
-            $candidates = $existing['by_name'][$nameKey];
-            if (count($candidates) === 1) {
-                $candidate = $candidates[0];
-                $candidatePhone = nup_phone((string)($candidate['mobile'] ?? ''));
-                if ($phone['valid'] && $candidatePhone['valid'] && $candidatePhone['key'] !== $phone['key']) {
-                    $issues[] = 'Existing exact name has a different mobile number';
-                    $action = 'REVIEW';
-                } else {
-                    $action = 'MATCH';
-                    $matchedMemberId = (int)$candidate['id'];
-                }
-            } else {
-                $issues[] = 'Exact name matches multiple existing members';
-                $action = 'REVIEW';
-            }
-        }
-
-        if ($issues) {
-            $action = 'REVIEW';
+        if ($phone['state'] === 'valid') {
+            $summary['valid_phones']++;
+            $phoneGroups[$phone['key']][] = (int)$rawRow['source_row'];
+        } elseif ($phone['state'] === 'placeholder') {
+            $summary['placeholder_phones']++;
+            $warnings[] = 'Placeholder mobile retained in raw source only';
+        } elseif ($phone['state'] === 'missing') {
+            $summary['missing_phones']++;
+            $warnings[] = 'Mobile missing; source identity remains valid';
+        } else {
+            $summary['invalid_phones']++;
+            $warnings[] = 'Mobile format not used for identity; raw value preserved';
         }
 
         $rows[] = [
-            'raw_id' => (int)$rawRow['id'],
             'source_row' => (int)$rawRow['source_row'],
-            'external_record_id' => (string)($rawRow['external_record_id'] ?? ''),
             'mapping_status' => (string)$rawRow['mapping_status'],
             'name' => $name,
-            'name_key' => $nameKey,
-            'mobile_raw' => $phone['raw'],
-            'mobile_key' => $phone['key'],
-            'mobile_valid' => (bool)$phone['valid'],
+            'mobile_state' => $phone['state'],
             'ums_date' => $date['iso'],
-            'ums_date_valid' => (bool)$date['valid'],
             'sponsor' => nup_trim($values['G'] ?? null),
-            'team_of' => nup_trim($values['E'] ?? null),
-            'active_supervisor' => nup_trim($values['L'] ?? null),
-            'ums_type' => $statusLabel,
-            'active_flag' => $activeFlag,
-            'duration' => nup_trim($values['J'] ?? null),
-            'action' => $action,
-            'matched_member_id' => $matchedMemberId,
+            'ums_type' => nup_trim($values['M'] ?? null),
             'issues' => $issues,
+            'warnings' => $warnings,
         ];
     }
 
-    $duplicatePhones = array_filter($sourcePhoneGroups, static fn(array $ids): bool => count($ids) > 1);
-    $duplicateNames = array_filter($sourceNameGroups, static fn(array $ids): bool => count($ids) > 1);
-    $summary['duplicate_phone_groups'] = count($duplicatePhones);
+    $sharedPhones = array_filter($phoneGroups, static fn(array $items): bool => count($items) > 1);
+    $duplicateNames = array_filter($nameGroups, static fn(array $items): bool => count($items) > 1);
+    $summary['shared_phone_groups'] = count($sharedPhones);
     $summary['duplicate_name_groups'] = count($duplicateNames);
 
-    if ($duplicatePhones || $duplicateNames) {
-        foreach ($rows as &$row) {
-            if ($row['mobile_key'] !== '' && isset($duplicatePhones[$row['mobile_key']])) {
-                $row['issues'][] = 'Same mobile appears more than once in New UMS source';
-                $row['action'] = 'REVIEW';
-            }
-            if ($row['name_key'] !== '' && isset($duplicateNames[$row['name_key']])) {
-                $row['issues'][] = 'Same member name appears more than once in New UMS source';
-                $row['action'] = 'REVIEW';
-            }
+    foreach ($rows as &$row) {
+        $values = nup_values((string)($rawRows[array_search($row['source_row'], array_column($rawRows, 'source_row'), true)]['raw_json'] ?? '{}'));
+        $phone = nup_phone($values['I'] ?? null);
+        $nameKey = nup_name_key($row['name']);
+        if ($phone['state'] === 'valid' && isset($sharedPhones[$phone['key']])) {
+            $row['warnings'][] = 'Mobile is shared by more than one New UMS source row; no auto-merge';
         }
-        unset($row);
-    }
-
-    foreach ($rows as $row) {
-        if ($row['action'] === 'CREATE') {
-            $summary['safe_create']++;
-        } elseif ($row['action'] === 'MATCH') {
-            $summary['safe_match']++;
-        } else {
-            $summary['review']++;
+        if ($nameKey !== '' && isset($duplicateNames[$nameKey])) {
+            $row['warnings'][] = 'Same name appears in more than one source row; no auto-merge';
         }
     }
-
-    $checks = [
-        'Latest raw batch is completed' => (string)$batch['status'] === 'completed',
-        'New UMS raw rows = 78' => $summary['raw_rows'] === EXPECTED_NEW_UMS_ROWS,
-        'Every New UMS row still pending normalization' => count(array_filter($rows, static fn(array $row): bool => $row['mapping_status'] !== 'pending')) === 0,
-        'No missing member names' => $summary['missing_name'] === 0,
-        'All mobile numbers are safely comparable' => $summary['invalid_phone'] === 0,
-        'All UMS dates are valid' => $summary['invalid_date'] === 0,
-        'No duplicate mobile groups in New UMS source' => $summary['duplicate_phone_groups'] === 0,
-        'No duplicate exact-name groups in New UMS source' => $summary['duplicate_name_groups'] === 0,
-        'No rows require identity review' => $summary['review'] === 0,
-    ];
+    unset($row);
 } catch (Throwable $e) {
     $error = $e->getMessage();
 }
 
-$allPass = $error === null && $checks && !in_array(false, $checks, true);
+$blockers = $summary['missing_names'] + $summary['invalid_dates'];
+$ready = $error === null && $summary['raw_rows'] === EXPECTED_NEW_UMS_ROWS && $blockers === 0;
 ?>
 <!doctype html>
 <html lang="en">
@@ -314,11 +213,11 @@ $allPass = $error === null && $checks && !in_array(false, $checks, true);
   <div class="imp-topbar-inner">
     <a class="imp-brand" href="index.php">
       <img src="../img/logo.png" alt="Healthcare Wellness Club logo">
-      <span><strong>Healthcare Wellness Club</strong><small>Business OS • New UMS Normalization Preview</small></span>
+      <span><strong>Healthcare Wellness Club</strong><small>Business OS • New UMS Source Identity Preview</small></span>
     </a>
     <nav class="imp-nav" aria-label="Business navigation">
       <a href="reconcile_raw.php">← Raw Integrity</a>
-      <a href="index.php">Business OS</a>
+      <a href="normalize_new_ums.php">Write Step →</a>
     </nav>
   </div>
 </header>
@@ -326,14 +225,14 @@ $allPass = $error === null && $checks && !in_array(false, $checks, true);
 <main class="imp-shell">
   <section class="imp-hero">
     <div>
-      <div class="imp-kicker">Step 8I • New UMS identity preview</div>
-      <h1>Resolve member identity before creating Members and UMS records.</h1>
-      <p>This is a read-only normalization preview for the 78 New UMS source rows. Mobile numbers, exact names and UMS dates are checked conservatively. Sponsor and supervisor names are preserved for a later relationship-linking pass and are not guessed here.</p>
+      <div class="imp-kicker">Step 8I • Source identity preview</div>
+      <h1>Preserve source identities; use names and mobiles as clues, not unique keys.</h1>
+      <p>The preview now reflects the actual workbook structure. Shared contact numbers, placeholder numbers and repeated names are warnings only. They are never used to merge people automatically.</p>
     </div>
     <div class="imp-safety">
       <span class="imp-chip good">Database write is OFF</span>
-      <span class="imp-chip good">New UMS only</span>
-      <span class="imp-chip <?= $allPass ? 'good' : '' ?>"><?= $allPass ? 'Normalization READY' : 'Review required' ?></span>
+      <span class="imp-chip good">Source-row identity</span>
+      <span class="imp-chip <?= $ready ? 'good' : '' ?>"><?= $ready ? 'Normalization READY' : 'Review required' ?></span>
     </div>
   </section>
 
@@ -341,78 +240,44 @@ $allPass = $error === null && $checks && !in_array(false, $checks, true);
     <?php if ($error !== null): ?>
       <div class="imp-alert" style="grid-column:span 12"><strong>Preview could not run:</strong> <?= nup_h($error) ?></div>
     <?php else: ?>
-      <section class="imp-summary" aria-label="New UMS normalization summary">
-        <article class="imp-kpi green"><small>Readiness</small><strong><?= $allPass ? 'READY' : 'REVIEW' ?></strong><span>Read-only identity analysis</span></article>
-        <article class="imp-kpi blue"><small>New UMS Rows</small><strong><?= number_format($summary['raw_rows']) ?></strong><span>Expected <?= EXPECTED_NEW_UMS_ROWS ?></span></article>
-        <article class="imp-kpi gold"><small>Create / Match</small><strong><?= number_format($summary['safe_create']) ?> / <?= number_format($summary['safe_match']) ?></strong><span>Safe identity actions</span></article>
-        <article class="imp-kpi"><small>Needs Review</small><strong><?= number_format($summary['review']) ?></strong><span>Must be zero before write</span></article>
+      <section class="imp-summary">
+        <article class="imp-kpi green"><small>Readiness</small><strong><?= $ready ? 'READY' : 'REVIEW' ?></strong><span><?= number_format($blockers) ?> blocker(s)</span></article>
+        <article class="imp-kpi blue"><small>New UMS Rows</small><strong><?= number_format($summary['raw_rows']) ?></strong><span>Expected 78</span></article>
+        <article class="imp-kpi gold"><small>Placeholder Mobiles</small><strong><?= number_format($summary['placeholder_phones']) ?></strong><span>Raw-only contact value</span></article>
+        <article class="imp-kpi"><small>Shared / Same-name Groups</small><strong><?= number_format($summary['shared_phone_groups']) ?> / <?= number_format($summary['duplicate_name_groups']) ?></strong><span>Warnings, not duplicates</span></article>
       </section>
 
-      <article class="imp-card" style="grid-column:span 7">
-        <h2>Readiness checks</h2>
-        <p>Normalization remains locked if any identity or source-quality check fails.</p>
+      <article class="imp-card" style="grid-column:span 12">
+        <h2>Readiness policy</h2>
+        <p>Only a missing member name or invalid UMS date blocks normalization. Mobile quality and repeated names remain traceable warnings.</p>
+        <div class="imp-derived-list">
+          <div class="imp-derived-item"><b>Missing names</b><span><?= number_format($summary['missing_names']) ?> • blocker</span></div>
+          <div class="imp-derived-item"><b>Invalid dates</b><span><?= number_format($summary['invalid_dates']) ?> • blocker</span></div>
+          <div class="imp-derived-item"><b>Valid mobiles</b><span><?= number_format($summary['valid_phones']) ?></span></div>
+          <div class="imp-derived-item"><b>Placeholder mobiles</b><span><?= number_format($summary['placeholder_phones']) ?> • warning</span></div>
+          <div class="imp-derived-item"><b>Invalid/missing mobiles</b><span><?= number_format($summary['invalid_phones'] + $summary['missing_phones']) ?> • warning</span></div>
+          <div class="imp-derived-item"><b>Auto-merge</b><span>OFF until verified reconciliation</span></div>
+        </div>
+      </article>
+
+      <article class="imp-card" style="grid-column:span 12">
+        <h2>Source rows</h2>
+        <p>Only rows with warnings/issues are highlighted below; all raw data remains preserved.</p>
         <div class="imp-plan-list">
-          <?php foreach ($checks as $label => $pass): ?>
+          <?php foreach ($rows as $row): ?>
+            <?php if (!$row['issues'] && !$row['warnings']) continue; ?>
             <div class="imp-plan-row">
-              <div><b><?= nup_h($label) ?></b><span><?= $pass ? 'Verified' : 'Needs review before Member/UMS write' ?></span></div>
-              <em><?= $pass ? 'PASS' : 'CHECK' ?></em>
+              <div>
+                <b>Row <?= (int)$row['source_row'] ?> • <?= nup_h($row['name'] !== '' ? $row['name'] : '(missing name)') ?></b>
+                <span><?= nup_h(implode(' • ', array_merge($row['issues'], $row['warnings']))) ?></span>
+              </div>
+              <em><?= $row['issues'] ? 'CHECK' : 'SAFE WARNING' ?></em>
             </div>
           <?php endforeach; ?>
         </div>
       </article>
 
-      <aside class="imp-card" style="grid-column:span 5">
-        <h2>Source quality</h2>
-        <div class="imp-derived-list" style="grid-template-columns:1fr 1fr">
-          <div class="imp-derived-item"><b>Missing names</b><span><?= number_format($summary['missing_name']) ?></span></div>
-          <div class="imp-derived-item"><b>Mobile review</b><span><?= number_format($summary['invalid_phone']) ?></span></div>
-          <div class="imp-derived-item"><b>Date review</b><span><?= number_format($summary['invalid_date']) ?></span></div>
-          <div class="imp-derived-item"><b>Duplicate mobile groups</b><span><?= number_format($summary['duplicate_phone_groups']) ?></span></div>
-          <div class="imp-derived-item"><b>Duplicate name groups</b><span><?= number_format($summary['duplicate_name_groups']) ?></span></div>
-          <div class="imp-derived-item"><b>Raw batch</b><span>#<?= (int)$batch['id'] ?> • <?= nup_h((string)$batch['original_file_name']) ?></span></div>
-        </div>
-      </aside>
-
-      <article class="imp-card imp-derived">
-        <h2>UMS source labels preserved</h2>
-        <p>These values are shown exactly as source categories. No business meaning is being invented during identity normalization.</p>
-        <div class="imp-derived-list">
-          <?php foreach ($statusCounts as $label => $count): ?>
-            <div class="imp-derived-item"><b><?= nup_h($label) ?></b><span>UMS Type • <?= number_format($count) ?> row(s)</span></div>
-          <?php endforeach; ?>
-          <?php foreach ($activeFlagCounts as $label => $count): ?>
-            <div class="imp-derived-item"><b><?= nup_h($label) ?></b><span>Active/Inactive • <?= number_format($count) ?> row(s)</span></div>
-          <?php endforeach; ?>
-        </div>
-      </article>
-
-      <?php if (!$allPass): ?>
-        <article class="imp-card imp-derived">
-          <h2>Rows requiring review</h2>
-          <p>Only rows with a conservative identity/data-quality concern are shown here.</p>
-          <div class="imp-table-wrap">
-            <table class="imp-table">
-              <thead><tr><th>Excel Row</th><th>Name</th><th>Mobile</th><th>UMS Date</th><th>Action</th><th>Reason</th></tr></thead>
-              <tbody>
-              <?php foreach ($rows as $row): if ($row['action'] !== 'REVIEW') continue; ?>
-                <tr>
-                  <td><?= (int)$row['source_row'] ?></td>
-                  <td><?= nup_h($row['name']) ?></td>
-                  <td><?= nup_h($row['mobile_raw']) ?></td>
-                  <td><?= nup_h($row['ums_date'] ?? '—') ?></td>
-                  <td>REVIEW</td>
-                  <td><?= nup_h(implode('; ', $row['issues'])) ?></td>
-                </tr>
-              <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      <?php endif; ?>
-
-      <div class="imp-footer-note">
-        <strong>Safety rule:</strong> this page performs no INSERT, UPDATE or DELETE. A later step will create Members and UMS records only after this preview is clean. Sponsor, Team of and Active Supervisor fields remain source metadata until member identities exist and relationship linking can be verified separately.
-      </div>
+      <div class="imp-footer-note"><strong>Identity rule:</strong> the original New UMS row is the import identity. A future Member Merge/Reconciliation step can combine records only after stronger evidence confirms they represent the same person.</div>
     <?php endif; ?>
   </section>
 </main>
