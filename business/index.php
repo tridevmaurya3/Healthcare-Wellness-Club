@@ -118,6 +118,7 @@ $liveReports = [
     </a>
     <div class="os-top-actions">
       <a class="os-btn" href="../index.html">Public Website</a>
+      <a class="os-btn" href="members.php">Members</a>
       <a class="os-btn" href="final_excel_seeding.php">Data Center</a>
       <a class="os-btn primary" href="report_center.php">Report Center</a>
     </div>
@@ -129,6 +130,7 @@ $liveReports = [
     <div class="os-nav-label">Business OS</div>
     <nav class="os-nav">
       <a class="active" href="index.php"><i class="dot"></i>Dashboard</a>
+      <a href="members.php"><i class="dot"></i>Members & Network</a>
       <a href="report_center.php"><i class="dot"></i>Report Center</a>
       <a href="final_excel_seeding.php"><i class="dot"></i>Excel Data Center</a>
       <a href="derived_reports_audit.php"><i class="dot"></i>Formula Audit</a>
@@ -147,13 +149,14 @@ $liveReports = [
 
   <main class="os-main">
     <section class="os-hero">
-      <div class="os-kicker">Step 10A • Professional Business OS</div>
-      <h1>Your business data, reports and lifecycle tracking now run from one connected system.</h1>
-      <p>The Excel source has been normalized into traceable database facts, and all six derived workbook reports are now live. This dashboard is the central entry point for reporting, source health and business operations.</p>
+      <div class="os-kicker">Step 10B • Professional Business OS</div>
+      <h1>Your business data, members, reports and lifecycle tracking now run from one connected system.</h1>
+      <p>The Excel source is normalized into traceable database facts, all six derived workbook reports are live, and Members & Network now provides a dedicated identity-safe member workspace.</p>
       <div class="os-status-row">
         <span class="os-chip <?= $businessReady ? 'good' : '' ?>"><?= $businessReady ? 'BUSINESS OS LIVE' : 'Review required' ?></span>
         <span class="os-chip good"><?= number_format($metrics['source_mapped']) ?> / 757 source mapped</span>
         <span class="os-chip good">6 / 6 live reports</span>
+        <span class="os-chip"><?= number_format($metrics['members']) ?> members</span>
         <span class="os-chip">Schema <?= os_h((string)$status['schema_version']) ?></span>
       </div>
     </section>
@@ -163,7 +166,7 @@ $liveReports = [
     <?php endif; ?>
 
     <section class="os-grid">
-      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Normalized member records</span></article>
+      <article class="os-card os-kpi green"><small>Members</small><strong><?= number_format($metrics['members']) ?></strong><span>Open Members & Network for lifecycle detail</span></article>
       <article class="os-card os-kpi blue"><small>Volume Point Facts</small><strong><?= number_format($metrics['vp_facts']) ?></strong><span>Live VP data layer</span></article>
       <article class="os-card os-kpi gold"><small>Orders</small><strong><?= number_format($metrics['orders']) ?></strong><span>Normalized order facts</span></article>
       <article class="os-card os-kpi violet"><small>Renewal Facts</small><strong><?= number_format($metrics['renewals']) ?></strong><span>Renewal UMS history</span></article>
@@ -186,7 +189,7 @@ $liveReports = [
 
       <aside class="os-card os-side">
         <h2>Source & Engine Health</h2>
-        <p>Every report depends on the same reconciled operational source layer.</p>
+        <p>Every operational module depends on the same reconciled source layer.</p>
         <div class="os-list">
           <div class="os-list-row"><div><b>Operational rows</b><span>Excel Sheets 7–14</span></div><strong><?= number_format($metrics['source_mapped']) ?>/<?= number_format($metrics['source_total']) ?></strong></div>
           <div class="os-list-row"><div><b>Pending source</b><span>Must remain zero</span></div><strong><?= number_format($metrics['source_pending']) ?></strong></div>
@@ -225,6 +228,7 @@ $liveReports = [
       <article class="os-card" style="grid-column:span 12">
         <div class="os-title-row"><div><h2>Quick Actions</h2><p>Open the main operational tools without leaving Business OS.</p></div></div>
         <div class="os-links">
+          <a class="os-link" href="members.php"><div><b>Members & Network</b><span>Search members, inspect UMS lifecycle and review identity-safe sponsor/team context</span></div><span>→</span></a>
           <a class="os-link" href="report_center.php"><div><b>Report Center</b><span>Open all six live derived reports</span></div><span>→</span></a>
           <a class="os-link" href="derived_reports_audit.php"><div><b>Formula Audit</b><span>Review the 280 formula-cell mapping and legacy-rule controls</span></div><span>→</span></a>
           <a class="os-link" href="final_excel_seeding.php"><div><b>Excel Data Center</b><span>Review final source reconciliation and normalized fact counts</span></div><span>→</span></a>
@@ -233,7 +237,7 @@ $liveReports = [
       </article>
     </section>
 
-    <div class="os-footer-note"><strong>Architecture status:</strong> operational workbook data is normalized and traceable, while Sheets 1–6 run as live derived reports. Future website forms, Google Forms and APIs can feed the same source layer without rebuilding the reporting engine.</div>
+    <div class="os-footer-note"><strong>Architecture status:</strong> operational workbook data is normalized and traceable, Sheets 1–6 run as live derived reports, and Members & Network now exposes the member lifecycle without unsafe identity merging. Future website forms, Google Forms and APIs can feed the same source layer.</div>
   </main>
 </div>
 </body>
