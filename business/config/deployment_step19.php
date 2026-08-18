@@ -159,10 +159,10 @@ function deployment_step19_log(PDO $pdo,string $eventType,string $status,array $
     if(function_exists('security_step17_audit'))security_step17_audit($pdo,$actorId,'deployment_'.$eventType,'deployment_event',null,$details+['status'=>$status,'environment'=>deployment_step19_env()]);
 }
 
-function deployment_step19_guard_request(PDO $pdo): void
+function deployment_step19_preflight_request(PDO $pdo): void
 {
     if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg')return;
-    deployment_step19_ensure($pdo);deployment_step19_apply_headers();$script=basename((string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));
+    deployment_step19_ensure($pdo);deployment_step19_apply_headers();
     if(deployment_step19_is_production()&&!deployment_step19_host_allowed()){
         http_response_code(421);echo '<!doctype html><meta charset="utf-8"><title>Host rejected</title><h1>Request host is not allowed.</h1>';exit;
     }
@@ -171,6 +171,13 @@ function deployment_step19_guard_request(PDO $pdo): void
         $host=deployment_step19_request_host();if($host===''){http_response_code(503);echo 'HTTPS configuration is incomplete.';exit;}
         $uri=(string)($_SERVER['REQUEST_URI']??'/');header('Location: https://'.$host.$uri,true,308);exit;
     }
+}
+
+function deployment_step19_guard_request(PDO $pdo): void
+{
+    if(PHP_SAPI==='cli'||PHP_SAPI==='phpdbg')return;
+    deployment_step19_preflight_request($pdo);$script=basename((string)($_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??''));
+    $ctx=deployment_step19_context($pdo);$settings=deployment_step19_settings($pdo,(int)$ctx['organization_id']);
     if((int)($settings['maintenance_enabled']??0)!==1)return;
     $always=['login.php','logout.php','access_denied.php','maintenance.php','healthz.php','password_change.php'];
     if(in_array($script,$always,true)||str_starts_with($script,'deployment_')||in_array($script,['production_health.php','multi_device_access.php','offsite_backup.php','migration_center.php','scheduler_center.php','step19_audit.php'],true))return;

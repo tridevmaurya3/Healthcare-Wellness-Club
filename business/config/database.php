@@ -212,6 +212,7 @@ function business_db(): PDO
         $pdo = new PDO($dsn, $user, $pass, $pdoOptions);
     }
 
+    deployment_step19_preflight_request($pdo);
     security_step17_guard_request($pdo);
     deployment_step19_guard_request($pdo);
     return $pdo;
