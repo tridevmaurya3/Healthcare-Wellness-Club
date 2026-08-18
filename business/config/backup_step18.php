@@ -98,7 +98,7 @@ function backup_step18_columns(PDO $pdo,string $table,bool $insertableOnly=false
 {
     $sql="SELECT column_name,column_type,is_nullable,column_default,extra,ordinal_position FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? ORDER BY ordinal_position";
     $stmt=$pdo->prepare($sql);$stmt->execute([$table]);$rows=$stmt->fetchAll();$out=[];
-    foreach($rows as $r){if($insertableOnly&&str_contains(strtoupper((string)$r['extra']),'GENERATED'))continue;$out[]=$r;}
+    foreach($rows as $r){$r=array_change_key_case($r,CASE_LOWER);if($insertableOnly&&str_contains(strtoupper((string)($r['extra']??'')),'GENERATED'))continue;$out[]=$r;}
     return $out;
 }
 
