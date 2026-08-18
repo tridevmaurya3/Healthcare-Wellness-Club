@@ -1,0 +1,101 @@
+name: One-time STEP 19 validation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-step19-validation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: healthcare_wellness_club
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Install PHP MySQL support
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y php-mysql mysql-client >/dev/null
+      - name: PHP syntax lint
+        shell: bash
+        run: |
+          set -e
+          for f in \
+            business/config/deployment_step19.php \
+            business/config/security_step17.php \
+            business/config/database.php \
+            business/deployment_center.php \
+            business/environment_center.php \
+            business/production_health.php \
+            business/healthz.php \
+            business/deployment_releases.php \
+            business/maintenance_center.php \
+            business/maintenance.php \
+            business/migration_center.php \
+            business/offsite_backup.php \
+            business/scheduler_center.php \
+            business/multi_device_access.php \
+            business/step19_audit.php \
+            business/dashboard_step19.php \
+            business/cli/deployment_step19.php \
+            business/global_search.php \
+            business/index.php; do
+              php -l "$f"
+          done
+      - name: Prepare isolated prerequisite schema
+        run: |
+          mysql -h127.0.0.1 -uroot healthcare_wellness_club <<'SQL'
+          CREATE TABLE organizations (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_code VARCHAR(80) NOT NULL UNIQUE) ENGINE=InnoDB;
+          CREATE TABLE clubs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,club_code VARCHAR(80) NOT NULL) ENGINE=InnoDB;
+          CREATE TABLE system_users (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,full_name VARCHAR(150) NOT NULL) ENGINE=InnoDB;
+          CREATE TABLE backup_records (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,organization_id BIGINT UNSIGNED NOT NULL,verification_status VARCHAR(32) NOT NULL DEFAULT 'pending',status VARCHAR(32) NOT NULL DEFAULT 'created') ENGINE=InnoDB;
+          INSERT INTO organizations(id,organization_code) VALUES(1,'HWC-001');
+          INSERT INTO clubs(id,organization_id,club_code) VALUES(1,1,'GHAZIPUR-001');
+          SQL
+      - name: STEP 19 isolated runtime smoke
+        env:
+          HWC_APP_ENV: local
+        run: |
+          php <<'PHP'
+          <?php
+          declare(strict_types=1);
+          require 'business/config/deployment_step19.php';
+          function business_table_exists(PDO $pdo,string $table):bool{$s=$pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?');$s->execute([$table]);return(int)$s->fetchColumn()>0;}
+          $pdo=new PDO('mysql:host=127.0.0.1;port=3306;dbname=healthcare_wellness_club;charset=utf8mb4','root','',[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+          deployment_step19_ensure($pdo);
+          foreach(deployment_step19_support_tables() as $t){if(!business_table_exists($pdo,$t))throw new RuntimeException('Missing STEP 19 table '.$t);}
+          $ctx=deployment_step19_context($pdo);if((int)$ctx['organization_id']!==1)throw new RuntimeException('Deployment context failed');
+          $settings=deployment_step19_settings($pdo,1);if((int)$settings['require_https_in_production']!==1)throw new RuntimeException('Production HTTPS policy missing');
+          deployment_step19_set_maintenance($pdo,true,'Smoke maintenance',null);$settings=deployment_step19_settings($pdo,1);if((int)$settings['maintenance_enabled']!==1)throw new RuntimeException('Maintenance enable failed');deployment_step19_set_maintenance($pdo,false,'',null);
+          putenv('HWC_APP_ENV=production');putenv('HWC_ALLOWED_HOSTS=example.test');putenv('HWC_TRUSTED_PROXIES=10.0.0.10');
+          $_SERVER['HTTP_HOST']='example.test';$_SERVER['REMOTE_ADDR']='203.0.113.5';$_SERVER['HTTPS']='off';$_SERVER['SERVER_PORT']='80';$_SERVER['HTTP_X_FORWARDED_PROTO']='https';
+          if(deployment_step19_is_https())throw new RuntimeException('Untrusted proxy header was accepted');
+          $_SERVER['REMOTE_ADDR']='10.0.0.10';if(!deployment_step19_is_https())throw new RuntimeException('Trusted proxy HTTPS header was not accepted');
+          if(!deployment_step19_host_allowed('example.test')||deployment_step19_host_allowed('evil.test'))throw new RuntimeException('Allowed host policy failed');
+          echo "STEP19_ISOLATED_VALIDATION=PASS\n";
+          PHP
+      - name: Commit validation proof
+        run: |
+          echo "STEP19_ISOLATED_VALIDATION=PASS" > business/config/step19_validation.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add business/config/step19_validation.txt
+          git commit -m "STEP 19: pass isolated production readiness validation"
+          git push origin main
