@@ -35,6 +35,8 @@ function product_step12_bridge_finalize(PDO $pdo, int $quoteId, ?int $memberId, 
 function product_step12_bridge_cancel(PDO $pdo, int $orderId, string $reason): void
 {
     $ctx=product_step12_context($pdo);$orgId=(int)$ctx['organization_id'];$clubId=(int)$ctx['club_id'];
+    $ledger=product_step12_ledger($pdo,$orgId,$orderId);if(!$ledger)throw new RuntimeException('Product sale ledger was not found.');
+    $pay=$pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM product_sale_payments WHERE organization_id=? AND order_id=? AND status='active'");$pay->execute([$orgId,$orderId]);$activePaid=(float)$pay->fetchColumn();if($activePaid>0.009)throw new RuntimeException('This sale has active payment of ₹'.number_format($activePaid,2).'. Reverse/refund the payment in Payments Center before cancelling the sale.');
     $stmt=$pdo->prepare("SELECT gross_amount,discount_amount,net_amount,profit_amount,volume_points FROM orders WHERE organization_id=? AND id=? LIMIT 1");$stmt->execute([$orgId,$orderId]);$before=$stmt->fetch()?:[];
     product_step12_cancel_sale($pdo,$orderId,$reason);
     $pdo->prepare("UPDATE orders SET gross_amount=0,discount_amount=0,net_amount=0,profit_amount=0,volume_points=0 WHERE organization_id=? AND id=? AND source_sheet=?")->execute([$orgId,$orderId,PRODUCT_SALE_REVERSED_SOURCE_SHEET]);
