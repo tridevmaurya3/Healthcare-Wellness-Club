@@ -1,16 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__.'/config/database.php';
-$error=null;$next=security_step17_next_url((string)($_GET['next']??$_POST['next']??'index.php'));
-try{
-    $pdo=business_db();security_step17_ensure($pdo);security_step17_session_start();
-    if(security_step17_total_users($pdo)===0){header('Location: setup_admin.php');exit;}
-    $existing=security_step17_session_user($pdo,false);if($existing){header('Location: '.$next);exit;}
-    $csrf=security_step17_csrf();
-    if($_SERVER['REQUEST_METHOD']==='POST'){
-        security_step17_verify_csrf((string)($_POST['csrf']??''));
-        $user=security_step17_login($pdo,(string)($_POST['email']??''),(string)($_POST['password']??''));
-        header('Location: '.($user['must_change_password']?'password_change.php?required=1':$next));exit;
-    }
-}catch(Throwable $e){$error=$e->getMessage();$csrf=$csrf??'';}
-?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Sign In - Healthcare Wellness Club</title><link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/product_pro.css"><style>body{min-height:100vh;background:linear-gradient(135deg,#f6faf7,#edf7f0)}.auth-shell{max-width:480px;margin:8vh auto;padding:20px}.auth-card{background:#fff;border:1px solid #dbe8df;border-radius:24px;padding:30px;box-shadow:0 18px 50px rgba(25,70,43,.08)}.auth-brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}.auth-brand img{width:56px;height:56px;border-radius:15px}.auth-card h1{font-size:32px;margin:10px 0}.auth-card p{color:#66766d}.auth-card label{display:block;font-weight:800;margin-top:15px}.auth-card input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid #cfded3;border-radius:12px;margin-top:6px}.auth-card button{width:100%;margin-top:22px;padding:13px;border:0;border-radius:12px;background:#237a46;color:#fff;font-weight:800}.security-note{margin-top:18px;padding:12px;border-radius:12px;background:#f4faf6;color:#52665a;font-size:13px}</style></head><body><main class="auth-shell"><section class="auth-card"><div class="auth-brand"><img src="../img/logo.png" alt="Healthcare Wellness Club"><div><strong>Healthcare Wellness Club</strong><div>Business OS • Secure Access</div></div></div><span class="pp-badge">STEP 17 SECURITY</span><h1>Sign in</h1><p>Use your assigned Business OS account. Access is controlled by role and module permissions.</p><?php if($error):?><div class="pp-alert bad"><strong>Sign in:</strong> <?= security_step17_h($error) ?></div><?php endif;?><form method="post" autocomplete="on"><input type="hidden" name="csrf" value="<?= security_step17_h($csrf??'') ?>"><input type="hidden" name="next" value="<?= security_step17_h($next) ?>"><label>Email<input type="email" name="email" required autocomplete="username" autofocus></label><label>Password<input type="password" name="password" required autocomplete="current-password"></label><button>Sign In Securely</button></form><div class="security-note">Sessions use idle + absolute expiry, secure password hashing, failed-login throttling and audited access history.</div></section></main></body></html>
+$target='../login.php';
+if(isset($_GET['logged_out']))$target.='?logged_out=1';
+header('Location: '.$target, true, 302);
+exit;
