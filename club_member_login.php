@@ -20,7 +20,7 @@ try{
         if($expectedUserId<=0)throw new RuntimeException('Club Member sign-in details could not be verified.');
         $user=role_mfa_login($pdo,$email,(string)($_POST['password']??''));
         if((int)($user['id']??0)!==$expectedUserId||(string)($user['role_code']??'')!=='customer'){
-            security_step17_logout($pdo,'club_member_identity_mismatch');
+            role_mfa_logout($pdo,'club_member_identity_mismatch');
             throw new RuntimeException('Club Member sign-in details could not be verified.');
         }
         $_SESSION['hwc_customer_login_mode']='club_member';
