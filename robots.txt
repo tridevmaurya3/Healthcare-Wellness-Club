@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /business/
+Disallow: /shop/cart.php
+Disallow: /shop/checkout.php
+Disallow: /shop/submit.php
+Disallow: /shop/status.php
+Sitemap: /shop/sitemap.php

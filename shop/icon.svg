@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Healthcare Wellness Club</title>
+  <desc id="desc">HWC leaf and wellness mark</desc>
+  <rect width="512" height="512" rx="112" fill="#247443"/>
+  <circle cx="256" cy="256" r="166" fill="#ffffff"/>
+  <path d="M153 270c64-9 105-52 125-122 68 38 94 101 58 158-31 49-90 67-146 42 44-13 81-45 103-90-36 37-82 61-140 70z" fill="#dff2e6"/>
+  <path d="M155 337c63-57 112-104 199-151-44 64-91 113-164 164z" fill="#247443"/>
+  <path d="M238 180h36v58h58v36h-58v58h-36v-58h-58v-36h58z" fill="#247443"/>
+</svg>

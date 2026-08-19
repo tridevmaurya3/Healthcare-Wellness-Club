@@ -1,0 +1,25 @@
+{
+  "id":"./",
+  "name":"Healthcare Wellness Club Product Portal",
+  "short_name":"HWC Store",
+  "description":"Browse source-listed Healthcare Wellness Club products and submit an order request for club confirmation.",
+  "lang":"en-IN",
+  "dir":"ltr",
+  "start_url":"./index.php?source=pwa",
+  "scope":"./",
+  "display":"standalone",
+  "orientation":"any",
+  "background_color":"#f7faf8",
+  "theme_color":"#247443",
+  "categories":["health","shopping","business"],
+  "icons":[
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ],
+  "shortcuts":[
+    {"name":"Browse Products","short_name":"Products","url":"./index.php"},
+    {"name":"Open Cart","short_name":"Cart","url":"./cart.php"},
+    {"name":"Track Request","short_name":"Track","url":"./status.php"}
+  ]
+}

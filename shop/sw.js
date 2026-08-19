@@ -1,0 +1,6 @@
+const HWC_CACHE='hwc-store-step24-v1';
+const HWC_STATIC=['./offline.html','./store.css','./store.js','./icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest'];
+const SENSITIVE_PATH=/\/shop\/(?:checkout|submit|status)\.php$/i;
+self.addEventListener('install',event=>{event.waitUntil(caches.open(HWC_CACHE).then(cache=>cache.addAll(HWC_STATIC)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('hwc-store-')&&key!==HWC_CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',event=>{const request=event.request;if(request.method !== 'GET')return;const url=new URL(request.url);if(url.origin!==self.location.origin)return;if(SENSITIVE_PATH.test(url.pathname)){event.respondWith(fetch(request));return}if(request.mode==='navigate'){event.respondWith(fetch(request).catch(()=>caches.match('./offline.html')));return}const isStatic=/\.(?:css|js|svg|png|webmanifest)$/i.test(url.pathname);if(!isStatic)return;event.respondWith(caches.match(request).then(cached=>{const refresh=fetch(request).then(response=>{if(response&&response.ok){const copy=response.clone();caches.open(HWC_CACHE).then(cache=>cache.put(request,copy))}return response}).catch(()=>cached);return cached||refresh}))});
