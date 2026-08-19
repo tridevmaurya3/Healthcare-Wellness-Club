@@ -10,6 +10,10 @@ const CUSTOMER_FREE_DELIVERY_VP = 100.00;
 
 function cm_ensure(PDO $pdo): void
 {
+    static $ready = [];
+    $key = spl_object_id($pdo);
+    if (isset($ready[$key])) return;
+
     role_portal_ensure($pdo);
     ps23_ensure($pdo);
 
@@ -98,7 +102,7 @@ function cm_ensure(PDO $pdo): void
 
     $promo = $pdo->prepare("INSERT INTO customer_promotions
         (organization_id,promotion_code,promotion_type,customer_scope,title,badge_text,subtitle,description,min_qty,min_vp,discount_type,discount_value,display_style,sort_order,status)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,? ,?,?,'active')
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,'active')
         ON DUPLICATE KEY UPDATE title=VALUES(title),badge_text=VALUES(badge_text),subtitle=VALUES(subtitle),description=VALUES(description),display_style=VALUES(display_style),sort_order=VALUES(sort_order)");
     $promo->execute([$orgId,'JOIN-CLUB','join_club','regular','Join the Wellness Club','MEMBER BENEFITS','Unlock your assigned member price level after verification.','Ask the club about membership, coaching support and member-only product pricing. Your member level is assigned only by an Administrator or your Coach.',1,0,'informational',0,'green',10]);
     $promo->execute([$orgId,'BULK-OFFER','bulk','regular','Bulk Product Offer','BULK SAVINGS','Ask about current quantity-based offers.','Bulk discount rules are controlled by the Administrator. When an active numeric offer is configured, the server applies it automatically to eligible order requests.',2,0,'informational',0,'gold',20]);
@@ -122,6 +126,8 @@ function cm_ensure(PDO $pdo): void
         $s=$pdo->prepare("INSERT INTO schema_meta(meta_key,meta_value) VALUES('customer_membership_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)");
         $s->execute([CUSTOMER_MEMBERSHIP_VERSION]);
     }
+
+    $ready[$key] = true;
 }
 
 function cm_generate_member_code(PDO $pdo, int $orgId): string
@@ -137,6 +143,9 @@ function cm_generate_member_code(PDO $pdo, int $orgId): string
 function cm_user_membership(PDO $pdo, int $orgId, int $userId): ?array
 {
     cm_ensure($pdo);
+    static $cache=[];
+    $key=spl_object_id($pdo).'|'.$orgId.'|'.$userId;
+    if(array_key_exists($key,$cache)) return $cache[$key];
     $s=$pdo->prepare("SELECT m.*,l.label_code,l.label_name,l.badge_text,l.pricing_tier_code,l.headline,l.description label_description,l.card_style,
         u.full_name customer_name,u.email customer_email,u.mobile customer_mobile,c.full_name coach_name
         FROM customer_membership_profiles m
@@ -144,7 +153,9 @@ function cm_user_membership(PDO $pdo, int $orgId, int $userId): ?array
         LEFT JOIN customer_discount_labels l ON l.id=m.discount_label_id
         LEFT JOIN system_users c ON c.id=m.coach_user_id
         WHERE m.organization_id=? AND m.user_id=? LIMIT 1");
-    $s->execute([$orgId,$userId]);$r=$s->fetch();return $r?:null;
+    $s->execute([$orgId,$userId]);$r=$s->fetch();
+    $cache[$key]=$r?:null;
+    return $cache[$key];
 }
 
 function cm_session_customer(PDO $pdo): ?array
@@ -178,6 +189,9 @@ function cm_customer_context(PDO $pdo, int $orgId, ?array $user=null): array
 function cm_promotions(PDO $pdo, int $orgId, string $scope='all', ?string $type=null): array
 {
     cm_ensure($pdo);
+    static $cache=[];
+    $key=spl_object_id($pdo).'|'.$orgId.'|'.$scope.'|'.($type??'*');
+    if(isset($cache[$key])) return $cache[$key];
     $sql="SELECT p.*,pr.product_name,pr.sku FROM customer_promotions p LEFT JOIN products pr ON pr.id=p.product_id
           WHERE p.organization_id=? AND p.status='active'
           AND (p.starts_at IS NULL OR p.starts_at<=NOW()) AND (p.ends_at IS NULL OR p.ends_at>=NOW())";
@@ -185,15 +199,21 @@ function cm_promotions(PDO $pdo, int $orgId, string $scope='all', ?string $type=
     if ($scope!=='all') {$sql.=" AND p.customer_scope IN ('all',?)";$args[]=$scope;}
     if ($type!==null) {$sql.=" AND p.promotion_type=?";$args[]=$type;}
     $sql.=" ORDER BY p.sort_order,p.id";
-    $s=$pdo->prepare($sql);$s->execute($args);return $s->fetchAll();
+    $s=$pdo->prepare($sql);$s->execute($args);
+    return $cache[$key]=$s->fetchAll();
 }
 
 function cm_exact_tier_price(PDO $pdo, int $priceVersionId, string $tierCode): ?float
 {
     if ($priceVersionId<=0 || $tierCode==='') return null;
+    static $cache=[];
+    $key=spl_object_id($pdo).'|'.$priceVersionId.'|'.$tierCode;
+    if(array_key_exists($key,$cache)) return $cache[$key];
     $s=$pdo->prepare("SELECT tp.price_amount FROM product_tier_prices tp JOIN product_discount_tiers t ON t.id=tp.discount_tier_id
         WHERE tp.price_version_id=? AND t.tier_code=? AND t.status='active' LIMIT 1");
-    $s->execute([$priceVersionId,$tierCode]);$v=$s->fetchColumn();return $v===false||$v===null?null:(float)$v;
+    $s->execute([$priceVersionId,$tierCode]);$v=$s->fetchColumn();
+    $cache[$key]=$v===false||$v===null?null:(float)$v;
+    return $cache[$key];
 }
 
 function cm_best_promotion(PDO $pdo, int $orgId, array $product, int $qty, float $orderVp, string $scope, float $baseUnit): ?array
