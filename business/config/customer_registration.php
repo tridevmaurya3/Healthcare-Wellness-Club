@@ -91,7 +91,7 @@ function customer_registration_create(PDO $pdo, string $name, string $email, str
 
     customer_registration_rate_limit($pdo, $orgId, $email);
 
-    if (mb_strlen($name) < 2 || mb_strlen($name) > 120) {
+    if (strlen($name) < 2 || strlen($name) > 120) {
         customer_registration_log($pdo, $orgId, $email, 'invalid');
         throw new RuntimeException('Enter your full name.');
     }
