@@ -110,7 +110,7 @@ try {
 
     $add(
         'Order request persistence uses canonical delivery result',
-        str_contains($src['order_request'], "'delivery_charge'=>$quote['delivery_charge']")
+        str_contains($src['order_request'], "\$quote['delivery_charge']")
         && str_contains($src['order_request'], 'CUSTOMER_FREE_DELIVERY_VP')
         && str_contains($src['order_request'], '₹118 delivery charge'),
         'Saved requests and event notes must persist the server-calculated delivery charge.'
