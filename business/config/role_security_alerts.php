@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/role_portal_auth.php';
 
-const ROLE_SECURITY_ALERTS_VERSION = '1.0-account-risk-alerts';
+const ROLE_SECURITY_ALERTS_VERSION = '1.1-account-risk-alerts';
 
 function role_security_ensure(PDO $pdo): void
 {
@@ -79,7 +79,7 @@ function role_security_create_alert(PDO $pdo, int $orgId, int $userId, string $t
     $ip=substr($ip,0,64);$ua=substr($ua,0,500);
 
     $stmt=$pdo->prepare("SELECT id FROM account_security_alerts
-        WHERE organization_id=? AND user_id=? AND alert_type=? AND status IN ('open','acknowledged')
+        WHERE organization_id=? AND user_id=? AND alert_type=? AND status='open'
           AND created_at>=DATE_SUB(NOW(),INTERVAL 6 HOUR)
           AND COALESCE(ip_address,'')=?
         ORDER BY id DESC LIMIT 1");
