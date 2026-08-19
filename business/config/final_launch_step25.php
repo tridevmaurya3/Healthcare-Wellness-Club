@@ -35,13 +35,14 @@ function step25_scalar(PDO $pdo, string $sql, array $args=[]): int
 
 function step25_latest_uat(PDO $pdo, int $orgId): ?array
 {
-    $stmt=$pdo->prepare("SELECT * FROM deployment_events WHERE organization_id=? AND event_type='step25_uat_signoff' AND event_status='pass' ORDER BY id DESC LIMIT 1");
+    $stmt=$pdo->prepare("SELECT * FROM deployment_events WHERE organization_id=? AND environment_code='production' AND event_type='step25_uat_signoff' AND event_status='pass' ORDER BY id DESC LIMIT 1");
     $stmt->execute([$orgId]);$row=$stmt->fetch();if(!$row)return null;
     $details=json_decode((string)($row['details_json']??''),true);$row['details']=is_array($details)?$details:[];return $row;
 }
 
 function step25_record_uat(PDO $pdo, array $user, array $selected, string $notes=''): void
 {
+    if(deployment_step19_env()!=='production')throw new RuntimeException('Final production UAT sign-off can only be recorded on the production environment.');
     if(!security_step17_has_permission($pdo,'deployment.release',$user))throw new RuntimeException('Production Release permission is required to sign off STEP 25 UAT.');
     $required=array_column(step25_uat_catalog(),'id');
     $selected=array_values(array_unique(array_filter(array_map('strval',$selected))));
