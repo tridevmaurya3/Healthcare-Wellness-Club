@@ -111,6 +111,31 @@
     return '#';
   }
 
+  function applyHomeContent(content) {
+    if (!document.body.classList.contains('home-page')) return;
+    const eyebrow=document.querySelector('.home-eyebrow');
+    if (eyebrow && content.home_eyebrow) {
+      eyebrow.replaceChildren();
+      const dot=document.createElement('span');dot.className='home-eyebrow-dot';
+      eyebrow.append(dot,document.createTextNode(' '+content.home_eyebrow));
+    }
+    const title=document.querySelector('.home-hero h1');
+    if (title && content.home_title) {
+      const text=String(content.home_title).trim();
+      const brand=String(content.global_brand_name||'Healthcare Wellness Club').trim();
+      title.replaceChildren();
+      const pos=text.toLowerCase().lastIndexOf(brand.toLowerCase());
+      if (brand && pos>=0) {
+        title.append(document.createTextNode(text.slice(0,pos)));
+        const accent=document.createElement('span');accent.textContent=text.slice(pos);title.appendChild(accent);
+      } else title.textContent=text;
+    }
+    const lead=document.querySelector('.home-hero-lead');if(lead&&content.home_lead)lead.textContent=content.home_lead;
+    const primary=document.querySelector('.home-hero-actions .home-primary-btn');
+    if(primary&&content.home_primary_cta){primary.replaceChildren(document.createTextNode(content.home_primary_cta+' '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent='→';primary.appendChild(arrow);}
+    const secondary=document.querySelector('.home-hero-actions .home-secondary-btn');if(secondary&&content.home_secondary_cta)secondary.textContent=content.home_secondary_cta;
+  }
+
   function applySiteContent(data, container = document) {
     const content = data && data.content ? data.content : {};
     container.querySelectorAll('[data-cms-key]').forEach((element) => {
@@ -132,6 +157,7 @@
       }
     });
 
+    applyHomeContent(content);
     if (content.global_whatsapp) {
       document.querySelectorAll('.floating-btns a[href*="wa.me"], .home-quick-contact a[href*="wa.me"]').forEach((a) => a.href = contactHref('whatsapp', content.global_whatsapp));
     }
