@@ -78,9 +78,14 @@ try {
         'shop/submit.php must use cor_submit(), not the legacy ps23_submit() path.'
     );
 
+    $checkoutHasBelow100 = str_contains($src['checkout'], 'below 100')
+        && str_contains($src['checkout'], '₹118')
+        && str_contains($src['checkout'], 'delivery charge');
+    $checkoutHasFree100Plus = str_contains($src['checkout'], '100 or more = ₹0')
+        || str_contains($src['checkout'], '100 VP or more = ₹0');
     $add(
         'Checkout customer text matches ₹118 / 100 VP rule',
-        str_contains($src['checkout'], 'below 100 total VP = ₹118') && str_contains($src['checkout'], '100 VP or more = ₹0'),
+        $checkoutHasBelow100 && $checkoutHasFree100Plus,
         'Checkout must show ₹118 below 100 VP and ₹0 at 100+ VP.'
     );
 
@@ -96,7 +101,7 @@ try {
         'Admin/Coach order queue must show the same delivery rule.'
     );
 
-    $legacyBad = preg_match("/\$delivery\s*=\s*\([^;]*\$vp\s*<\s*100\s*\)\s*\?\s*100(?:\.0+)?\s*:\s*0(?:\.0+)?\s*;/", $src['legacy_store']) === 1
+    $legacyBad = preg_match("/\\$delivery\\s*=\\s*\\([^;]*\\$vp\\s*<\\s*100\\s*\\)\\s*\\?\\s*100(?:\\.0+)?\\s*:\\s*0(?:\\.0+)?\\s*;/", $src['legacy_store']) === 1
         || str_contains($src['legacy_store'], "?100.0:0.0");
     $legacyGood = str_contains($src['legacy_store'], '118.0') || str_contains($src['legacy_store'], '118.00') || str_contains($src['legacy_store'], 'PUBLIC_STORE_HOME_DELIVERY_CHARGE');
     $add(
@@ -110,7 +115,7 @@ try {
 
     $add(
         'Order request persistence uses canonical delivery result',
-        str_contains($src['order_request'], "\$quote['delivery_charge']")
+        str_contains($src['order_request'], "\\$quote['delivery_charge']")
         && str_contains($src['order_request'], 'CUSTOMER_FREE_DELIVERY_VP')
         && str_contains($src['order_request'], '₹118 delivery charge'),
         'Saved requests and event notes must persist the server-calculated delivery charge.'
