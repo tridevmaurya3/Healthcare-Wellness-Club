@@ -17,23 +17,23 @@
   <header class="pub-hero">
     <div class="pub-shell pub-hero-grid">
       <div>
-        <div class="pub-kicker">Wellness services</div>
-        <h1>Practical support for healthier everyday routines.</h1>
-        <p>Choose from wellness education, guided activities, community support and follow-up options designed to make healthy routines easier to understand and maintain.</p>
+        <div class="pub-kicker" data-cms-key="services_kicker">Wellness services</div>
+        <h1 data-cms-key="services_title">Practical support for healthier everyday routines.</h1>
+        <p data-cms-key="services_intro">Choose from wellness education, guided activities, community support and follow-up options designed to make healthy routines easier to understand and maintain.</p>
       </div>
-      <div class="pub-hero-chip">9 wellness support areas</div>
+      <div class="pub-hero-chip" data-cms-key="services_chip">Wellness support areas</div>
     </div>
   </header>
 
   <main class="pub-main">
     <div class="pub-shell">
       <section class="pub-services-grid" id="services" aria-label="Wellness services"></section>
-      <div class="pub-note">These services provide general wellness education and support. They are not a substitute for diagnosis, treatment or personalised medical advice from a qualified healthcare professional.</div>
+      <div class="pub-note" data-cms-key="services_note">These services provide general wellness education and support. They are not a substitute for diagnosis, treatment or personalised medical advice from a qualified healthcare professional.</div>
 
       <section class="pub-card pub-card-pad mt-4">
         <div class="pub-kicker">Need help choosing?</div>
-        <h2 class="pub-section-title">Talk to the club before you begin.</h2>
-        <p class="pub-section-copy">Share what kind of wellness support you are looking for and the club can explain the available services and how they work.</p>
+        <h2 class="pub-section-title" data-cms-key="services_cta_title">Talk to the club before you begin.</h2>
+        <p class="pub-section-copy" data-cms-key="services_cta_copy">Share what kind of wellness support you are looking for and the club can explain the available services and how they work.</p>
         <div class="pub-cta-row">
           <a class="pub-cta-link primary" href="contact.html">Contact the Club</a>
           <a class="pub-cta-link" href="about.html">Meet the Coach</a>
@@ -42,35 +42,30 @@
     </div>
   </main>
 
-  <div class="floating-btns">
-    <a href="https://wa.me/919876543210" target="_blank" rel="noopener">📱 Chat on WhatsApp</a>
-    <a href="tel:+919876543210" class="call-btn">📞 Call Now</a>
-  </div>
+  <div class="floating-btns"><a href="https://wa.me/918858302744" target="_blank" rel="noopener">📱 Chat on WhatsApp</a><a href="tel:+915483561586" class="call-btn">📞 Call Now</a></div>
   <div id="footer-placeholder"></div>
 
   <script src="../js/bootstrap.bundle.min.js"></script>
   <script src="../js/site.js"></script>
   <script>
-    const services=[
-      ['Nutrition Consulting','Balanced meals, nutrition habits and general product information.'],
-      ['Fitness Sessions','Group movement, yoga and guided activity for different ability levels.'],
-      ['Wellness Goal Support','Routine planning, progress review and regular check-ins around chosen wellness goals.'],
-      ['Wellness Workshops','Hydration, sleep, mindfulness, stress management and everyday healthy habits.'],
-      ['Community Activities','Walks and community events that encourage connection, consistency and activity.'],
-      ['Online Support','Virtual coaching, webinars and online groups for useful tips and encouragement.'],
-      ['Healthy Habit Challenges','Positive challenges around hydration, movement and consistency.'],
-      ['Everyday Motivation','Practical encouragement and follow-up for maintaining useful routines.'],
-      ['Mental Well-being Resources','General relaxation, mindfulness and stress-management practices.']
-    ];
-    document.getElementById('services').innerHTML=services.map((item,index)=>`
-      <article class="pub-card pub-service">
-        <div class="pub-service-media"><img src="../img/service${index+1}.jpg" alt="${item[0]}" loading="lazy"></div>
-        <div class="pub-service-body">
-          <span class="pub-service-number">SERVICE ${String(index+1).padStart(2,'0')}</span>
-          <h2>${item[0]}</h2>
-          <p>${item[1]}</p>
-        </div>
-      </article>`).join('');
+    (()=>{
+      const fallback=[
+        {service_name:'Nutrition Consulting',service_text:'Balanced meals, nutrition habits and general product information.',image_path:'img/service1.jpg'},
+        {service_name:'Fitness Sessions',service_text:'Group movement, yoga and guided activity for different ability levels.',image_path:'img/service2.jpg'},
+        {service_name:'Wellness Goal Support',service_text:'Routine planning, progress review and regular check-ins around chosen wellness goals.',image_path:'img/service3.jpg'},
+        {service_name:'Wellness Workshops',service_text:'Hydration, sleep, mindfulness, stress management and everyday healthy habits.',image_path:'img/service4.jpg'},
+        {service_name:'Community Activities',service_text:'Walks and community events that encourage connection, consistency and activity.',image_path:'img/service5.jpg'},
+        {service_name:'Online Support',service_text:'Virtual coaching, webinars and online groups for useful tips and encouragement.',image_path:'img/service6.jpg'},
+        {service_name:'Healthy Habit Challenges',service_text:'Positive challenges around hydration, movement and consistency.',image_path:'img/service7.jpg'},
+        {service_name:'Everyday Motivation',service_text:'Practical encouragement and follow-up for maintaining useful routines.',image_path:'img/service8.jpg'},
+        {service_name:'Mental Well-being Resources',service_text:'General relaxation, mindfulness and stress-management practices.',image_path:'img/service9.jpg'}
+      ];
+      const host=document.getElementById('services');
+      const asset=(path)=>window.hwcSiteAsset?window.hwcSiteAsset(path):('../'+String(path).replace(/^\/+/,''));
+      function render(items){host.replaceChildren();items.forEach((item,index)=>{const card=document.createElement('article');card.className='pub-card pub-service';const media=document.createElement('div');media.className='pub-service-media';const img=document.createElement('img');img.src=asset(item.image_path);img.alt=item.service_name;img.loading='lazy';media.appendChild(img);const body=document.createElement('div');body.className='pub-service-body';const number=document.createElement('span');number.className='pub-service-number';number.textContent='SERVICE '+String(index+1).padStart(2,'0');const h=document.createElement('h2');h.textContent=item.service_name;const p=document.createElement('p');p.textContent=item.service_text;body.append(number,h,p);card.append(media,body);host.appendChild(card);});}
+      render(fallback);
+      (window.hwcSiteReady||Promise.resolve({services:[]})).then(data=>{if(Array.isArray(data.services)&&data.services.length)render(data.services);});
+    })();
   </script>
 </body>
 </html>
