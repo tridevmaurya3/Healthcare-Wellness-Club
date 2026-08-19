@@ -1,0 +1,32 @@
+/* Premium Light Refresh — Public Product Store */
+:root{--premium-mint:#eef9f3;--premium-blue:#eef5ff;--premium-lav:#f5f1ff;--premium-peach:#fff4ec;--premium-yellow:#fff9e8;--premium-cyan:#edf9fb;--premium-border:#dbe7e1;--premium-shadow:0 14px 36px rgba(36,72,52,.075)}
+body{background:radial-gradient(circle at 7% 8%,rgba(155,208,237,.16),transparent 24%),radial-gradient(circle at 94% 14%,rgba(213,193,243,.14),transparent 21%),linear-gradient(180deg,#fbfefc,#f6faff 55%,#fbfaf7)}
+.store-top{background:linear-gradient(100deg,rgba(255,255,255,.97),rgba(244,249,255,.97) 48%,rgba(244,252,248,.97));border-bottom-color:#dbe7e1;box-shadow:0 8px 26px rgba(38,68,53,.065)}
+.store-brand img{border:3px solid #fff;border-radius:14px;box-shadow:0 6px 16px rgba(35,84,55,.13)}
+.store-btn{border-color:#d6e3dc;background:linear-gradient(135deg,#fff,#f7fbf9);color:#40594d;box-shadow:0 4px 12px rgba(44,70,56,.04)}
+.store-btn:hover{background:linear-gradient(135deg,#f6fbf8,#eef5ff);border-color:#cadfd3}
+.store-btn.primary{background:linear-gradient(135deg,#dff3e7,#dfeafb);border-color:#bddbc8;color:#245b40;box-shadow:0 7px 18px rgba(45,99,70,.09)}
+.store-btn.primary:hover{background:linear-gradient(135deg,#d4eedf,#d7e6fb);color:#1f5339}
+.store-btn.install{background:linear-gradient(135deg,#f5f1ff,#eef5ff);border-color:#ddd8ed;color:#5d5278}
+.store-hero{background:radial-gradient(circle at 91% 7%,rgba(139,197,234,.21),transparent 27%),radial-gradient(circle at 75% 95%,rgba(211,189,242,.14),transparent 28%),linear-gradient(130deg,#fff 5%,#eef9f3 46%,#eef5ff 74%,#fff5ee);border-color:var(--premium-border);box-shadow:var(--premium-shadow)}
+.store-kicker{color:#326e50}.store-hero h1{color:#203a2e}.store-hero p{color:#65776d}
+.store-toolbar{background:linear-gradient(135deg,#fff,#f8fbff);border-color:var(--premium-border);box-shadow:0 7px 18px rgba(42,70,55,.045)}
+.store-input,.store-select,.store-textarea{border-color:#d6e3dc;background:#fff;box-shadow:inset 0 1px 2px rgba(34,60,46,.025)}
+.store-input:focus,.store-select:focus,.store-textarea:focus{border-color:#9fcbb2;box-shadow:0 0 0 4px rgba(77,151,104,.10);outline:none}
+.product-card{border-color:var(--premium-border);box-shadow:var(--premium-shadow);transition:transform .18s ease,box-shadow .18s ease}
+.product-card:nth-child(6n+1){background:linear-gradient(145deg,#fff,var(--premium-mint))}.product-card:nth-child(6n+2){background:linear-gradient(145deg,#fff,var(--premium-blue))}.product-card:nth-child(6n+3){background:linear-gradient(145deg,#fff,var(--premium-lav))}.product-card:nth-child(6n+4){background:linear-gradient(145deg,#fff,var(--premium-peach))}.product-card:nth-child(6n+5){background:linear-gradient(145deg,#fff,var(--premium-yellow))}.product-card:nth-child(6n+6){background:linear-gradient(145deg,#fff,var(--premium-cyan))}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(36,72,52,.105)}
+.product-card:nth-child(6n+1) .product-image{background:linear-gradient(135deg,#edf9f2,#e4f3eb)}.product-card:nth-child(6n+2) .product-image{background:linear-gradient(135deg,#eef5ff,#e5eefb)}.product-card:nth-child(6n+3) .product-image{background:linear-gradient(135deg,#f5f1ff,#ece6fa)}.product-card:nth-child(6n+4) .product-image{background:linear-gradient(135deg,#fff5ee,#faeadf)}.product-card:nth-child(6n+5) .product-image{background:linear-gradient(135deg,#fff9e8,#f8f0d3)}.product-card:nth-child(6n+6) .product-image{background:linear-gradient(135deg,#edf9fb,#e2f2f5)}
+.product-placeholder{border-color:#d6e5dc;background:rgba(255,255,255,.86);box-shadow:0 8px 22px rgba(39,75,55,.08)}
+.card{border-color:var(--premium-border);background:linear-gradient(145deg,#fff,#f8fbff 58%,#f5fbf7);box-shadow:var(--premium-shadow)}
+.two-col>.card:nth-child(2){background:linear-gradient(145deg,#fff,#f6f2ff 52%,#f4faf7)}
+.notice{background:linear-gradient(135deg,#edf9f3,#eef7ff);border:1px solid #d7e7df;color:#315f47}.notice.warn{background:linear-gradient(135deg,#fff9e8,#fff4ec);border-color:#eadfbd}.notice.bad{background:linear-gradient(135deg,#fff1f4,#fff4f0);border-color:#eccfd2}
+.pill{background:#e2f5e9;border:1px solid #d0e8d9}.pill.review{background:#f2f4f5}.pill.limited{background:#fff5dd}.pill.unavailable{background:#fff0f2}
+.cart-row{border-bottom-color:#e5ece8}.cart-row:nth-child(even){background:rgba(238,245,255,.42);border-radius:10px;padding-left:8px;padding-right:8px}
+.summary-line{border-radius:8px}.summary-line:nth-child(even){background:rgba(238,249,243,.45);padding-left:8px;padding-right:8px}
+.status-track{border-left-color:#c7ddeb}.status-item:before{background:linear-gradient(135deg,#67b789,#6d9edb);box-shadow:0 0 0 4px #edf7f2}
+.store-footer{margin-top:12px;background:linear-gradient(110deg,#f2faf5,#f1f6ff,#f8f3ff);border-top:1px solid #dce7e1}
+.network-badge{padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #dae6df}
+.offline-card{background:linear-gradient(145deg,#fff,#eef5ff 55%,#f5f1ff)}
+@media(max-width:540px){.store-hero{background:linear-gradient(145deg,#fff,#eef9f3 55%,#eef5ff)}.product-card:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){.product-card:hover{transform:none}}

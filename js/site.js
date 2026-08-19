@@ -8,6 +8,17 @@
 
   const fromRoot = (path) => new URL(path, siteRoot).href;
 
+  function loadPremiumLightTheme() {
+    if (document.querySelector('link[data-hwc-premium-light]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = fromRoot('pages/premium-light.css?v=20260819-1');
+    link.dataset.hwcPremiumLight = '1';
+    document.head.appendChild(link);
+  }
+
+  loadPremiumLightTheme();
+
   async function loadFragment(elementId, relativePath) {
     const target = document.getElementById(elementId);
     if (!target) return;
