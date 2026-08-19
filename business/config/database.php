@@ -213,6 +213,12 @@ function business_db(): PDO
     }
 
     deployment_step19_preflight_request($pdo);
+    security_step17_session_start();
+    $mfaPublic=['login.php','setup_admin.php','logout.php','access_denied.php','maintenance.php','healthz.php','public_lead_submit.php'];
+    if(!security_step17_is_cli()&&!empty($_SESSION['hwc_mfa_pending'])&&!in_array($currentScript,$mfaPublic,true)){
+        header('Location: ../mfa_verify.php');
+        exit;
+    }
     security_step17_guard_request($pdo);
     deployment_step19_guard_request($pdo);
     return $pdo;
