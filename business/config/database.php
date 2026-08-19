@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/report_runtime.php';
 require_once __DIR__ . '/deployment_step19.php';
 require_once __DIR__ . '/security_step17.php';
+require_once __DIR__ . '/admin_global_menu.php';
+admin_global_menu_start();
 
 const BUSINESS_REVERSED_SOURCE_SHEET = 'Manual Entry • Reversed';
 
