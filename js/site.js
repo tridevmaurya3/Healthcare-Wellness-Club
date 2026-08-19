@@ -6,14 +6,23 @@
     ? new URL('../', scriptElement.src)
     : new URL('./', window.location.href);
 
-  const fromRoot = (path) => new URL(path, siteRoot).href;
+  const fromRoot = (path) => new URL(String(path || '').replace(/^\/+/, ''), siteRoot).href;
   let authStatePromise = null;
+
+  window.hwcSiteAsset = fromRoot;
+  window.hwcSiteReady = fetch(fromRoot('public_site_api.php'), { cache: 'no-store', credentials: 'same-origin' })
+    .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+    .then((data) => data && data.ok ? data : Promise.reject(new Error('Content API unavailable')))
+    .catch((error) => {
+      console.warn('Using built-in public-site fallback content:', error);
+      return { ok: false, content: {}, stories: [], services: [] };
+    });
 
   function loadPremiumLightTheme() {
     if (document.querySelector('link[data-hwc-premium-light]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = fromRoot('pages/premium-light.css?v=20260819-1');
+    link.href = fromRoot('pages/premium-light.css?v=20260819-2');
     link.dataset.hwcPremiumLight = '1';
     document.head.appendChild(link);
   }
@@ -57,6 +66,8 @@
       highlightCurrentNavigation(target);
       updateCurrentYear(target);
       syncAuthLinks(target);
+      const data = await window.hwcSiteReady;
+      applySiteContent(data, target);
     } catch (error) {
       console.error(`Unable to load ${relativePath}:`, error);
     }
@@ -89,6 +100,43 @@
     });
   }
 
+  function contactHref(kind, value) {
+    if (kind === 'whatsapp') return `https://wa.me/${String(value || '').replace(/\D/g, '')}`;
+    if (kind === 'phone') return `tel:${String(value || '').replace(/[^+\d]/g, '')}`;
+    if (kind === 'email') return `mailto:${String(value || '').trim()}`;
+    return '#';
+  }
+
+  function applySiteContent(data, container = document) {
+    const content = data && data.content ? data.content : {};
+    container.querySelectorAll('[data-cms-key]').forEach((element) => {
+      const value = content[element.dataset.cmsKey];
+      if (typeof value === 'string' && value !== '') element.textContent = value;
+    });
+    container.querySelectorAll('[data-cms-brand]').forEach((element) => {
+      if (content.global_brand_name) element.textContent = content.global_brand_name;
+    });
+    container.querySelectorAll('[data-site-contact]').forEach((element) => {
+      const kind = element.dataset.siteContact;
+      const key = kind === 'whatsapp' ? 'global_whatsapp' : kind === 'phone' ? 'global_phone' : kind === 'email' ? 'global_email' : 'global_location';
+      const value = content[key];
+      if (!value) return;
+      if (kind === 'location') element.textContent = value;
+      else {
+        element.setAttribute('href', contactHref(kind, value));
+        if (element.hasAttribute('data-contact-text')) element.textContent = value;
+      }
+    });
+
+    if (content.global_whatsapp) {
+      document.querySelectorAll('.floating-btns a[href*="wa.me"], .home-quick-contact a[href*="wa.me"]').forEach((a) => a.href = contactHref('whatsapp', content.global_whatsapp));
+    }
+    if (content.global_phone) {
+      document.querySelectorAll('.floating-btns a[href^="tel:"]').forEach((a) => a.href = contactHref('phone', content.global_phone));
+    }
+    document.dispatchEvent(new CustomEvent('hwc-site-content', { detail: data }));
+  }
+
   function createChatbot() {
     if (document.getElementById('chat-toggle-btn')) return;
     const button = document.createElement('button');
@@ -115,12 +163,14 @@
     document.body.appendChild(frame);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     configureRootLinks(document);
     updateCurrentYear(document);
     syncAuthLinks(document);
     loadFragment('navbar-placeholder', 'pages/navbar.html');
     loadFragment('footer-placeholder', 'pages/footer.html');
     createChatbot();
+    const data = await window.hwcSiteReady;
+    applySiteContent(data, document);
   });
 })();
