@@ -1,0 +1,60 @@
+/* Healthcare Wellness Club — current workspace visual refresh */
+:root{
+  --wr-ink:#173c2c;
+  --wr-muted:#667970;
+  --wr-line:#dbe8e1;
+  --wr-green:#176f45;
+  --wr-green-dark:#0f5634;
+  --wr-mint:#eef9f3;
+  --wr-blue:#eef5ff;
+  --wr-lav:#f5f1ff;
+  --wr-gold:#fff8e8;
+}
+body{
+  font-family:"Segoe UI Variable Text","Aptos","Segoe UI",Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  letter-spacing:-.006em;
+  background:
+    radial-gradient(circle at 8% 2%,rgba(51,175,109,.055),transparent 22rem),
+    radial-gradient(circle at 92% 9%,rgba(59,112,220,.05),transparent 24rem),
+    #f6f9f7;
+}
+.os-topbar{
+  background:rgba(255,255,255,.94);
+  box-shadow:0 8px 28px rgba(28,65,46,.045);
+}
+.os-brand strong{font-size:1rem;font-weight:780;letter-spacing:-.025em}
+.os-brand small{font-weight:540;letter-spacing:.005em}
+.os-btn{font-weight:720;transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease}
+.os-btn:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(29,82,54,.08);border-color:#c8ddd1}
+.os-sidebar{border-radius:20px;box-shadow:0 12px 34px rgba(28,65,46,.055)}
+.os-nav-label{font-size:.61rem;letter-spacing:.13em;color:#7f9187}
+.os-nav a{font-size:.775rem;font-weight:700;transition:.15s ease}
+.os-nav a:hover,.os-nav a.active{background:linear-gradient(135deg,#eaf7ef,#eef5ff);box-shadow:inset 0 0 0 1px #d5e6dc}
+.os-hero{border-radius:24px;padding:30px 31px;background:radial-gradient(circle at 91% 7%,rgba(68,119,228,.13),transparent 31%),radial-gradient(circle at 8% 100%,rgba(38,171,101,.09),transparent 32%),linear-gradient(135deg,#fff,#f5fbf8)}
+.os-kicker{font-size:.67rem;letter-spacing:.115em}
+.os-hero h1{max-width:1180px;font-size:clamp(2rem,3.15vw,3.05rem);font-weight:760;line-height:1.04;letter-spacing:-.055em;color:var(--wr-ink)}
+.os-hero p{font-size:.91rem;line-height:1.68;color:var(--wr-muted)}
+.os-chip{font-weight:750;box-shadow:0 3px 11px rgba(36,72,52,.025)}
+.os-card,.s10-card,.s10-kpi{border-color:var(--wr-line);box-shadow:0 10px 26px rgba(28,65,46,.045)}
+.os-title-row h2,.os-card h2{font-weight:760;letter-spacing:-.028em;color:var(--wr-ink)}
+.os-link{border-radius:13px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.os-link:hover{transform:translateY(-1px);box-shadow:0 7px 18px rgba(29,82,54,.055)}
+.os-link b{font-size:.79rem;font-weight:760}
+.os-link div span{display:block;margin-top:3px;color:#5e7569;font-size:.7rem;font-weight:540}
+.wr-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:13px}
+.wr-quick-card{display:block;min-height:112px;padding:14px 15px;border:1px solid var(--wr-line);border-radius:15px;background:#fff;transition:.17s ease}
+.wr-quick-card:nth-child(4n+1){background:linear-gradient(145deg,#fff,var(--wr-mint))}
+.wr-quick-card:nth-child(4n+2){background:linear-gradient(145deg,#fff,var(--wr-blue))}
+.wr-quick-card:nth-child(4n+3){background:linear-gradient(145deg,#fff,var(--wr-lav))}
+.wr-quick-card:nth-child(4n+4){background:linear-gradient(145deg,#fff,var(--wr-gold))}
+.wr-quick-card:hover{transform:translateY(-2px);border-color:#c8ded2;box-shadow:0 10px 22px rgba(29,82,54,.07)}
+.wr-quick-card small{display:block;color:#798a81;font-size:.6rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.wr-quick-card b{display:block;margin-top:8px;color:var(--wr-ink);font-size:.88rem;font-weight:780}
+.wr-quick-card span{display:block;margin-top:5px;color:#657970;font-size:.69rem;line-height:1.45}
+.wr-feature-btn{background:linear-gradient(135deg,#153f2d,#19764a)!important;color:#fff!important;border-color:#176f45!important}
+.wr-feature-btn:hover{background:linear-gradient(135deg,#123625,#12633b)!important}
+.pp-table th{font-weight:760;letter-spacing:.025em}
+.pp-table td{font-size:.76rem}
+.pp-toolbar select,.pp-toolbar button{font-family:inherit}
+@media(max-width:1180px){.wr-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.os-hero{padding:20px}.os-hero h1{font-size:1.8rem}.os-hero p{font-size:.79rem}.wr-quick-grid{grid-template-columns:1fr}.wr-quick-card{min-height:0}}
