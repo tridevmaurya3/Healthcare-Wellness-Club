@@ -18,13 +18,17 @@
       return { ok: false, content: {}, stories: [], services: [] };
     });
 
-  function loadPremiumLightTheme() {
-    if (document.querySelector('link[data-hwc-premium-light]')) return;
+  function appendStylesheet(href, marker) {
+    if (document.querySelector(`link[${marker}]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = fromRoot('pages/premium-light.css?v=20260819-2');
-    link.dataset.hwcPremiumLight = '1';
+    link.href = fromRoot(href);
+    link.setAttribute(marker, '1');
     document.head.appendChild(link);
+  }
+
+  function loadPremiumLightTheme() {
+    appendStylesheet('pages/premium-light.css?v=20260819-2', 'data-hwc-premium-light');
   }
 
   loadPremiumLightTheme();
@@ -164,6 +168,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
+    if (document.body.classList.contains('stories-page')) appendStylesheet('pages/stories.css?v=20260819-1', 'data-hwc-stories-theme');
     configureRootLinks(document);
     updateCurrentYear(document);
     syncAuthLinks(document);
