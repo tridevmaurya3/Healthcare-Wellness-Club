@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/role_security_alerts.php';
 
-const ROLE_TRUSTED_DEVICES_VERSION = '1.0-secure-device-recognition';
+const ROLE_TRUSTED_DEVICES_VERSION = '1.1-secure-device-recognition';
 const ROLE_TRUSTED_DEVICE_DAYS = 90;
 
 function role_trusted_ensure(PDO $pdo): void
@@ -145,6 +145,13 @@ function role_trusted_active_count(PDO $pdo, int $orgId, int $userId): int
     $stmt->execute([$orgId,$userId]);return (int)$stmt->fetchColumn();
 }
 
+function role_trusted_history_count(PDO $pdo, int $orgId, int $userId): int
+{
+    role_trusted_ensure($pdo);
+    $stmt=$pdo->prepare("SELECT COUNT(*) FROM security_trusted_devices WHERE organization_id=? AND user_id=?");
+    $stmt->execute([$orgId,$userId]);return (int)$stmt->fetchColumn();
+}
+
 function role_trusted_login(PDO $pdo, string $email, string $password): array
 {
     role_trusted_ensure($pdo);
@@ -155,9 +162,14 @@ function role_trusted_login(PDO $pdo, string $email, string $password): array
     $trusted=role_trusted_current($pdo,$orgId,$userId,true);
     if($trusted){
         security_step17_audit($pdo,$userId,'security_trusted_device_login','security_trusted_device',(int)$trusted['id'],['device_label'=>$trusted['device_label']]);
-    }elseif(role_trusted_active_count($pdo,$orgId,$userId)>0){
-        $ip=substr((string)($_SERVER['REMOTE_ADDR']??''),0,64);$ua=substr((string)($_SERVER['HTTP_USER_AGENT']??''),0,500);
-        role_security_create_alert($pdo,$orgId,$userId,'untrusted_device_login','medium','Sign-in from an untrusted device','A successful sign-in did not present a valid trusted-device token. Review the device and trust it only if it is yours.',$ip,$ua);
+    }else{
+        $activeTrusted=role_trusted_active_count($pdo,$orgId,$userId);
+        $knownTrusted=role_trusted_history_count($pdo,$orgId,$userId);
+        if($knownTrusted>0){
+            $ip=substr((string)($_SERVER['REMOTE_ADDR']??''),0,64);$ua=substr((string)($_SERVER['HTTP_USER_AGENT']??''),0,500);
+            role_security_create_alert($pdo,$orgId,$userId,'untrusted_device_login','medium','Sign-in from an untrusted device','A successful sign-in did not present a valid trusted-device token. Review the device and trust it only if it is yours.',$ip,$ua);
+            security_step17_audit($pdo,$userId,'security_untrusted_device_login','system_user',$userId,['active_trusted_devices'=>$activeTrusted,'known_trusted_records'=>$knownTrusted]);
+        }
     }
     return $result;
 }
