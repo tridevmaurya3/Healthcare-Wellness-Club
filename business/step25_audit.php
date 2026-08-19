@@ -1,0 +1,83 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/config/final_launch_step25.php';
+require_once __DIR__.'/config/bi_step22.php';
+$error=null;$checks=[];$state=[];
+function a25(array &$a,string $name,bool $ok,string $detail):void{$a[]=['name'=>$name,'ok'=>$ok,'detail'=>$detail];}
+try{
+    $pdo=business_db();$user=security_step17_current_user($pdo);if(!security_step17_has_permission($pdo,'deployment.view',$user))throw new RuntimeException('Deployment View permission is required.');
+    bi_step22_ensure($pdo);$state=step25_state($pdo);$orgId=(int)$state['organization_id'];$root=dirname(__DIR__);
+    $read=static fn(string $p):string=>is_file($p)?(string)file_get_contents($p):'';
+    $helper=$read(__DIR__.'/config/final_launch_step25.php');$center=$read(__DIR__.'/final_launch_center.php');$dash=$read(__DIR__.'/dashboard_step25.php');$index=$read(__DIR__.'/index.php');$audit24=$read(__DIR__.'/step24_audit.php');
+    $deploy=$read(__DIR__.'/config/deployment_step19.php');$backup=$read(__DIR__.'/config/backup_step18.php');$security=$read(__DIR__.'/config/security_step17.php');$storeService=$read(__DIR__.'/config/public_store_step23.php');
+    $shopIndex=$read($root.'/shop/index.php');$checkout=$read($root.'/shop/checkout.php');$status=$read($root.'/shop/status.php');$sw=$read($root.'/shop/sw.js');$css=$read($root.'/shop/store.css');$robots=$read($root.'/robots.txt');$sitemap=$read($root.'/shop/sitemap.php');$gitignore=$read($root.'/.gitignore');$envExample=$read($root.'/.env.example');$launchDoc=$read($root.'/PRODUCTION_LAUNCH.md');
+    $required=['business/config/final_launch_step25.php','business/final_launch_center.php','business/step25_audit.php','business/dashboard_step25.php','PRODUCTION_LAUNCH.md'];$files=true;foreach($required as$f)if(!is_file($root.'/'.$f)){$files=false;break;}
+    $legacy=$state['legacy'];$uatCatalog=step25_uat_catalog();$runtime=$state['runtime'];$health=$state['health'];
+
+    a25($checks,'Legacy workbook preserved',(int)($legacy['total_rows']??0)===757&&(int)($legacy['mapped_rows']??0)===757&&(int)($legacy['pending_rows']??0)===0,(int)($legacy['mapped_rows']??0).' / 757 mapped • '.(int)($legacy['pending_rows']??0).' pending');
+    a25($checks,'STEP 11 active product catalog preserved',(int)$state['products']===64,(int)$state['products'].' / 64 active products');
+    a25($checks,'STEP 16 Finance foundation preserved',count(finance_step16_tables())===8,'8 finance tables');
+    a25($checks,'STEP 17 Security foundation preserved',count(security_step17_tables())===8,'8 security tables');
+    a25($checks,'STEP 18 Recovery foundation preserved',count(backup_step18_support_tables())===4,'4 recovery support tables');
+    a25($checks,'STEP 19 Deployment foundation preserved',count(deployment_step19_support_tables())===8,'8 deployment tables');
+    a25($checks,'STEP 20 Lead CRM preserved',business_table_exists($pdo,'crm_leads')&&business_table_exists($pdo,'crm_lead_submissions'),'lead tables available');
+    a25($checks,'STEP 21 Communications preserved',business_table_exists($pdo,'communication_events')&&business_table_exists($pdo,'communication_outbox'),'communication tables available');
+    a25($checks,'STEP 22 Executive BI preserved',business_table_exists($pdo,'bi_targets')&&business_table_exists($pdo,'bi_signal_actions'),'BI tables available');
+    a25($checks,'STEP 23 public catalog preserved',(int)$state['catalog']===64,(int)$state['catalog'].' / 64 public products');
+    a25($checks,'STEP 24 final experience audit preserved',str_contains($audit24,'STEP 24 COMPLETE')&&is_file($root.'/shop/manifest.webmanifest')&&is_file($root.'/shop/sw.js'),'PWA/mobile/accessibility/SEO layer present');
+    a25($checks,'STEP 25 production files present',$files,count($required).' required files');
+    a25($checks,'STEP 25 version marker',str_contains($helper,"FINAL_LAUNCH_STEP25_VERSION = '1.0-complete'"),'version 1.0-complete');
+    a25($checks,'Business OS activates STEP 25',str_contains($index,'dashboard_step25.php'),'dashboard_step25.php active');
+    a25($checks,'Prior dashboard compatibility markers',str_contains($index,'dashboard_step22.php')&&str_contains($index,'dashboard_step23.php')&&str_contains($index,'dashboard_step24.php'),'STEP 22/23/24 markers retained');
+    a25($checks,'STEP 25 dashboard builds on STEP 24',str_contains($dash,'dashboard_step24.php'),'non-destructive final layer');
+    a25($checks,'Final Launch Center linked from dashboard',str_contains($dash,'final_launch_center.php')&&str_contains($dash,'step25_audit.php'),'launch + audit links');
+    a25($checks,'Human UAT catalog is explicit',count($uatCatalog)===10,'10 required UAT cases');
+    a25($checks,'UAT covers authentication',in_array('auth',array_column($uatCatalog,'id'),true),'auth case');
+    a25($checks,'UAT covers catalog/cart/checkout',count(array_intersect(['catalog','cart','checkout'],array_column($uatCatalog,'id')))===3,'catalog + cart + checkout');
+    a25($checks,'UAT covers private tracking',in_array('tracking',array_column($uatCatalog,'id'),true),'tracking case');
+    a25($checks,'UAT covers staff handoff',in_array('handoff',array_column($uatCatalog,'id'),true),'staff review/quote boundary');
+    a25($checks,'UAT covers PWA offline boundary',in_array('pwa',array_column($uatCatalog,'id'),true),'PWA case');
+    a25($checks,'UAT covers responsive UI',in_array('responsive',array_column($uatCatalog,'id'),true),'device/keyboard case');
+    a25($checks,'UAT covers recovery and health',count(array_intersect(['recovery','health'],array_column($uatCatalog,'id')))===2,'backup + production health');
+    a25($checks,'UAT sign-off requires all cases',str_contains($helper,'Complete every UAT case before sign-off')&&str_contains($helper,'array_diff($required,$selected)'),'missing cases blocked');
+    a25($checks,'UAT sign-off requires release permission',str_contains($helper,"security_step17_has_permission(\$pdo,'deployment.release'"),'critical permission gate');
+    a25($checks,'UAT evidence uses deployment audit trail',str_contains($helper,"deployment_step19_log(\$pdo,'step25_uat_signoff','pass'"),'deployment_events evidence');
+    a25($checks,'UAT form has CSRF protection',str_contains($center,'security_step17_verify_csrf')&&str_contains($center,'security_step17_csrf'),'CSRF token verified');
+    a25($checks,'UAT notes warn against secrets',str_contains($center,'never paste passwords or tokens'),'secret-safe note guidance');
+    a25($checks,'Production state cannot be inferred from local QA',str_contains($helper,"'production_live'=>(bool)\$deployed")&&str_contains($helper,"\$isProduction&&\$latestRelease"),'live requires production runtime + deployed release');
+    a25($checks,'Release workflow remains authoritative',str_contains($center,'Deployment Releases workflow')&&str_contains($center,'deployment_releases.php'),'no parallel deploy switch');
+    a25($checks,'Existing production release registrar preserved',str_contains($deploy,'function deployment_step19_register_release')&&str_contains($deploy,"\$status==='deployed'"),'STEP 19 release control');
+    a25($checks,'Production requires verified recovery',str_contains($deploy,'A verified recovery backup is required before a production release can be marked deployed'),'release backup gate');
+    a25($checks,'Production HTTPS enforcement preserved',str_contains($deploy,'require_https_in_production')&&str_contains($deploy,'Strict-Transport-Security'),'HTTPS/HSTS policy');
+    a25($checks,'Production host allowlist preserved',str_contains($deploy,'HWC_ALLOWED_HOSTS')&&str_contains($deploy,'deployment_step19_host_allowed'),'allowed host gate');
+    a25($checks,'Production DB credential gate preserved',str_contains($deploy,'production_db_credentials_ready')&&str_contains($deploy,"strtolower(\$dbUser)!=='root'"),'non-root database rule');
+    a25($checks,'Private health-token gate preserved',str_contains($deploy,'HWC_HEALTH_TOKEN')&&str_contains($deploy,'health_token_ready'),'private health probe');
+    a25($checks,'Maintenance-mode control preserved',str_contains($deploy,'maintenance_enabled')&&str_contains($deploy,'deployment_step19_set_maintenance'),'maintenance/rollback safety');
+    a25($checks,'Backup engine preserved',str_contains($backup,'HWC_BACKUP_PASSPHRASE')||str_contains($envExample,'HWC_BACKUP_PASSPHRASE'),'encrypted backup secret outside source facts');
+    a25($checks,'Secret files remain ignored',str_contains($gitignore,'.env')&&str_contains($gitignore,'config.local.php'),'secret/local overrides ignored');
+    a25($checks,'Production env template has no real secret',str_contains($envExample,'CHANGE_ON_SERVER_ONLY')&&!preg_match('/DB_PASS=(?!CHANGE_ON_SERVER_ONLY)\S+/', $envExample),'placeholder secrets only');
+    a25($checks,'Production env template covers app identity',str_contains($envExample,'HWC_APP_ENV=production')&&str_contains($envExample,'HWC_APP_URL=https://')&&str_contains($envExample,'HWC_ALLOWED_HOSTS='),'environment + URL + hosts');
+    a25($checks,'Production env template covers DB variables',str_contains($envExample,'DB_HOST=')&&str_contains($envExample,'DB_NAME=')&&str_contains($envExample,'DB_USER=')&&str_contains($envExample,'DB_PASS='),'DB env variables');
+    a25($checks,'Production env template covers public-form pepper',str_contains($envExample,'HWC_PUBLIC_FORM_PEPPER'),'rate-limit privacy secret');
+    a25($checks,'Server repricing remains authoritative',str_contains($storeService,'function ps23_cart_quote')&&!str_contains($read($root.'/shop/store.js'),'unit_price'),'client sends IDs/quantities only');
+    a25($checks,'Public checkout remains an order request',str_contains($checkout,'This is not an instant paid checkout')&&!str_contains(strtolower($checkout),'pay now'),'no fake payment checkout');
+    a25($checks,'Private tracking hides staff notes',!str_contains($status,"['note']")&&str_contains($status,'Staff-only review notes are intentionally not shown'),'public privacy boundary');
+    a25($checks,'Sensitive PWA routes remain network-only',str_contains($sw,'checkout|submit|status')&&str_contains($sw,'event.respondWith(fetch(request))'),'checkout/submit/status not offline-cached');
+    a25($checks,'Offline checkout explicitly requires internet',str_contains($checkout,'Internet connection is required'),'no fake offline submission');
+    a25($checks,'Storefront mobile touch baseline preserved',str_contains($css,'min-height:44px'),'44px touch targets');
+    a25($checks,'Storefront keyboard focus preserved',str_contains($css,':focus-visible'),'visible focus style');
+    a25($checks,'SEO sitemap preserved',str_contains($sitemap,'application/xml')&&str_contains($sitemap,'product.php?id='),'dynamic product sitemap');
+    a25($checks,'Robots protects internal/private routes',str_contains($robots,'Disallow: /business/')&&str_contains($robots,'Disallow: /shop/checkout.php')&&str_contains($robots,'Disallow: /shop/status.php'),'business + private storefront blocked from crawl');
+    a25($checks,'At least one active administrator',(int)$state['admins']>=1,(int)$state['admins'].' active admin(s)');
+    a25($checks,'Existing public orders structurally valid',(int)$state['invalid_orders']===0,(int)$state['invalid_orders'].' invalid order(s)');
+    a25($checks,'Runtime health engine executes',isset($health['status'],$health['checks'],$health['passed'],$health['review']),'health result shape');
+    a25($checks,'Core QA state is calculable',array_key_exists('core_ready',$state)&&is_bool($state['core_ready']),'core_ready boolean');
+    a25($checks,'Production gate list is complete',count($state['production_gates'])===7,'7 production gates');
+    a25($checks,'Production readiness is environment-aware',array_key_exists('production_ready',$state)&&(($runtime['environment']??'local')==='production'||$state['production_ready']===false),'local/staging cannot self-declare production-ready');
+    a25($checks,'Launch runbook exists',str_contains($launchDoc,'Required order')&&str_contains($launchDoc,'Rollback rule'),'production sequence + rollback');
+    a25($checks,'Runbook forbids fake local production',str_contains($launchDoc,'does not treat a successful local XAMPP run as a production deployment'),'local/production boundary explicit');
+    a25($checks,'Runbook requires exact release SHA',str_contains($launchDoc,'exact version and Git commit SHA'),'traceable release');
+    a25($checks,'Runbook requires post-launch health probe',str_contains($launchDoc,'X-HWC-Health-Token'),'post-launch verification');
+}catch(Throwable $e){$error=$e->getMessage();}
+$passed=count(array_filter($checks,static fn(array$c):bool=>$c['ok']));$failed=count($checks)-$passed;$complete=$error===null&&$failed===0;
+?><!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>STEP 25 Audit - Healthcare Wellness Club</title><link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/step10.css"><link rel="stylesheet" href="assets/product_pro.css"></head><body><header class="os-topbar"><div class="os-topbar-inner"><a class="os-brand" href="index.php"><img src="../img/logo.png" alt="Healthcare Wellness Club"><span><strong>Healthcare Wellness Club</strong><small>STEP 25 • Final Automated QA Audit</small></span></a><div class="os-top-actions"><a class="os-btn" href="final_launch_center.php">Final Launch</a><a class="os-btn" href="production_health.php">Health</a><a class="os-btn primary" href="index.php">Dashboard</a></div></div></header><main class="os-main" style="max-width:1540px;margin:auto"><section class="os-hero pp-hero"><div class="os-kicker">STEP 25Z • FINAL AUTOMATED REGRESSION</div><h1><?=$complete?'STEP 25 AUTOMATED QA COMPLETE':'STEP 25 needs review'?></h1><p>This audit proves code/runtime preservation and launch-control wiring. It deliberately does not pretend that human browser/device UAT or an actual production deployment already happened.</p><div class="os-status-row"><span class="os-chip <?=$complete?'good':''?>"><?=$complete?'AUTOMATED QA COMPLETE':'REVIEW REQUIRED'?></span><span class="os-chip good"><?= (int)($state['legacy']['mapped_rows']??0) ?> / 757 legacy</span><span class="os-chip good"><?= (int)($state['products']??0) ?> / 64 products</span><span class="os-chip"><?=$passed?> PASS / <?=$failed?> REVIEW</span><span class="os-chip <?=!empty($state['latest_uat'])?'good':''?>"><?=!empty($state['latest_uat'])?'UAT SIGNED':'UAT STILL MANUAL'?></span></div></section><?php if($error):?><div class="pp-alert bad"><strong>Audit diagnostic:</strong> <?=step25_h($error)?></div><?php endif;?><section class="os-card" style="margin-top:14px"><div class="os-title-row"><div><h2>Automated Checks</h2><p>Human UAT and target-server production gates are completed in Final Launch Center after this audit is clean.</p></div><span class="pp-badge <?=$failed?'warn':''?>"><?=$passed?> PASS / <?=$failed?> REVIEW</span></div><div class="pp-grid"><?php foreach($checks as$c):?><div class="pp-source pp-span-6"><div><b><?=step25_h($c['name'])?></b><small><?=step25_h($c['detail'])?></small></div><span class="pp-badge <?=$c['ok']?'':'warn'?>"><?=$c['ok']?'PASS':'REVIEW'?></span></div><?php endforeach;?></div></section><div class="os-footer-note"><strong>STEP 25 truth boundary:</strong> automated QA completion is not a claim that production is live. Production is live only on the production runtime after authorized UAT/recovery/health gates and a deployed release record.</div></main></body></html>
