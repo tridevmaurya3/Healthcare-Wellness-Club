@@ -1,0 +1,136 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Universal Administrator navigation shell.
+ *
+ * The menu is injected only into authenticated Administrator HTML pages. JSON,
+ * downloads, redirects, public storefront pages and non-admin roles are left untouched.
+ */
+
+function admin_global_menu_start(): void
+{
+    if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') return;
+    if (defined('HWC_ADMIN_GLOBAL_MENU_STARTED')) return;
+    define('HWC_ADMIN_GLOBAL_MENU_STARTED', true);
+    ob_start('admin_global_menu_inject');
+}
+
+function admin_global_menu_active(string $script, array $scripts): string
+{
+    return in_array($script, $scripts, true) ? ' active' : '';
+}
+
+function admin_global_menu_link(string $href, string $label, string $script, array $scripts, string $icon): string
+{
+    $active = admin_global_menu_active($script, $scripts);
+    return '<a class="hwc-admin-nav-link'.$active.'" href="'.htmlspecialchars($href, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8').'">'
+        .'<span class="hwc-admin-nav-icon" aria-hidden="true">'.htmlspecialchars($icon, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8').'</span>'
+        .'<span>'.htmlspecialchars($label, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8').'</span></a>';
+}
+
+function admin_global_menu_markup(bool $insideBusiness, string $script): string
+{
+    $business = $insideBusiness ? '' : 'business/';
+    $root = $insideBusiness ? '../' : '';
+
+    $groups = [
+        ['Workspace', [
+            [$business.'index.php','Dashboard',['index.php','dashboard_step25.php'],'⌂'],
+            [$root.'feature_hub.php','All Features',['feature_hub.php'],'▦'],
+        ]],
+        ['Customers', [
+            [$business.'customer_center.php','Customer Center',['customer_center.php','customer_detail.php'],'◎'],
+            [$business.'customer_membership_manager.php','Club Members & Offers',['customer_membership_manager.php'],'★'],
+            [$business.'public_order_center.php','Customer Orders',['public_order_center.php','public_order_detail.php'],'▤'],
+            [$business.'lead_center.php','Leads & Enquiries',['lead_center.php','lead_followups.php','lead_appointments.php'],'↗'],
+        ]],
+        ['Products & Sales', [
+            [$business.'product_catalog.php','Product Catalog',['product_catalog.php','product_detail.php'],'□'],
+            [$business.'product_master_manager.php','New / Update Product',['product_master_manager.php'],'＋'],
+            [$business.'product_image_manager.php','Product Images',['product_image_manager.php','product_images.php'],'▧'],
+            [$business.'product_sales_center.php','Sales Center',['product_sales_center.php','product_sale_detail.php','product_quotes.php','product_payments.php'],'₹'],
+        ]],
+        ['Operations', [
+            [$business.'inventory_center.php','Inventory',['inventory_center.php','inventory_stocktake.php','inventory_batches.php'],'◫'],
+            [$business.'purchase_center.php','Purchases & Suppliers',['purchase_center.php','purchase_orders.php','supplier_center.php'],'⇄'],
+            [$business.'report_center.php','Reports & Analytics',['report_center.php','insights_center.php','master_tracking.php','sp_house.php','name_wise_tracking.php','master_business_tracking.php','ums_renewal.php','ums_active_duration.php'],'▥'],
+            [$business.'finance_center.php','Finance',['finance_center.php','finance_cashbook.php','finance_profit_loss.php','finance_cash_flow.php','finance_reconciliation.php'],'₹'],
+        ]],
+        ['Administration', [
+            [$business.'customer_site_manager.php','Customer Site Manager',['customer_site_manager.php'],'◉'],
+            [$business.'security_center.php','Security Center',['security_center.php','security_audit.php','security_sessions.php','account_security.php'],'◆'],
+            [$business.'user_management.php','Users & Roles',['user_management.php','permission_matrix.php','role_accounts.php'],'♙'],
+            [$business.'backup_center.php','Backup & Recovery',['backup_center.php','backup_create.php','backup_history.php','backup_policy.php','backup_restore.php','disaster_recovery.php'],'↺'],
+            [$business.'deployment_center.php','Deployment',['deployment_center.php','production_health.php','deployment_releases.php','maintenance_center.php','migration_center.php','scheduler_center.php'],'⇧'],
+        ]],
+        ['My Account', [
+            [$root.'account.php','My Account',['account.php'],'●'],
+            [$root.'security_alerts.php','Security Alerts',['security_alerts.php'],'!'],
+            [$root.'trusted_devices.php','Trusted Devices',['trusted_devices.php'],'▣'],
+            [$root.'mfa_settings.php','Two-Step Verification',['mfa_settings.php'],'✓'],
+            [$root.'logout.php','Sign Out',['logout.php'],'→'],
+        ]],
+    ];
+
+    $html = '<aside class="hwc-admin-global-sidebar" id="hwcAdminGlobalSidebar" aria-label="Administrator navigation">'
+        .'<a class="hwc-admin-brand" href="'.htmlspecialchars($business.'index.php', ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8').'">'
+        .'<span class="hwc-admin-brand-mark">HWC</span><span><b>Healthcare Wellness Club</b><small>Administrator Portal</small></span></a>';
+
+    foreach ($groups as [$title, $links]) {
+        $html .= '<div class="hwc-admin-nav-group"><div class="hwc-admin-nav-title">'.htmlspecialchars($title, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8').'</div>';
+        foreach ($links as [$href,$label,$scripts,$icon]) {
+            $html .= admin_global_menu_link($href,$label,$script,$scripts,$icon);
+        }
+        $html .= '</div>';
+    }
+
+    $html .= '</aside><button class="hwc-admin-menu-toggle" id="hwcAdminMenuToggle" type="button" aria-controls="hwcAdminGlobalSidebar" aria-expanded="false">☰ Menu</button><button class="hwc-admin-menu-backdrop" id="hwcAdminMenuBackdrop" type="button" aria-label="Close Administrator menu"></button>';
+    return $html;
+}
+
+function admin_global_menu_styles(): string
+{
+    return <<<'HTML'
+<style id="hwc-admin-global-menu-css">
+:root{--hwc-admin-menu-w:244px}.hwc-admin-global-sidebar{position:fixed;inset:0 auto 0 0;width:var(--hwc-admin-menu-w);z-index:2147483000;background:linear-gradient(180deg,#f8fbfa 0%,#f5f8fb 100%);border-right:1px solid #dbe5e0;box-shadow:8px 0 28px rgba(31,59,48,.07);padding:14px 11px 22px;overflow-y:auto;overscroll-behavior:contain;font-family:Inter,Segoe UI,Arial,sans-serif}.hwc-admin-brand{display:flex;align-items:center;gap:10px;padding:9px 8px 14px;text-decoration:none;border-bottom:1px solid #e1e8e4;margin-bottom:8px}.hwc-admin-brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#173f2e;color:#fff;font-size:.68rem;font-weight:900;letter-spacing:.05em;flex:none}.hwc-admin-brand b{display:block;color:#183a2d;font-size:.75rem;line-height:1.25}.hwc-admin-brand small{display:block;color:#74847c;font-size:.61rem;margin-top:2px}.hwc-admin-nav-group{margin-top:10px}.hwc-admin-nav-title{padding:0 9px 5px;color:#87948e;font-size:.55rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.hwc-admin-nav-link{display:flex;align-items:center;gap:9px;padding:8px 9px;margin:2px 0;border-radius:10px;text-decoration:none;color:#42574e;font-size:.69rem;font-weight:760;line-height:1.22;border:1px solid transparent;transition:.16s ease}.hwc-admin-nav-link:hover{background:#fff;border-color:#dbe5e0;color:#163b2c}.hwc-admin-nav-link.active{background:#e9f5ee;border-color:#cce3d5;color:#12613c}.hwc-admin-nav-icon{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:#edf2ef;color:#51675d;font-size:.68rem;font-weight:900;flex:none}.hwc-admin-nav-link.active .hwc-admin-nav-icon{background:#d9eee1;color:#12613c}.hwc-admin-menu-toggle{display:none;position:fixed;left:10px;top:10px;z-index:2147483002;border:1px solid #ccdcd3;background:#fff;color:#173f2e;border-radius:10px;padding:8px 11px;font:800 .72rem/1 Inter,Segoe UI,Arial,sans-serif;box-shadow:0 6px 20px rgba(23,63,46,.15);cursor:pointer}.hwc-admin-menu-backdrop{display:none;position:fixed;inset:0;z-index:2147482999;border:0;background:rgba(13,31,24,.34)}
+@media(min-width:1101px){body{padding-left:var(--hwc-admin-menu-w)!important;box-sizing:border-box}.os-layout{grid-template-columns:minmax(0,1fr)!important}.os-layout>.os-sidebar{display:none!important}}
+@media(max-width:1100px){.hwc-admin-global-sidebar{transform:translateX(-103%);transition:transform .2s ease;width:min(86vw,285px)}.hwc-admin-menu-toggle{display:block}.hwc-admin-menu-open .hwc-admin-global-sidebar{transform:translateX(0)}.hwc-admin-menu-open .hwc-admin-menu-backdrop{display:block}.hwc-admin-menu-open{overflow:hidden}.os-layout>.os-sidebar{display:none!important}.os-layout{grid-template-columns:minmax(0,1fr)!important}body{padding-left:0!important}}
+@media print{.hwc-admin-global-sidebar,.hwc-admin-menu-toggle,.hwc-admin-menu-backdrop{display:none!important}body{padding-left:0!important}}
+</style>
+HTML;
+}
+
+function admin_global_menu_script(): string
+{
+    return <<<'HTML'
+<script id="hwc-admin-global-menu-js">
+(()=>{const b=document.body,t=document.getElementById('hwcAdminMenuToggle'),d=document.getElementById('hwcAdminMenuBackdrop');if(!b||!t)return;const close=()=>{b.classList.remove('hwc-admin-menu-open');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=!b.classList.contains('hwc-admin-menu-open');b.classList.toggle('hwc-admin-menu-open',open);t.setAttribute('aria-expanded',open?'true':'false')});d?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.getElementById('hwcAdminGlobalSidebar')?.addEventListener('click',e=>{if(e.target.closest('a')&&matchMedia('(max-width:1100px)').matches)close()})})();
+</script>
+HTML;
+}
+
+function admin_global_menu_inject(string $html): string
+{
+    if ($html === '' || stripos($html, '<html') === false || stripos($html, '<body') === false) return $html;
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        @session_start();
+    }
+    if ((string)($_SESSION['hwc_role'] ?? '') !== 'admin' || (int)($_SESSION['hwc_user_id'] ?? 0) <= 0) return $html;
+
+    $path = str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? ''));
+    $script = basename($path);
+    $insideBusiness = str_contains($path, '/business/');
+    $allowedRoot = ['account.php','security_alerts.php','trusted_devices.php','mfa_settings.php','change_password.php'];
+    if (!$insideBusiness && !in_array($script, $allowedRoot, true)) return $html;
+    if (str_contains($path, '/shop/')) return $html;
+
+    if (str_contains($html, 'id="hwcAdminGlobalSidebar"')) return $html;
+
+    $html = preg_replace('/<\/head>/i', admin_global_menu_styles().'</head>', $html, 1) ?? $html;
+    $markup = admin_global_menu_markup($insideBusiness, $script);
+    $html = preg_replace('/<body([^>]*)>/i', '<body$1>'.$markup, $html, 1) ?? $html;
+    $html = preg_replace('/<\/body>/i', admin_global_menu_script().'</body>', $html, 1) ?? $html;
+    return $html;
+}
