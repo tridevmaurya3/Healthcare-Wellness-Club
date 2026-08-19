@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/database.php';
 
-const ROLE_PORTAL_VERSION = '1.0-advanced-rbac';
+const ROLE_PORTAL_VERSION = '1.1-advanced-rbac-recovery';
 
 function role_portal_db(): PDO
 {
@@ -54,6 +54,27 @@ function role_portal_ensure(PDO $pdo): void
         $insert->execute([$orgId,'coach',$code]);
     }
     $insert->execute([$orgId,'customer','portal.customer']);
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_recovery_requests (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        organization_id BIGINT UNSIGNED NOT NULL,
+        user_id BIGINT UNSIGNED NULL,
+        identifier_hash CHAR(64) NOT NULL,
+        ip_hash CHAR(64) NOT NULL,
+        user_agent VARCHAR(500) NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        handled_at DATETIME NULL,
+        handled_by BIGINT UNSIGNED NULL,
+        resolution_note VARCHAR(255) NULL,
+        CONSTRAINT fk_recovery_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+        CONSTRAINT fk_recovery_user FOREIGN KEY (user_id) REFERENCES system_users(id) ON DELETE SET NULL,
+        CONSTRAINT fk_recovery_handler FOREIGN KEY (handled_by) REFERENCES system_users(id) ON DELETE SET NULL,
+        KEY idx_recovery_status (organization_id,status,requested_at),
+        KEY idx_recovery_identifier (organization_id,identifier_hash,requested_at),
+        KEY idx_recovery_ip (organization_id,ip_hash,requested_at),
+        KEY idx_recovery_user (organization_id,user_id,requested_at)
+    ) ENGINE=InnoDB");
 
     if (business_table_exists($pdo,'schema_meta')) {
         $stmt = $pdo->prepare("INSERT INTO schema_meta(meta_key,meta_value) VALUES('role_portal_version',?) ON DUPLICATE KEY UPDATE meta_value=VALUES(meta_value)");
@@ -142,4 +163,80 @@ function role_portal_update_user(PDO $pdo, int $userId, string $name, string $mo
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
     }
+}
+
+function role_portal_recovery_pepper(): string
+{
+    $pepper = (string)(getenv('HWC_PUBLIC_FORM_PEPPER') ?: 'hwc-local-recovery-pepper');
+    return hash('sha256','account-recovery|'.$pepper);
+}
+
+function role_portal_recovery_hash(string $value): string
+{
+    return hash_hmac('sha256',strtolower(trim($value)),role_portal_recovery_pepper());
+}
+
+function role_portal_request_recovery(PDO $pdo, string $email): void
+{
+    role_portal_ensure($pdo);
+    $ctx=security_step17_context($pdo);$orgId=(int)$ctx['organization_id'];
+    $email=strtolower(trim($email));
+    if(!filter_var($email,FILTER_VALIDATE_EMAIL)) return;
+
+    $identifierHash=role_portal_recovery_hash($email);
+    $ip=(string)($_SERVER['REMOTE_ADDR']??'');
+    $ipHash=role_portal_recovery_hash('ip|'.$ip);
+
+    $rate=$pdo->prepare("SELECT COUNT(*) FROM password_recovery_requests WHERE organization_id=? AND requested_at>=DATE_SUB(NOW(),INTERVAL 1 HOUR) AND (identifier_hash=? OR ip_hash=?)");
+    $rate->execute([$orgId,$identifierHash,$ipHash]);
+    if((int)$rate->fetchColumn()>=3) return;
+
+    $stmt=$pdo->prepare("SELECT u.id FROM system_users u JOIN organization_user_access a ON a.user_id=u.id AND a.organization_id=? AND a.is_active=1 WHERE LOWER(u.email)=? AND u.is_active=1 LIMIT 1");
+    $stmt->execute([$orgId,$email]);$userId=(int)$stmt->fetchColumn();
+    $status=$userId>0?'pending':'unmatched';
+    $ua=substr((string)($_SERVER['HTTP_USER_AGENT']??''),0,500);
+    $stmt=$pdo->prepare("INSERT INTO password_recovery_requests(organization_id,user_id,identifier_hash,ip_hash,user_agent,status) VALUES(?,?,?,?,?,?)");
+    $stmt->execute([$orgId,$userId>0?$userId:null,$identifierHash,$ipHash,$ua!==''?$ua:null,$status]);
+    security_step17_audit($pdo,$userId>0?$userId:null,'password_recovery_requested','system_user',$userId>0?$userId:null,['matched_account'=>$userId>0]);
+}
+
+function role_portal_recovery_rows(PDO $pdo, int $orgId, int $limit=100): array
+{
+    role_portal_ensure($pdo);$limit=max(1,min(200,$limit));
+    $sql="SELECT r.id,r.user_id,r.status,r.requested_at,r.handled_at,r.resolution_note,u.full_name,u.email,u.mobile,u.is_active,a.role_code,h.full_name handled_by_name
+          FROM password_recovery_requests r
+          LEFT JOIN system_users u ON u.id=r.user_id
+          LEFT JOIN organization_user_access a ON a.user_id=u.id AND a.organization_id=r.organization_id AND a.is_active=1
+          LEFT JOIN system_users h ON h.id=r.handled_by
+          WHERE r.organization_id=?
+          ORDER BY CASE WHEN r.status='pending' THEN 0 WHEN r.status='unmatched' THEN 1 ELSE 2 END,r.requested_at DESC,r.id DESC
+          LIMIT {$limit}";
+    $stmt=$pdo->prepare($sql);$stmt->execute([$orgId]);return $stmt->fetchAll();
+}
+
+function role_portal_pending_recovery_count(PDO $pdo, int $orgId): int
+{
+    role_portal_ensure($pdo);$stmt=$pdo->prepare("SELECT COUNT(*) FROM password_recovery_requests WHERE organization_id=? AND status IN ('pending','unmatched')");$stmt->execute([$orgId]);return (int)$stmt->fetchColumn();
+}
+
+function role_portal_handle_recovery(PDO $pdo, int $requestId, string $action, string $temporaryPassword=''): void
+{
+    role_portal_ensure($pdo);$actor=security_step17_current_user($pdo);
+    if((string)($actor['role_code']??'')!=='admin' || !security_step17_has_permission($pdo,'security.users.manage',$actor)) throw new RuntimeException('Administrator permission is required for account recovery.');
+    $ctx=security_step17_context($pdo);$orgId=(int)$ctx['organization_id'];
+    $stmt=$pdo->prepare("SELECT * FROM password_recovery_requests WHERE organization_id=? AND id=? LIMIT 1");$stmt->execute([$orgId,$requestId]);$r=$stmt->fetch();
+    if(!$r) throw new RuntimeException('Recovery request was not found.');
+    if(!in_array((string)$r['status'],['pending','unmatched'],true)) throw new RuntimeException('This recovery request is already closed.');
+
+    if($action==='dismiss'){
+        $pdo->prepare("UPDATE password_recovery_requests SET status='dismissed',handled_at=NOW(),handled_by=?,resolution_note='Dismissed by administrator' WHERE id=?")->execute([(int)$actor['id'],$requestId]);
+        security_step17_audit($pdo,(int)$actor['id'],'password_recovery_dismissed','password_recovery_request',$requestId,['matched_account'=>(int)($r['user_id']??0)>0]);
+        return;
+    }
+    if($action!=='reset') throw new RuntimeException('Recovery action is invalid.');
+    $userId=(int)($r['user_id']??0);if($userId<=0) throw new RuntimeException('This request is not linked to an active account and cannot be reset.');
+    security_step17_admin_reset_password($pdo,$userId,$temporaryPassword);
+    $pdo->prepare("UPDATE password_recovery_requests SET status='reset',handled_at=NOW(),handled_by=?,resolution_note='Temporary password issued; change required at next sign-in' WHERE id=?")->execute([(int)$actor['id'],$requestId]);
+    $pdo->prepare("UPDATE password_recovery_requests SET status='superseded',handled_at=NOW(),handled_by=?,resolution_note='Closed by newer successful recovery' WHERE organization_id=? AND user_id=? AND status='pending' AND id<>?")->execute([(int)$actor['id'],$orgId,$userId,$requestId]);
+    security_step17_audit($pdo,(int)$actor['id'],'password_recovery_reset_completed','system_user',$userId,['request_id'=>$requestId,'force_change'=>true]);
 }
