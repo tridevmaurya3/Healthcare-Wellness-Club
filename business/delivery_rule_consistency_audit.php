@@ -74,7 +74,7 @@ try {
 
     $add(
         'Current checkout submits through customer order-request engine',
-        str_contains($src['submit'], "customer_order_request.php") && str_contains($src['submit'], 'cor_submit(') && !str_contains($src['submit'], 'ps23_submit('),
+        str_contains($src['submit'], 'customer_order_request.php') && str_contains($src['submit'], 'cor_submit(') && !str_contains($src['submit'], 'ps23_submit('),
         'shop/submit.php must use cor_submit(), not the legacy ps23_submit() path.'
     );
 
@@ -101,9 +101,11 @@ try {
         'Admin/Coach order queue must show the same delivery rule.'
     );
 
-    $legacyBad = preg_match("/\\$delivery\\s*=\\s*\\([^;]*\\$vp\\s*<\\s*100\\s*\\)\\s*\\?\\s*100(?:\\.0+)?\\s*:\\s*0(?:\\.0+)?\\s*;/", $src['legacy_store']) === 1
-        || str_contains($src['legacy_store'], "?100.0:0.0");
-    $legacyGood = str_contains($src['legacy_store'], '118.0') || str_contains($src['legacy_store'], '118.00') || str_contains($src['legacy_store'], 'PUBLIC_STORE_HOME_DELIVERY_CHARGE');
+    $legacyBad = str_contains($src['legacy_store'], '?100.0:0.0')
+        || str_contains($src['legacy_store'], '?100:0');
+    $legacyGood = str_contains($src['legacy_store'], '118.0')
+        || str_contains($src['legacy_store'], '118.00')
+        || str_contains($src['legacy_store'], 'PUBLIC_STORE_HOME_DELIVERY_CHARGE');
     $add(
         'Legacy STEP23 quote path is consistent',
         !$legacyBad && $legacyGood,
@@ -115,7 +117,7 @@ try {
 
     $add(
         'Order request persistence uses canonical delivery result',
-        str_contains($src['order_request'], "\\$quote['delivery_charge']")
+        str_contains($src['order_request'], '$quote[\'delivery_charge\']')
         && str_contains($src['order_request'], 'CUSTOMER_FREE_DELIVERY_VP')
         && str_contains($src['order_request'], '₹118 delivery charge'),
         'Saved requests and event notes must persist the server-calculated delivery charge.'
