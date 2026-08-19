@@ -1,70 +1,24 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/public_store_step23.php';
+require_once __DIR__ . '/customer_membership.php';
 
-const CUSTOMER_ORDER_REQUEST_VERSION = '1.0-review-first';
+const CUSTOMER_ORDER_REQUEST_VERSION = '2.0-member-pricing';
 
 /**
- * Public/customer checkout is a request workflow, not a stock allocation.
- * We therefore keep the live availability snapshot for staff review, but do
- * not reject a request merely because current tracked quantity is zero/low.
- * Final sale, stock allocation and payment remain inside Business OS.
+ * Customer/public checkout remains a request workflow, not a stock allocation.
+ * Prices are recalculated from product IDs and quantity on the server. A signed-in
+ * verified Club Member receives only the exact tier assigned by Admin/Coach, plus
+ * any explicitly configured numeric promotion that is currently eligible.
  */
 function cor_cart_quote(PDO $pdo, int $orgId, array $cart, string $mode): array
 {
-    $mode = in_array($mode, ['club_pickup','home_delivery'], true) ? $mode : 'club_pickup';
-    $items=[];
-    $subtotal=0.0;
-    $vp=0.0;
-    $hasNutrition=false;
-    $seen=[];
-    $needsAvailabilityReview=false;
-
-    foreach ($cart as $raw) {
-        $id=(int)($raw['product_id']??0);
-        $qty=(int)($raw['qty']??0);
-        if ($id<=0 || $qty<=0 || $qty>20 || isset($seen[$id])) continue;
-        $seen[$id]=1;
-
-        $p=ps23_product($pdo,$orgId,$id);
-        $av=ps23_availability($pdo,$orgId,(int)$p['listing_id'],$qty);
-        if ($av['status']!=='available' || ($av['qty']!==null && (float)$av['qty']<$qty)) {
-            $needsAvailabilityReview=true;
-        }
-
-        $line=round((float)$p['mrp']*$qty,2);
-        $lineVp=round((float)$p['volume_points']*$qty,3);
-        $subtotal+=$line;
-        $vp+=$lineVp;
-        if (!in_array(strtoupper((string)$p['category_name']),['ART OF PROMOTION','APPLICATIONS'],true)) {
-            $hasNutrition=true;
-        }
-        $items[]=$p+[
-            'qty'=>$qty,
-            'line_mrp'=>$line,
-            'line_vp'=>$lineVp,
-            'availability_status'=>$av['status'],
-        ];
-    }
-
-    if (!$items) throw new RuntimeException('Add at least one valid product.');
-
-    $delivery=($mode==='home_delivery' && $hasNutrition && $vp>0 && $vp<100) ? 100.0 : 0.0;
-    return [
-        'items'=>$items,
-        'subtotal_mrp'=>round($subtotal,2),
-        'total_vp'=>round($vp,3),
-        'delivery_charge'=>$delivery,
-        'estimated_total'=>round($subtotal+$delivery,2),
-        'delivery_mode'=>$mode,
-        'availability_review_required'=>$needsAvailabilityReview,
-    ];
+    return cm_cart_quote($pdo,$orgId,$cart,$mode);
 }
 
 function cor_submit(PDO $pdo, array $in, array $server): array
 {
-    ps23_ensure($pdo);
+    cm_ensure($pdo);
     $c=ps23_context($pdo);
     $orgId=(int)$c['organization_id'];
     $set=ps23_settings($pdo,$orgId);
@@ -105,6 +59,15 @@ function cor_submit(PDO $pdo, array $in, array $server): array
     $quote=cor_cart_quote($pdo,$orgId,$cart,(string)($in['delivery_mode']??'club_pickup'));
     if ($quote['delivery_mode']==='home_delivery' && strlen($address)<5) throw new RuntimeException('Enter a delivery address.');
 
+    $signedIn=$quote['customer_context']['user']??null;
+    if($signedIn){
+        // A signed-in Customer request is bound to the account contact identity so a browser cannot submit member pricing for another person.
+        $accountEmail=strtolower(trim((string)($signedIn['email']??'')));
+        $accountMobile=ps23_mobile((string)($signedIn['mobile']??''));
+        if($accountEmail!==''&&$email!==''&&!hash_equals($accountEmail,$email))throw new RuntimeException('Use the email connected to your signed-in Customer account.');
+        if($accountMobile!==''&&$mobile!==''&&!hash_equals($accountMobile,$mobile))throw new RuntimeException('Use the mobile number connected to your signed-in Customer account.');
+    }
+
     $dup=ps23_dup($mobile,$email);
     $token=bin2hex(random_bytes(24));
     $code='WEB-'.date('Ymd-His').'-'.strtoupper(substr(bin2hex(random_bytes(2)),0,4));
@@ -112,18 +75,36 @@ function cor_submit(PDO $pdo, array $in, array $server): array
     $pdo->beginTransaction();
     try {
         $leadId=ps23_link_lead($pdo,$orgId,$name,$mobile,$email,$note,$dup,$ipHash,$ua);
-        $s=$pdo->prepare("INSERT INTO public_order_requests(organization_id,order_code,lead_id,customer_name,mobile,email,address_text,postal_code,delivery_mode,subtotal_mrp,total_vp,delivery_charge,estimated_total,tax_status,order_status,payment_status,consent_to_contact,duplicate_key_hash,status_token_hash,ip_hash,user_agent,source_path,customer_note) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'not_calculated','submitted','not_requested',1,?,?,?,?, 'shop/checkout.php',?)");
-        $s->execute([$orgId,$code,$leadId,$name,$mobile,$email?:null,$address?:null,$postal?:null,$quote['delivery_mode'],$quote['subtotal_mrp'],$quote['total_vp'],$quote['delivery_charge'],$quote['estimated_total'],$dup,hash('sha256',$token),$ipHash,$ua?:null,$note?:null]);
+        $s=$pdo->prepare("INSERT INTO public_order_requests(
+            organization_id,order_code,lead_id,customer_user_id,customer_membership_id,customer_price_mode,discount_label_code,
+            customer_name,mobile,email,address_text,postal_code,delivery_mode,subtotal_mrp,discount_amount,total_vp,delivery_charge,estimated_total,
+            tax_status,order_status,payment_status,consent_to_contact,duplicate_key_hash,status_token_hash,ip_hash,user_agent,source_path,customer_note
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'not_calculated','submitted','not_requested',1,?,?,?,?, 'shop/checkout.php',?)");
+        $s->execute([
+            $orgId,$code,$leadId,$quote['customer_user_id'],$quote['customer_membership_id'],$quote['customer_price_mode'],$quote['discount_label_code'],
+            $name,$mobile,$email?:null,$address?:null,$postal?:null,$quote['delivery_mode'],$quote['subtotal_mrp'],$quote['discount_amount'],$quote['total_vp'],$quote['delivery_charge'],$quote['estimated_total'],
+            $dup,hash('sha256',$token),$ipHash,$ua?:null,$note?:null
+        ]);
         $oid=(int)$pdo->lastInsertId();
 
-        $ins=$pdo->prepare("INSERT INTO public_order_request_items(organization_id,public_order_id,product_id,listing_id,price_version_id,stock_no,product_name_snapshot,quantity,unit_mrp,unit_vp,line_mrp,line_vp,availability_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $ins=$pdo->prepare("INSERT INTO public_order_request_items(
+            organization_id,public_order_id,product_id,listing_id,price_version_id,stock_no,product_name_snapshot,quantity,
+            unit_mrp,unit_customer_price,unit_vp,line_mrp,line_customer_price,discount_amount,line_vp,availability_status,pricing_source,promotion_code
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         foreach ($quote['items'] as $it) {
-            $ins->execute([$orgId,$oid,$it['id'],$it['listing_id'],$it['price_version_id'],$it['sku'],$it['product_name'],$it['qty'],$it['mrp'],$it['volume_points'],$it['line_mrp'],$it['line_vp'],$it['availability_status']]);
+            $ins->execute([
+                $orgId,$oid,$it['id'],$it['listing_id'],$it['price_version_id'],$it['sku'],$it['product_name'],$it['qty'],
+                $it['mrp'],$it['unit_customer_price'],$it['volume_points'],$it['line_mrp'],$it['line_customer_price'],$it['line_discount'],$it['line_vp'],$it['availability_status'],$it['pricing_source'],$it['promotion_code']
+            ]);
         }
 
-        $eventNote=!empty($quote['availability_review_required'])
-            ? 'Customer order request captured. Product availability requires staff review; no payment collected.'
-            : 'Customer order request captured; availability snapshot available for review; no payment collected.';
+        $pricingNote=!empty($quote['customer_context']['is_member'])
+            ? 'Verified Club Member pricing applied from assigned exact tier '.$quote['customer_context']['tier_code'].'.'
+            : 'Regular/public MRP pricing applied.';
+        $deliveryNote=$quote['delivery_mode']==='home_delivery'
+            ? ((float)$quote['total_vp']<CUSTOMER_FREE_DELIVERY_VP?' Home delivery below 100 VP includes ₹118 delivery charge.':' Home delivery at 100 VP or more has ₹0 delivery charge.')
+            : ' Club pickup selected.';
+        $eventNote='Customer order request captured. '.$pricingNote.$deliveryNote.(!empty($quote['availability_review_required'])?' Product availability requires staff review.':'').' No payment collected.';
         $pdo->prepare("INSERT INTO public_order_events(organization_id,public_order_id,event_type,new_status,note) VALUES(?,?,'submitted','submitted',?)")
             ->execute([$orgId,$oid,$eventNote]);
 
@@ -139,6 +120,10 @@ function cor_submit(PDO $pdo, array $in, array $server): array
             'order_code'=>$code,
             'status_token'=>$token,
             'estimated_total'=>$quote['estimated_total'],
+            'discount_amount'=>$quote['discount_amount'],
+            'delivery_charge'=>$quote['delivery_charge'],
+            'customer_price_mode'=>$quote['customer_price_mode'],
+            'discount_label_code'=>$quote['discount_label_code'],
             'availability_review_required'=>(bool)$quote['availability_review_required'],
         ];
     } catch (Throwable $e) {
