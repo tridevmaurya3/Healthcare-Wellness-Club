@@ -94,8 +94,10 @@ function admin_global_menu_styles(): string
     return <<<'HTML'
 <style id="hwc-admin-global-menu-css">
 :root{--hwc-admin-menu-w:244px}.hwc-admin-global-sidebar{position:fixed;inset:0 auto 0 0;width:var(--hwc-admin-menu-w);z-index:2147483000;background:linear-gradient(180deg,#f8fbfa 0%,#f5f8fb 100%);border-right:1px solid #dbe5e0;box-shadow:8px 0 28px rgba(31,59,48,.07);padding:14px 11px 22px;overflow-y:auto;overscroll-behavior:contain;font-family:Inter,Segoe UI,Arial,sans-serif}.hwc-admin-brand{display:flex;align-items:center;gap:10px;padding:9px 8px 14px;text-decoration:none;border-bottom:1px solid #e1e8e4;margin-bottom:8px}.hwc-admin-brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#173f2e;color:#fff;font-size:.68rem;font-weight:900;letter-spacing:.05em;flex:none}.hwc-admin-brand b{display:block;color:#183a2d;font-size:.75rem;line-height:1.25}.hwc-admin-brand small{display:block;color:#74847c;font-size:.61rem;margin-top:2px}.hwc-admin-nav-group{margin-top:10px}.hwc-admin-nav-title{padding:0 9px 5px;color:#87948e;font-size:.55rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.hwc-admin-nav-link{display:flex;align-items:center;gap:9px;padding:8px 9px;margin:2px 0;border-radius:10px;text-decoration:none;color:#42574e;font-size:.69rem;font-weight:760;line-height:1.22;border:1px solid transparent;transition:.16s ease}.hwc-admin-nav-link:hover{background:#fff;border-color:#dbe5e0;color:#163b2c}.hwc-admin-nav-link.active{background:#e9f5ee;border-color:#cce3d5;color:#12613c}.hwc-admin-nav-icon{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:#edf2ef;color:#51675d;font-size:.68rem;font-weight:900;flex:none}.hwc-admin-nav-link.active .hwc-admin-nav-icon{background:#d9eee1;color:#12613c}.hwc-admin-menu-toggle{display:none;position:fixed;left:10px;top:10px;z-index:2147483002;border:1px solid #ccdcd3;background:#fff;color:#173f2e;border-radius:10px;padding:8px 11px;font:800 .72rem/1 Inter,Segoe UI,Arial,sans-serif;box-shadow:0 6px 20px rgba(23,63,46,.15);cursor:pointer}.hwc-admin-menu-backdrop{display:none;position:fixed;inset:0;z-index:2147482999;border:0;background:rgba(13,31,24,.34)}
+.hwc-membership-candidates{margin:14px 0;padding:17px;border:1px solid #dce8e1;border-radius:18px;background:linear-gradient(135deg,#f8fcfa,#fbfcff)}.hwc-membership-candidates-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px}.hwc-membership-candidates h2{margin:0;color:#173c2c;font-size:1.04rem}.hwc-membership-candidates p{margin:4px 0 0;color:#6e7f76;font-size:.7rem;line-height:1.5}.hwc-membership-count{display:inline-flex;padding:5px 8px;border-radius:999px;background:#edf7f1;color:#176f45;font-size:.6rem;font-weight:900;white-space:nowrap}.hwc-membership-candidate-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.hwc-membership-candidate{padding:12px;border:1px solid #dde8e2;border-radius:13px;background:#fff}.hwc-membership-candidate b{display:block;color:#173c2c;font-size:.78rem}.hwc-membership-candidate small{display:block;margin-top:3px;color:#74847c;font-size:.62rem;word-break:break-word}.hwc-membership-candidate-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.hwc-membership-pill{display:inline-flex;padding:4px 7px;border-radius:999px;background:#eef3f0;color:#52675e;font-size:.55rem;font-weight:850}.hwc-membership-pill.member{background:#e8f6ed;color:#176f45}.hwc-membership-candidate button,.hwc-membership-candidate a.hwc-assign-link{display:inline-flex;margin-top:9px;padding:7px 9px;border:0;border-radius:9px;background:#176f45;color:#fff;text-decoration:none;font-size:.62rem;font-weight:850;cursor:pointer}.hwc-membership-candidate a.hwc-assign-link{background:#eef6f1;color:#176f45;border:1px solid #d2e4d9}
 @media(min-width:1101px){body{padding-left:var(--hwc-admin-menu-w)!important;box-sizing:border-box}.os-layout{grid-template-columns:minmax(0,1fr)!important}.os-layout>.os-sidebar{display:none!important}}
-@media(max-width:1100px){.hwc-admin-global-sidebar{transform:translateX(-103%);transition:transform .2s ease;width:min(86vw,285px)}.hwc-admin-menu-toggle{display:block}.hwc-admin-menu-open .hwc-admin-global-sidebar{transform:translateX(0)}.hwc-admin-menu-open .hwc-admin-menu-backdrop{display:block}.hwc-admin-menu-open{overflow:hidden}.os-layout>.os-sidebar{display:none!important}.os-layout{grid-template-columns:minmax(0,1fr)!important}body{padding-left:0!important}}
+@media(max-width:1100px){.hwc-admin-global-sidebar{transform:translateX(-103%);transition:transform .2s ease;width:min(86vw,285px)}.hwc-admin-menu-toggle{display:block}.hwc-admin-menu-open .hwc-admin-global-sidebar{transform:translateX(0)}.hwc-admin-menu-open .hwc-admin-menu-backdrop{display:block}.hwc-admin-menu-open{overflow:hidden}.os-layout>.os-sidebar{display:none!important}.os-layout{grid-template-columns:minmax(0,1fr)!important}body{padding-left:0!important}.hwc-membership-candidate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.hwc-membership-candidate-grid{grid-template-columns:1fr}.hwc-membership-candidates-head{align-items:flex-start;flex-direction:column}}
 @media print{.hwc-admin-global-sidebar,.hwc-admin-menu-toggle,.hwc-admin-menu-backdrop{display:none!important}body{padding-left:0!important}}
 </style>
 HTML;
@@ -105,9 +107,66 @@ function admin_global_menu_script(): string
 {
     return <<<'HTML'
 <script id="hwc-admin-global-menu-js">
-(()=>{const b=document.body,t=document.getElementById('hwcAdminMenuToggle'),d=document.getElementById('hwcAdminMenuBackdrop');if(!b||!t)return;const close=()=>{b.classList.remove('hwc-admin-menu-open');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=!b.classList.contains('hwc-admin-menu-open');b.classList.toggle('hwc-admin-menu-open',open);t.setAttribute('aria-expanded',open?'true':'false')});d?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.getElementById('hwcAdminGlobalSidebar')?.addEventListener('click',e=>{if(e.target.closest('a')&&matchMedia('(max-width:1100px)').matches)close()})})();
+(()=>{const b=document.body,t=document.getElementById('hwcAdminMenuToggle'),d=document.getElementById('hwcAdminMenuBackdrop');if(!b||!t)return;const close=()=>{b.classList.remove('hwc-admin-menu-open');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=!b.classList.contains('hwc-admin-menu-open');b.classList.toggle('hwc-admin-menu-open',open);t.setAttribute('aria-expanded',open?'true':'false')});d?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.getElementById('hwcAdminGlobalSidebar')?.addEventListener('click',e=>{if(e.target.closest('a')&&matchMedia('(max-width:1100px)').matches)close()});document.addEventListener('click',e=>{const btn=e.target.closest('[data-hwc-membership-user]');if(!btn)return;const select=document.querySelector('select[name="user_id"]');if(!select)return;select.value=btn.getAttribute('data-hwc-membership-user')||'';select.dispatchEvent(new Event('change',{bubbles:true}));select.focus();select.scrollIntoView({behavior:'smooth',block:'center'})})})();
 </script>
 HTML;
+}
+
+function admin_global_menu_membership_candidates_panel(): string
+{
+    $customers = $GLOBALS['customers'] ?? [];
+    $memberships = $GLOBALS['memberships'] ?? [];
+    if (!is_array($customers) || !$customers) return '';
+
+    $memberByUser = [];
+    foreach ($memberships as $membership) {
+        if (!is_array($membership)) continue;
+        $uid = (int)($membership['user_id'] ?? 0);
+        if ($uid > 0) $memberByUser[$uid] = $membership;
+    }
+
+    $regularCount = 0;
+    foreach ($customers as $customer) {
+        if (!is_array($customer)) continue;
+        $uid = (int)($customer['id'] ?? 0);
+        if ($uid > 0 && !isset($memberByUser[$uid])) $regularCount++;
+    }
+
+    $h = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8');
+    $html = '<section class="hwc-membership-candidates" id="hwcMembershipCustomerAccounts">'
+        .'<div class="hwc-membership-candidates-head"><div><h2>Customer Login Accounts</h2><p>New website sign-ups appear here immediately. Regular customers can be selected below and converted to Club Members without creating a duplicate account.</p></div>'
+        .'<span class="hwc-membership-count">'.$regularCount.' regular • '.count($memberByUser).' member</span></div>'
+        .'<div class="hwc-membership-candidate-grid">';
+
+    foreach ($customers as $customer) {
+        if (!is_array($customer)) continue;
+        $uid = (int)($customer['id'] ?? 0);
+        if ($uid <= 0) continue;
+        $membership = $memberByUser[$uid] ?? null;
+        $name = trim((string)($customer['full_name'] ?? 'Customer'));
+        $email = trim((string)($customer['email'] ?? ''));
+        $mobile = trim((string)($customer['mobile'] ?? ''));
+
+        $html .= '<article class="hwc-membership-candidate"><b>'.$h($name).'</b><small>'.$h($email).'</small>';
+        if ($mobile !== '') $html .= '<small>'.$h($mobile).'</small>';
+        $html .= '<div class="hwc-membership-candidate-meta">';
+        if (is_array($membership)) {
+            $html .= '<span class="hwc-membership-pill member">CLUB MEMBER</span>';
+            if (!empty($membership['label_name'])) $html .= '<span class="hwc-membership-pill">'.$h($membership['label_name']).'</span>';
+            if (!empty($membership['member_code'])) $html .= '<span class="hwc-membership-pill">'.$h($membership['member_code']).'</span>';
+        } else {
+            $html .= '<span class="hwc-membership-pill">REGULAR CUSTOMER</span><span class="hwc-membership-pill">NO MEMBER ID</span>';
+        }
+        $html .= '</div>';
+        if (is_array($membership) && (int)($membership['id'] ?? 0) > 0) {
+            $html .= '<a class="hwc-assign-link" href="?edit_membership='.(int)$membership['id'].'">Edit Membership</a>';
+        } else {
+            $html .= '<button type="button" data-hwc-membership-user="'.$uid.'">Assign Club Membership</button>';
+        }
+        $html .= '</article>';
+    }
+
+    return $html.'</div></section>';
 }
 
 function admin_global_menu_inject(string $html): string
@@ -131,6 +190,12 @@ function admin_global_menu_inject(string $html): string
     $html = preg_replace('/<\/head>/i', admin_global_menu_styles().'</head>', $html, 1) ?? $html;
     $markup = admin_global_menu_markup($insideBusiness, $script);
     $html = preg_replace('/<body([^>]*)>/i', '<body$1>'.$markup, $html, 1) ?? $html;
+
+    if ($script === 'customer_membership_manager.php' && str_contains($html, '<section class="cm-grid">')) {
+        $panel = admin_global_menu_membership_candidates_panel();
+        if ($panel !== '') $html = preg_replace('/<section class="cm-grid">/', $panel.'<section class="cm-grid">', $html, 1) ?? $html;
+    }
+
     $html = preg_replace('/<\/body>/i', admin_global_menu_script().'</body>', $html, 1) ?? $html;
     return $html;
 }
