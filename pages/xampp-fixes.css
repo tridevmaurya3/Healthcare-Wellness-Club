@@ -23,3 +23,11 @@
 @media(max-width:991.98px){.global-navbar{min-height:64px}.global-nav-links{align-items:stretch!important;padding:14px 0 6px}.global-navbar .nav-link{padding:.7rem .82rem!important}.global-nav-divider{display:none}.global-contact-link{margin-top:5px;text-align:center}.global-footer-grid{grid-template-columns:1fr 1fr}.terms-layout{grid-template-columns:1fr}.terms-summary{position:static}.global-footer-bottom{flex-direction:column;gap:6px}}
 @media(max-width:768px){.home-page .home-photo-main{inset:12px 16px 46px 16px}.home-page .home-photo-main img{object-position:60% center}.home-page .home-float-two{left:6px;right:auto;top:20px;max-width:178px}.home-page .home-float-one{left:auto;right:4px;bottom:12px;max-width:178px}.home-page .home-float-card{padding:9px 11px}.home-page .home-float-card strong{font-size:.82rem}.home-page .home-float-card span{font-size:.68rem}}
 @media(max-width:575.98px){.global-brand-copy strong{font-size:.9rem}.global-brand-copy small{display:none}.global-brand-logo{width:40px!important;height:40px!important;flex-basis:40px}.global-footer{padding-top:36px!important}.global-footer-grid{grid-template-columns:1fr;gap:26px}.global-footer-bottom{margin-top:26px}.terms-content{padding:4px 18px}.terms-content article{grid-template-columns:38px minmax(0,1fr);gap:12px;padding:21px 0}.terms-number{width:36px;height:36px}.chat-toggle-btn{right:12px;bottom:14px;width:54px;height:54px}.chatbot-frame{right:12px;bottom:78px;width:calc(100vw - 24px);height:min(520px,calc(100vh - 98px))}}
+
+/* 2026-08-19: homepage scroll + floating action collision fix */
+html,body.home-page{min-height:100%}
+body.home-page{overflow-x:hidden!important;overflow-y:auto!important}
+.floating-btns{right:20px!important;bottom:20px!important;z-index:1035!important}
+.chat-toggle-btn{right:20px!important;bottom:150px!important;z-index:1040!important}
+.chatbot-frame{right:18px!important;bottom:218px!important;height:min(520px,calc(100vh - 240px))!important}
+@media(max-width:575.98px){body.home-page{overflow-x:hidden!important;overflow-y:auto!important}.floating-btns{right:12px!important;bottom:12px!important}.chat-toggle-btn{right:12px!important;bottom:142px!important}.chatbot-frame{right:12px!important;bottom:208px!important;width:calc(100vw - 24px)!important;height:min(500px,calc(100vh - 225px))!important}}
