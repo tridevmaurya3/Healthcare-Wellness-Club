@@ -42,7 +42,7 @@
 
   function loadPremiumLightTheme() {
     appendStylesheet(
-      "pages/premium-light.css?v=20260819-2",
+      "pages/premium-light.css?v=20260820-4",
       "data-hwc-premium-light",
     );
   }
@@ -287,12 +287,13 @@
     whatsapp.target = "_blank";
     whatsapp.rel = "noopener";
     whatsapp.className = "dock-action dock-whatsapp";
-    whatsapp.innerHTML = '<span aria-hidden="true">◉</span><b>WhatsApp</b>';
+    whatsapp.innerHTML =
+      '<span aria-hidden="true">📱</span><b>Chat on WhatsApp</b>';
     const phone = document.createElement("a");
     phone.dataset.dock = "phone";
     phone.href = "tel:+915483561586";
     phone.className = "dock-action dock-phone";
-    phone.innerHTML = '<span aria-hidden="true">☎</span><b>Call Now</b>';
+    phone.innerHTML = '<span aria-hidden="true">📞</span><b>Call Now</b>';
     dock.append(button, whatsapp, phone);
     document
       .querySelectorAll(".floating-btns,.home-quick-contact")
