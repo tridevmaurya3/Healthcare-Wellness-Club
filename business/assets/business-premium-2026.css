@@ -106,3 +106,11 @@ html body .os-link:hover,html body .os-report:hover{border-color:#c9c5eb!importa
 html body .bp-collapse-toggle{border-color:#d9d7e9!important;background:#fff!important;color:#5347ae!important;box-shadow:0 3px 10px rgba(58,47,129,.06)!important}
 html body .bp-collapse-toggle:hover{border-color:#bcb5ec!important;background:#f5f2ff!important}
 @media(max-width:680px){html body .os-hero{border-radius:16px!important}html body .os-card,html body .s10-card,html body .s10-kpi,html body .bi-card,html body .bi-kpi,html body .pp-card{border-radius:13px!important}}
+
+/* Club Member Register: keep the action control readable at every width. */
+html body .cm-table{min-width:680px!important}
+html body .cm-table th:nth-child(2){width:23%!important}
+html body .cm-table th:nth-child(4){width:15%!important}
+html body .cm-table th:nth-child(6){width:11%!important;white-space:nowrap!important}
+html body .cm-table td:last-child{white-space:nowrap!important;overflow-wrap:normal!important}
+html body .cm-table td:last-child a{min-width:54px!important;min-height:32px!important;padding:0 11px!important;line-height:1!important;white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important}
