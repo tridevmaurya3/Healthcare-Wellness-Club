@@ -116,6 +116,7 @@ try{
 <a class="active" href="customer_site_manager.php">
 <i class="dot">
 </i>Site Content Manager</a>
+<a href="ai_improvement_dashboard.php"><i class="dot"></i>AI Improvement Dashboard</a>
 <a href="product_image_manager.php">
 <i class="dot">
 </i>Product Images</a>
