@@ -88,6 +88,7 @@ function pscms_ensure(PDO $pdo): void
         'combo_product_1'=>'',
         'combo_product_2'=>'',
         'combo_product_3'=>'',
+        'combo_product_ids'=>'',
         'combo_button_text'=>'Add Complete Combo',
         'about_kicker'=>'About the coach',
         'about_title'=>'Guidance built around consistency, support and healthier everyday habits.',
@@ -126,6 +127,12 @@ function pscms_ensure(PDO $pdo): void
         foreach(['combo_product_1'=>'%Formula 1%','combo_product_2'=>'%Afresh%','combo_product_3'=>'%Protein%200%'] as $key=>$pattern){
             $find->execute([$orgId,$pattern]);$productId=(int)$find->fetchColumn();
             if($productId>0)$pdo->prepare("UPDATE public_site_content SET content_value=? WHERE organization_id=? AND content_key=? AND content_value=''")->execute([(string)$productId,$orgId,$key]);
+        }
+        $legacy=$pdo->prepare("SELECT content_key,content_value FROM public_site_content WHERE organization_id=? AND content_key IN ('combo_product_ids','combo_product_1','combo_product_2','combo_product_3')");
+        $legacy->execute([$orgId]);$selected=[];foreach($legacy->fetchAll() as $row)$selected[(string)$row['content_key']]=(string)$row['content_value'];
+        if(trim($selected['combo_product_ids']??'')===''){
+            $ids=array_values(array_unique(array_filter(array_map('intval',[$selected['combo_product_1']??0,$selected['combo_product_2']??0,$selected['combo_product_3']??0]))));
+            if($ids)$pdo->prepare("UPDATE public_site_content SET content_value=? WHERE organization_id=? AND content_key='combo_product_ids'")->execute([json_encode($ids),$orgId]);
         }
     }
 
@@ -169,5 +176,14 @@ function pscms_payload(PDO $pdo): array
     foreach($s->fetchAll() as $r)$content[(string)$r['content_key']]=(string)$r['content_value'];
     $s=$pdo->prepare("SELECT id,member_name,headline,story_text,image_path,sort_order,is_featured FROM public_site_stories WHERE organization_id=? AND status='active' ORDER BY is_featured DESC,sort_order,id");$s->execute([$orgId]);$stories=$s->fetchAll();
     $s=$pdo->prepare("SELECT id,service_name,service_text,image_path,sort_order FROM public_site_services WHERE organization_id=? AND status='active' ORDER BY sort_order,id");$s->execute([$orgId]);$services=$s->fetchAll();
-    return ['version'=>PUBLIC_SITE_CMS_VERSION,'content'=>$content,'stories'=>$stories,'services'=>$services,'updated_at'=>gmdate('c')];
+    $comboProducts=[];$ids=json_decode((string)($content['combo_product_ids']??''),true);
+    if(!is_array($ids))$ids=[];$ids=array_values(array_unique(array_filter(array_map('intval',$ids))));
+    if(!$ids)$ids=array_values(array_unique(array_filter(array_map('intval',[$content['combo_product_1']??0,$content['combo_product_2']??0,$content['combo_product_3']??0]))));
+    if($ids&&business_table_exists($pdo,'product_price_versions')){
+        $marks=implode(',',array_fill(0,count($ids),'?'));
+        $sql="SELECT p.id,p.sku,p.product_name,p.pack_size,p.pack_unit,v.mrp,(SELECT image_url FROM product_images i WHERE i.product_id=p.id AND i.is_primary=1 AND i.verification_status='verified' ORDER BY i.id LIMIT 1) image_url FROM products p JOIN product_market_listings l ON l.product_id=p.id AND l.organization_id=p.organization_id JOIN product_price_versions v ON v.listing_id=l.id AND v.organization_id=l.organization_id WHERE p.organization_id=? AND p.status='active' AND l.status='active' AND v.status='active' AND v.effective_from<=CURDATE() AND v.effective_from=(SELECT MAX(v2.effective_from) FROM product_price_versions v2 WHERE v2.organization_id=v.organization_id AND v2.listing_id=v.listing_id AND v2.status='active' AND v2.effective_from<=CURDATE()) AND p.id IN ($marks)";
+        $q=$pdo->prepare($sql);$q->execute([$orgId,...$ids]);$found=[];foreach($q->fetchAll() as $row)$found[(int)$row['id']]=$row;foreach($ids as $id)if(isset($found[$id]))$comboProducts[]=$found[$id];
+    }
+    $mrp=array_sum(array_map(static fn(array $p):float=>(float)$p['mrp'],$comboProducts));$discount=max(0,min(100,(float)($content['combo_discount_percent']??0)));
+    return ['version'=>PUBLIC_SITE_CMS_VERSION,'content'=>$content,'stories'=>$stories,'services'=>$services,'combo'=>['products'=>$comboProducts,'mrp_total'=>round($mrp,2),'discount_percent'=>$discount,'offer_total'=>round($mrp*(1-$discount/100),2)],'updated_at'=>gmdate('c')];
 }

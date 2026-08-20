@@ -17,7 +17,7 @@ $groups=[
   'home_eyebrow'=>'Hero Eyebrow','home_title'=>'Hero Title','home_lead'=>'Hero Introduction','home_primary_cta'=>'Primary Button Text','home_secondary_cta'=>'Secondary Button Text'
  ],
  'Public Product Combo'=>[
-  'combo_enabled'=>'Show Combo Offer','combo_badge'=>'Offer Badge','combo_title'=>'Offer Title','combo_subtitle'=>'Product Line','combo_description'=>'Offer Description','combo_discount_percent'=>'Discount Percent','combo_product_1'=>'Product 1','combo_product_2'=>'Product 2','combo_product_3'=>'Product 3','combo_button_text'=>'Button Text'
+  'combo_enabled'=>'Show Combo Offer','combo_badge'=>'Offer Badge','combo_title'=>'Offer Title','combo_subtitle'=>'Product Line','combo_description'=>'Offer Description','combo_discount_percent'=>'Discount Percent','combo_product_ids'=>'Products Included in Combo','combo_button_text'=>'Button Text'
  ],
  'About page'=>[
   'about_kicker'=>'Hero Kicker','about_title'=>'Hero Title','about_intro'=>'Hero Introduction','about_coach_name'=>'Coach Name','about_coach_role'=>'Coach Role','about_mission_title'=>'Mission Title','about_mission_copy'=>'Mission Description','about_mission_quote'=>'Mission Quote'
@@ -55,7 +55,7 @@ try{
         security_step17_verify_csrf((string)($_POST['csrf']??''));$action=(string)($_POST['action']??'');
         if($action==='save_content'){
             $posted=is_array($_POST['content']??null)?$_POST['content']:[];$allowed=[];foreach($groups as $fields)foreach($fields as $k=>$v)$allowed[$k]=true;
-            if(isset($posted['combo_discount_percent'])){$discount=(float)$posted['combo_discount_percent'];if($discount<0||$discount>100)throw new RuntimeException('Combo discount must be between 0 and 100 percent.');$ids=array_map('intval',[$posted['combo_product_1']??0,$posted['combo_product_2']??0,$posted['combo_product_3']??0]);if(count(array_unique(array_filter($ids)))!==3)throw new RuntimeException('Choose three different active products for the combo.');$marks=implode(',',array_fill(0,3,'?'));$check=$pdo->prepare("SELECT COUNT(*) FROM products WHERE organization_id=? AND status='active' AND id IN ($marks)");$check->execute([$orgId,...$ids]);if((int)$check->fetchColumn()!==3)throw new RuntimeException('One or more combo products are not active.');}
+            if(isset($posted['combo_discount_percent'])){$discount=(float)$posted['combo_discount_percent'];if($discount<0||$discount>100)throw new RuntimeException('Combo discount must be between 0 and 100 percent.');$ids=array_values(array_unique(array_filter(array_map('intval',is_array($posted['combo_product_ids']??null)?$posted['combo_product_ids']:[]))));if(count($ids)<2)throw new RuntimeException('Choose at least two active products for the combo.');$marks=implode(',',array_fill(0,count($ids),'?'));$check=$pdo->prepare("SELECT COUNT(*) FROM products WHERE organization_id=? AND status='active' AND id IN ($marks)");$check->execute([$orgId,...$ids]);if((int)$check->fetchColumn()!==count($ids))throw new RuntimeException('One or more combo products are not active.');$posted['combo_product_ids']=json_encode($ids);}
             $s=$pdo->prepare("INSERT INTO public_site_content(organization_id,content_key,content_value,updated_by) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE content_value=VALUES(content_value),updated_by=VALUES(updated_by),updated_at=NOW()");
             foreach($posted as $k=>$v){if(!isset($allowed[$k]))continue;$value=trim((string)$v);if(strlen($value)>8000)throw new RuntimeException('A content field is too long.');$s->execute([$orgId,$k,$value,(int)$user['id']]);}
             $section=trim((string)($_POST['content_section']??''));
@@ -181,8 +181,8 @@ try{
 </span>
 <?php if($key==='combo_enabled'):?>
 <select name="content[<?=security_step17_h($key)?>]"><option value="1" <?=($content[$key]??'1')==='1'?'selected':''?>>Visible / Active</option><option value="0" <?=($content[$key]??'1')==='0'?'selected':''?>>Hidden / Inactive</option></select>
-<?php elseif(str_starts_with($key,'combo_product_')):?>
-<select name="content[<?=security_step17_h($key)?>]" required><option value="">Choose active product</option><?php foreach($productOptions as $product):?><option value="<?=(int)$product['id']?>" <?=(string)($content[$key]??'')===(string)$product['id']?'selected':''?>><?=security_step17_h($product['product_name'].' • '.$product['sku'].($product['pack_size']?' • '.$product['pack_size'].' '.$product['pack_unit']:''))?></option><?php endforeach;?></select>
+<?php elseif($key==='combo_product_ids'):$chosen=json_decode((string)($content[$key]??''),true);if(!is_array($chosen))$chosen=[];$chosen=array_map('intval',$chosen);?>
+<select name="content[combo_product_ids][]" multiple size="8" required aria-describedby="combo-product-help"><?php foreach($productOptions as $product):?><option value="<?=(int)$product['id']?>" <?=in_array((int)$product['id'],$chosen,true)?'selected':''?>><?=security_step17_h($product['product_name'].' • '.$product['sku'].($product['pack_size']?' • '.$product['pack_size'].' '.$product['pack_unit']:''))?></option><?php endforeach;?></select><small id="combo-product-help">Select any 2 or more products. Use Ctrl/Command to select or remove multiple items. Only selected products are calculated and displayed.</small>
 <?php elseif($key==='combo_discount_percent'):?>
 <input type="number" name="content[<?=security_step17_h($key)?>]" value="<?=security_step17_h((string)($content[$key]??'25'))?>" min="0" max="100" step="0.01">
 <?php elseif(in_array($key,$longKeys,true)):?>

@@ -286,6 +286,27 @@
     );
   }
 
+  function money(value) {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(Number(value) || 0);
+  }
+
+  function createCompactCombo(data) {
+    if (document.querySelector(".public-combo-strip")) return;
+    const content = data?.content || {};
+    const products = Array.isArray(data?.combo?.products) ? data.combo.products : [];
+    if (content.combo_enabled !== "1" || products.length < 2) return;
+    const card = document.createElement("section");
+    card.className = "public-combo-strip";
+    card.setAttribute("aria-label", "Featured product combo offer");
+    const images = products.slice(0, 5).map((product) => {
+      const raw = String(product.image_url || "").replace(/^\.\.\//, "");
+      return raw ? `<img src="${fromRoot(raw)}" alt="${String(product.product_name || "Product").replace(/[&<>\"]/g, "")}">` : `<span>HWC</span>`;
+    }).join("");
+    card.innerHTML = `<div class="public-combo-images">${images}${products.length > 5 ? `<b>+${products.length - 5}</b>` : ""}</div><div class="public-combo-copy"><small>${content.combo_badge || `${data.combo.discount_percent}% COMBO OFFER`}</small><strong>${content.combo_title || "Featured Wellness Combo"}</strong><span>${products.length} selected products • <s>${money(data.combo.mrp_total)}</s> <b>${money(data.combo.offer_total)}</b></span></div><a href="${fromRoot("shop/index.php#combo-title")}">View Combo →</a>`;
+    const footer = document.getElementById("footer-placeholder") || document.querySelector("footer");
+    (footer?.parentNode || document.body).insertBefore(card, footer || null);
+  }
+
   function createChatbot() {
     if (document.getElementById("chat-toggle-btn")) return;
     const button = document.createElement("button");
@@ -450,5 +471,6 @@
     createChatbot();
     const data = await window.hwcSiteReady;
     applySiteContent(data, document);
+    createCompactCombo(data);
   });
 })();
