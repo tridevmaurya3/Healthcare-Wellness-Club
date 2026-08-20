@@ -242,6 +242,7 @@
         link.rel = "noopener noreferrer";
       }
     });
+    const aiPanel = document.querySelector(".chatbot-panel");
     const dock = document.querySelector(".premium-action-dock");
     if (dock) {
       const whatsapp = dock.querySelector('[data-dock="whatsapp"]');
@@ -259,7 +260,6 @@
             "Hello, I need help from Healthcare Wellness Club.",
           );
     }
-    const aiPanel = document.querySelector(".chatbot-panel");
     if (aiPanel) {
       const safeUrl = /^https:\/\//i.test(
         String(content.global_ai_chat_url || ""),
@@ -311,7 +311,27 @@
     frame.title = "Healthcare Wellness Club chat";
     frame.loading = "lazy";
 
+    const feedback = document.createElement("form");
+    feedback.className = "chatbot-feedback";
+    feedback.innerHTML = `<p>Did you get a useful answer?</p><div><button type="button" data-ai-helpful>Yes, helpful</button><button type="button" data-ai-not-helpful>No, report question</button></div><label hidden><span>What question was not answered?</span><textarea maxlength="1000" required></textarea><button type="submit">Send for improvement</button></label><small aria-live="polite"></small>`;
+    let aiSession = sessionStorage.getItem("hwc_ai_session");
+    if (!aiSession) {
+      aiSession = crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 3 | 8); return v.toString(16); });
+      sessionStorage.setItem("hwc_ai_session", aiSession);
+    }
+    const track = (event_type, extra = {}) => {
+      const body = JSON.stringify({ event_type, session_token: aiSession, page_path: location.pathname, ...extra });
+      if (navigator.sendBeacon) navigator.sendBeacon(fromRoot("public_ai_event.php"), new Blob([body], { type: "application/json" }));
+      else fetch(fromRoot("public_ai_event.php"), { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
+    };
+    panel.querySelectorAll(".chatbot-panel-intro nav a").forEach((link) => link.addEventListener("click", () => track("topic_click", { topic: link.textContent.trim() })));
+    panel.querySelector("[data-ai-handoff]").addEventListener("click", () => track("human_handoff"));
+    feedback.querySelector("[data-ai-helpful]").addEventListener("click", () => { track("answer_helpful"); feedback.querySelector("small").textContent = "Thank you for your feedback."; });
+    feedback.querySelector("[data-ai-not-helpful]").addEventListener("click", () => { feedback.querySelector("label").hidden = false; feedback.querySelector("textarea").focus(); });
+    feedback.addEventListener("submit", (event) => { event.preventDefault(); const question = feedback.querySelector("textarea").value.trim(); if (question.length < 3) return; track("answer_unanswered", { question }); feedback.reset(); feedback.querySelector("label").hidden = true; feedback.querySelector("small").textContent = "Saved for the club team to improve."; });
+
     const closeChat = () => {
+      track("panel_close");
       panel.classList.remove("is-open");
       backdrop.classList.remove("is-open");
       backdrop.hidden = true;
@@ -321,6 +341,7 @@
       button.focus({ preventScroll: true });
     };
     const openChat = () => {
+      track("panel_open");
       backdrop.hidden = false;
       window.requestAnimationFrame(() => {
         panel.classList.add("is-open");
@@ -409,7 +430,7 @@
     document
       .querySelectorAll(".floating-btns,.home-quick-contact")
       .forEach((element) => (element.hidden = true));
-    panel.appendChild(frame);
+    panel.append(frame, feedback);
     document.body.append(dock, backdrop, panel);
   }
 
