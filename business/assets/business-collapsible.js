@@ -67,9 +67,70 @@
     });
   }
 
+  function groupProductMasterByCategory() {
+    var cards = document.querySelectorAll('.pmm-card');
+    if (!cards.length) return;
+    var card = cards[cards.length - 1];
+    var rows = Array.prototype.slice.call(card.querySelectorAll(':scope > .pmm-row'));
+    if (!rows.length) return;
+
+    var groups = {};
+    rows.forEach(function (row) {
+      var categoryNode = row.querySelector(':scope > div:first-child small');
+      var category = categoryNode && categoryNode.textContent.trim() ? categoryNode.textContent.trim() : 'Uncategorised';
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(row);
+    });
+
+    var toolbar = document.createElement('div');
+    toolbar.className = 'pmm-category-toolbar';
+    var label = document.createElement('label');
+    label.innerHTML = '<span>Product Category</span>';
+    var select = document.createElement('select');
+    select.setAttribute('aria-label', 'Filter recent products by category');
+    select.innerHTML = '<option value="all">All Categories (' + rows.length + ')</option>';
+    Object.keys(groups).sort().forEach(function (category) {
+      var option = document.createElement('option');
+      option.value = category;
+      option.textContent = category + ' (' + groups[category].length + ')';
+      select.appendChild(option);
+    });
+    label.appendChild(select);
+    toolbar.appendChild(label);
+    rows[0].parentNode.insertBefore(toolbar, rows[0]);
+
+    var list = document.createElement('div');
+    list.className = 'pmm-category-list';
+    toolbar.parentNode.insertBefore(list, toolbar.nextSibling);
+    Object.keys(groups).sort().forEach(function (category, index) {
+      var section = document.createElement('details');
+      section.className = 'pmm-category-section';
+      section.dataset.category = category;
+      section.open = index === 0;
+      var summary = document.createElement('summary');
+      summary.innerHTML = '<span>' + category + '</span><b>' + groups[category].length + ' product' + (groups[category].length === 1 ? '' : 's') + '</b>';
+      section.appendChild(summary);
+      var body = document.createElement('div');
+      body.className = 'pmm-category-products';
+      groups[category].forEach(function (row) { body.appendChild(row); });
+      section.appendChild(body);
+      list.appendChild(section);
+    });
+
+    select.addEventListener('change', function () {
+      var chosen = select.value;
+      list.querySelectorAll('.pmm-category-section').forEach(function (section) {
+        var visible = chosen === 'all' || section.dataset.category === chosen;
+        section.hidden = !visible;
+        if (chosen !== 'all' && visible) section.open = true;
+      });
+    });
+  }
+
   function init() {
     collapseSidebar();
     collapseCards();
+    groupProductMasterByCategory();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
