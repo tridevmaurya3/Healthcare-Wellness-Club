@@ -181,7 +181,7 @@ function admin_global_menu_inject(string $html): string
     $path = str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? ''));
     $script = basename($path);
     $insideBusiness = str_contains($path, '/business/');
-    $allowedRoot = ['account.php','security_alerts.php','trusted_devices.php','mfa_settings.php','change_password.php'];
+    $allowedRoot = ['feature_hub.php','account.php','security_alerts.php','trusted_devices.php','trusted_device_diagnostics.php','mfa_settings.php','change_password.php'];
     if (!$insideBusiness && !in_array($script, $allowedRoot, true)) return $html;
     if (str_contains($path, '/shop/')) return $html;
 
