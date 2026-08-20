@@ -206,5 +206,6 @@ body{background:#f5f8f6;color:#173c2c}.fa-wrap{max-width:1540px;margin:0 auto;pa
 <div class="fa-note"><strong>Visual identity check:</strong> the technical audit cannot identify whether the printed label/artwork inside a photo belongs to the intended product. That was intentionally handled by the per-batch preview step before activation. This page is the final database/repository consistency audit.</div>
 <?php endif; ?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

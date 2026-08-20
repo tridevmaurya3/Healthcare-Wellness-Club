@@ -216,5 +216,6 @@ $allPass = $error === null && $allSourcePass && $checks && !in_array(false, $che
     <?php endif; ?>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

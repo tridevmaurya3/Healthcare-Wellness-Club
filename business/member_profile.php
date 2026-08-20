@@ -612,5 +612,6 @@ $excludedSameName = array_sum($guardCounts);
     <div class="os-footer-note"><strong>Profile 360 policy:</strong> totals and timeline events are joined by verified <code>member_id</code>. Source-only rows with the same displayed name are never silently attributed to this profile.</div>
   </main>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

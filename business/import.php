@@ -360,5 +360,6 @@ $missingDerivedSheets = array_values(array_diff(array_keys($derivedSheets), arra
     </div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

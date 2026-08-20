@@ -262,4 +262,4 @@ function de_member_options(array $members, string $name): string {
 </div></section>
 <?php endif; ?>
 <div class="os-footer-note"><strong>Identity rule:</strong> duplicate warning never means automatic merge. Every genuinely separate New UMS row remains a separate identity unless a verified review explicitly links it later.</div>
-</main></div><script src="assets/data_entry.js"></script></body></html>
+</main></div><script src="assets/data_entry.js"></script><script src="assets/business-collapsible.js?v=20260820-1" defer></script></body></html>

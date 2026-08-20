@@ -321,4 +321,4 @@ $recentRestores=count(array_filter($history,static fn(array $h):bool=>str_ends_w
 <div class="rs-policy"><strong>Recovery policy:</strong> restore never hard-deletes or recreates the fact. It reactivates the same preserved normalized record only when no active replacement conflict exists. Legacy Excel data remains read-only.</div></article>
 <?php endif; ?>
 </main></div>
-</body></html>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script></body></html>

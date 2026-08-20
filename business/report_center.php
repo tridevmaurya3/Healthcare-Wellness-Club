@@ -191,5 +191,6 @@ $ready = $error === null && $stats['source_total'] === 757 && $stats['source_map
     <?php endif; ?>
   </main>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

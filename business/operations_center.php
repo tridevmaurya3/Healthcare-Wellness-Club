@@ -731,5 +731,6 @@ $selectedMemberName = $filters['member'] > 0 && isset($membersById[$filters['mem
   });
 })();
 </script>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

@@ -281,5 +281,6 @@ $ready = $error === null && $summary['raw_rows'] === EXPECTED_NEW_UMS_ROWS && $b
     <?php endif; ?>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

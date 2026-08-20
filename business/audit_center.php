@@ -412,4 +412,4 @@ function ua_query(array $changes = []): string
 <div class="os-footer-note"><strong>Audit policy:</strong> this center is observational only. Manual facts are changed only through Data Entry, Correction, Reverse and Restore workflows. Legacy Excel/source evidence remains locked.</div>
 <?php endif; ?>
 </main></div>
-</body></html>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script></body></html>

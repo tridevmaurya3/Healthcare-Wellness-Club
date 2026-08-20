@@ -247,5 +247,6 @@ $workflow = [
     <div class="os-footer-note"><strong>Workflow rule:</strong> Create for new facts, Correct for wrong values, Reverse to remove a fact from business effect without deletion, Restore only when recovery is genuinely needed, and Audit whenever you need the complete evidence trail.</div>
   </main>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

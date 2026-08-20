@@ -460,5 +460,6 @@ $complete = $error === null && $mappedRows === VP_WRITE_EXPECTED_ROWS && $pendin
     <div class="imp-footer-note"><strong>Traceability:</strong> each Volume Point fact retains its raw Excel source record, source sheet, original row number and immutable source key. Uncertain member identity is represented explicitly as an unlinked fact rather than a guessed Member relationship.</div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

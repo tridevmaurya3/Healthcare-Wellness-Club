@@ -598,5 +598,6 @@ $ready = $error === null && $sourceTotal === 757 && $sourceMapped === 757;
     <div class="os-footer-note"><strong>Identity policy:</strong> member name and mobile are searchable attributes, not global unique keys. Imported source rows remain independently traceable, and unresolved Sponsor/Team/Supervisor relationships are preserved without guessing.</div>
   </main>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

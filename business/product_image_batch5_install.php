@@ -183,5 +183,6 @@ body{background:#f5f8f6}.pi-wrap{max-width:1460px;margin:0 auto;padding:18px}.pi
 </section>
 <?php endif; ?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

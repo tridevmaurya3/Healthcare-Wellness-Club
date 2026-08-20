@@ -511,5 +511,6 @@ $complete = $error === null && $mappedRows === FSS_WRITE_EXPECTED_ROWS && $pendi
     <div class="imp-footer-note"><strong>Traceability:</strong> every created order keeps its original raw record ID, source sheet, row and source key. Product-level order_items remain deliberately deferred until the authoritative product catalog and pricing system exist.</div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

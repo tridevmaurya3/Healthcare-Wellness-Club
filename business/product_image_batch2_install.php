@@ -202,5 +202,6 @@ try {
 </section>
 <?php endif; ?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

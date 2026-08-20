@@ -42,3 +42,22 @@ html body .os-main input:not([type=checkbox]):not([type=radio]),html body .os-ma
 html body .os-main input:focus,html body .os-main select:focus,html body .os-main textarea:focus{outline:none;border-color:#38a86f;box-shadow:0 0 0 4px rgba(37,168,102,.12)}
 @media(max-width:1050px){html body .os-layout{grid-template-columns:1fr;gap:12px;margin-top:12px}html body .os-sidebar{position:static;padding:9px;border-radius:16px}html body .os-sidebar .os-nav a:hover{transform:none}}
 @media(max-width:680px){html body .os-topbar-inner,html body .os-layout{width:min(100% - 16px,1760px)}html body .os-topbar-inner{min-height:62px}html body .os-brand img{width:38px;height:38px;border-radius:12px}html body .os-hero{padding:20px;border-radius:20px}html body .os-hero h1{font-size:1.72rem}html body .os-card:hover{transform:none}}
+
+/* Compact two-part tools + universal collapsible work areas. */
+html body .os-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html body .os-link{min-height:62px}
+.bp-collapse-heading{position:relative;padding-right:92px!important;min-height:42px}
+.bp-collapse-toggle{position:absolute;top:50%;right:0;display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 11px;border:1px solid #cfe1d7;border-radius:10px;background:linear-gradient(180deg,#fff,#f3f8f5);color:#236243;font:800 .68rem/1 inherit;cursor:pointer;transform:translateY(-50%);box-shadow:0 5px 14px rgba(31,72,51,.06);transition:.18s ease}
+.bp-collapse-toggle:hover{border-color:#9fcbb2;background:#edf8f2;box-shadow:0 8px 18px rgba(31,72,51,.10)}
+.bp-collapse-toggle i{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .18s ease}
+.bp-collapse-toggle[aria-expanded=true] i{transform:rotate(225deg) translate(-1px,-1px)}
+.bp-collapse-body{padding-top:14px;animation:bp-expand .18s ease both}
+.bp-collapse-body[hidden],.bp-sidebar-group[hidden]{display:none!important}
+.bp-collapsible-card{padding-top:13px!important;padding-bottom:13px!important}
+.bp-collapsible-card>.os-title-row{margin:0}
+.os-sidebar>.bp-collapse-heading{display:flex;align-items:center;margin:2px 0;padding:9px 42px 9px 10px!important;border-radius:11px;color:#5d7166;cursor:default}
+.os-sidebar>.bp-collapse-heading .bp-collapse-toggle{right:5px;width:29px;min-height:29px;padding:0;border-radius:9px}
+.os-sidebar>.bp-collapse-heading .bp-collapse-toggle span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.bp-sidebar-group{display:grid;gap:4px;padding-bottom:6px;animation:bp-expand .16s ease both}
+@keyframes bp-expand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(max-width:680px){html body .os-links{grid-template-columns:1fr}.bp-collapse-heading{padding-right:76px!important}.bp-collapse-toggle{padding:0 9px}.bp-collapse-body{padding-top:11px}}

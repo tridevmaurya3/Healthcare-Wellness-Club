@@ -598,5 +598,6 @@ $complete = $error === null && $alreadyMapped === NEW_UMS_EXPECTED_ROWS && $pend
     <div class="imp-footer-note"><strong>Traceability:</strong> each Member and UMS record retains its original New UMS raw source row. Sponsor, Team and Active Supervisor relationship IDs remain deferred. A later reconciliation module can merge duplicate identities only after stronger evidence is available.</div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

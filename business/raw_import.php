@@ -396,5 +396,6 @@ try {
     <div class="imp-footer-note"><strong>Next boundary:</strong> after raw capture is verified, Step 8H will reconcile row counts and source integrity. Only after that will normalized mapping be enabled sheet-by-sheet.</div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

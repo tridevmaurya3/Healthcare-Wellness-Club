@@ -140,5 +140,6 @@ foreach($customerAccounts as $a){
 <div class="os-footer-note"><strong>Customer sign-up location:</strong> Administrator → Customer Center → Customer Login Accounts / New Sign-ups.</div>
 </main>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

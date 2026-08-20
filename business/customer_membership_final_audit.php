@@ -431,5 +431,6 @@ body{background:#f5f8f6;color:#173c2c}.cmfa-wrap{max-width:1520px;margin:0 auto;
 <div class="cmfa-note"><strong>Boundary:</strong> this audit verifies membership/account/order consistency and exact tier references. It does not turn an order request into a sale, collect payment, allocate stock, expose internal cost/profit data, or replace the already-completed visual product-image audit.</div>
 <?php endif; ?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

@@ -160,5 +160,6 @@ body{background:#f5f8f6;color:#173c2c}.dr-wrap{max-width:1380px;margin:auto;padd
 <div class="dr-note"><strong>Important:</strong> the currently tested Customer Membership checkout already uses the canonical ₹118 rule. This audit also checks dormant/legacy STEP23 code so an older path cannot reintroduce a different charge later.</div>
 <?php endif;?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

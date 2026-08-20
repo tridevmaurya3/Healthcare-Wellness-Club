@@ -518,5 +518,6 @@ $ready = $error === null && $sourceTotal === 757 && $sourceMapped === 757;
   }
 })();
 </script>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

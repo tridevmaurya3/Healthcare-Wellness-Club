@@ -448,5 +448,6 @@ natcasesort($ownerOptions);
     </section>
   <?php endif; ?>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

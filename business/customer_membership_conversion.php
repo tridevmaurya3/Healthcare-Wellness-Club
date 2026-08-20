@@ -267,5 +267,6 @@ body{background:#f5f8f6}.cmc-wrap{max-width:1480px;margin:0 auto;padding:18px}.c
 <div class="cmc-note"><a href="customer_membership_manager.php">← Open full Club Members & Offers manager</a> &nbsp;•&nbsp; <a href="customer_center.php">Customer Center</a> &nbsp;•&nbsp; <a href="../shop/index.php">Storefront</a></div>
 <?php endif; ?>
 </div>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>

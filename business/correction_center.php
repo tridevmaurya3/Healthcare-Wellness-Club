@@ -286,4 +286,4 @@ function cc_value(array $row, string $key, mixed $fallback=''): string { return 
 <div class="os-footer-note"><strong>Correction policy:</strong> imported/legacy facts are historical source evidence and stay locked. MANUAL normalized facts can be corrected only with an explicit reason; the original raw payload remains immutable and every change is auditable.</div>
 </main></div>
 <script>const s=document.getElementById('ccSearch'),rows=[...document.querySelectorAll('.cc-entry')];if(s){s.addEventListener('input',()=>{const q=s.value.trim().toLowerCase();rows.forEach(r=>r.hidden=q!==''&&!r.dataset.search.includes(q));});}</script>
-</body></html>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script></body></html>

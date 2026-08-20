@@ -482,5 +482,6 @@ $complete = $error === null
     <div class="imp-footer-note"><strong>Traceability:</strong> every activity snapshot points back to its exact raw Excel source row. Snapshot date is stored as the first day of the source Year + Month only as a normalized period anchor; it does not claim the member became active on that specific day.</div>
   </section>
 </main>
+<script src="assets/business-collapsible.js?v=20260820-1" defer></script>
 </body>
 </html>
