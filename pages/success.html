@@ -1,102 +1,299 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Read individual Healthcare Wellness Club member experiences focused on consistency, confidence, activity and everyday wellness routines.">
-  <title>Member Stories - Healthcare Wellness Club</title>
-  <link rel="stylesheet" href="../css/bootstrap.min.css">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="design-system.css">
-  <link rel="stylesheet" href="public-pages.css">
-  <link rel="stylesheet" href="xampp-fixes.css">
-</head>
-<body class="public-page stories-page">
-  <div id="navbar-placeholder"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Read individual Healthcare Wellness Club member experiences focused on consistency, confidence, activity and everyday wellness routines."
+    />
+    <title>Member Stories - Healthcare Wellness Club</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="design-system.css" />
+    <link rel="stylesheet" href="public-pages.css" />
+    <link rel="stylesheet" href="xampp-fixes.css" />
+  </head>
+  <body class="public-page stories-page">
+    <div id="navbar-placeholder"></div>
 
-  <header class="pub-hero story-hero">
-    <div class="pub-shell pub-hero-grid">
-      <div>
-        <div class="pub-kicker" data-cms-key="stories_kicker">Member experiences</div>
-        <h1 data-cms-key="stories_title">Real people. Personal journeys. Everyday consistency.</h1>
-        <p data-cms-key="stories_intro">Explore individual member experiences one story at a time. Use the story selector or let the spotlight rotate automatically.</p>
-      </div>
-      <div class="pub-hero-chip" data-cms-key="stories_chip">Personal experiences • Results vary</div>
-    </div>
-  </header>
-
-  <main class="pub-main story-main">
-    <div class="pub-shell">
-      <section class="story-showcase" aria-label="Featured member story">
-        <div class="story-photo-wrap">
-          <img id="story-photo" class="story-photo" src="../img/kusum-me.jpg" alt="Member story" loading="eager">
-          <div class="story-photo-shade"></div>
-          <div class="story-counter"><span id="story-current">01</span><i></i><span id="story-total">06</span></div>
-        </div>
-        <article class="story-content" aria-live="polite">
-          <div class="story-topline"><span class="story-label">MEMBER SPOTLIGHT</span><span class="story-auto"><i></i> Auto-changing stories</span></div>
-          <h2 id="story-name">Kusum Maurya</h2>
-          <h3 id="story-headline">A routine built with consistency</h3>
-          <p id="story-text">Shared that regular wellness routines and consistent support helped her feel more active and better supported in everyday life.</p>
-          <div class="story-controls">
-            <button id="story-prev" type="button" aria-label="Previous member story">← Previous</button>
-            <button id="story-next" type="button" aria-label="Next member story">Next →</button>
+    <header class="pub-hero story-hero">
+      <div class="pub-shell pub-hero-grid">
+        <div>
+          <div class="pub-kicker" data-cms-key="stories_kicker">
+            Member experiences
           </div>
-        </article>
-      </section>
+          <h1 data-cms-key="stories_title">
+            Real people. Personal journeys. Everyday consistency.
+          </h1>
+          <p data-cms-key="stories_intro">
+            Explore individual member experiences one story at a time. Use the
+            story selector or let the spotlight rotate automatically.
+          </p>
+        </div>
+        <div class="pub-hero-chip" data-cms-key="stories_chip">
+          Personal experiences • Results vary
+        </div>
+      </div>
+    </header>
 
-      <section class="story-selector-wrap" aria-label="Choose a member story">
-        <div class="story-selector-head"><div><span>EXPLORE STORIES</span><h2>Choose a member</h2></div><p>Stories automatically change every few seconds. You can select any member directly.</p></div>
-        <div class="story-rail" id="story-rail"></div>
-      </section>
+    <main class="pub-main story-main">
+      <div class="pub-shell">
+        <section class="story-proof-strip" aria-label="Story principles">
+          <div>
+            <strong>Real voices</strong><span>Personal member experiences</span>
+          </div>
+          <div>
+            <strong>Everyday progress</strong
+            ><span>Consistency-focused stories</span>
+          </div>
+          <div>
+            <strong>Responsible sharing</strong
+            ><span>Individual results may vary</span>
+          </div>
+        </section>
+        <section class="story-showcase" aria-label="Featured member story">
+          <div class="story-photo-wrap">
+            <img
+              id="story-photo"
+              class="story-photo"
+              src="../img/kusum-me.jpg"
+              alt="Member story"
+              loading="eager"
+            />
+            <div class="story-photo-shade"></div>
+            <div class="story-counter">
+              <span id="story-current">01</span><i></i
+              ><span id="story-total">06</span>
+            </div>
+          </div>
+          <article class="story-content" aria-live="polite">
+            <div class="story-topline">
+              <span class="story-label">MEMBER SPOTLIGHT</span
+              ><span class="story-auto"><i></i> Auto-changing stories</span>
+            </div>
+            <h2 id="story-name">Kusum Maurya</h2>
+            <h3 id="story-headline">A routine built with consistency</h3>
+            <p id="story-text">
+              Shared that regular wellness routines and consistent support
+              helped her feel more active and better supported in everyday life.
+            </p>
+            <div class="story-controls">
+              <button
+                id="story-prev"
+                type="button"
+                aria-label="Previous member story"
+              >
+                ← Previous
+              </button>
+              <button
+                id="story-next"
+                type="button"
+                aria-label="Next member story"
+              >
+                Next →
+              </button>
+            </div>
+          </article>
+        </section>
 
-      <div class="pub-disclaimer"><strong>Important:</strong> <span data-cms-key="stories_disclaimer">Individual experiences differ. Wellness outcomes can vary based on many factors. These stories are personal accounts, not medical claims or guaranteed outcomes.</span></div>
+        <section class="story-selector-wrap" aria-label="Choose a member story">
+          <div class="story-selector-head">
+            <div>
+              <span>EXPLORE STORIES</span>
+              <h2>Choose a member</h2>
+            </div>
+            <p>
+              Stories automatically change every few seconds. You can select any
+              member directly.
+            </p>
+          </div>
+          <div class="story-rail" id="story-rail"></div>
+        </section>
 
-      <section class="story-cta mt-4">
-        <div><div class="pub-kicker">START YOUR CONVERSATION</div><h2 data-cms-key="stories_cta_title">Your wellness journey can be personal too.</h2><p data-cms-key="stories_cta_copy">Explore the available services or contact the club to understand the support, routines and community activities available.</p></div>
-        <div class="pub-cta-row"><a class="pub-cta-link primary" href="services.html">Explore Services</a><a class="pub-cta-link" href="contact.html">Contact the Club</a></div>
-      </section>
+        <div class="pub-disclaimer">
+          <strong>Important:</strong>
+          <span data-cms-key="stories_disclaimer"
+            >Individual experiences differ. Wellness outcomes can vary based on
+            many factors. These stories are personal accounts, not medical
+            claims or guaranteed outcomes.</span
+          >
+        </div>
+
+        <section class="story-cta mt-4">
+          <div>
+            <div class="pub-kicker">START YOUR CONVERSATION</div>
+            <h2 data-cms-key="stories_cta_title">
+              Your wellness journey can be personal too.
+            </h2>
+            <p data-cms-key="stories_cta_copy">
+              Explore the available services or contact the club to understand
+              the support, routines and community activities available.
+            </p>
+          </div>
+          <div class="pub-cta-row">
+            <a class="pub-cta-link primary" href="services.html"
+              >Explore Services</a
+            ><a class="pub-cta-link" href="contact.html">Contact the Club</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="floating-btns">
+      <a href="https://wa.me/918858302744" target="_blank" rel="noopener"
+        >📱 Chat on WhatsApp</a
+      ><a href="tel:+915483561586" class="call-btn">📞 Call Now</a>
     </div>
-  </main>
+    <div id="footer-placeholder"></div>
 
-  <div class="floating-btns"><a href="https://wa.me/918858302744" target="_blank" rel="noopener">📱 Chat on WhatsApp</a><a href="tel:+915483561586" class="call-btn">📞 Call Now</a></div>
-  <div id="footer-placeholder"></div>
-
-  <script src="../js/bootstrap.bundle.min.js"></script>
-  <script src="../js/site.js"></script>
-  <script>
-    (()=>{
-      const fallback=[
-        {member_name:'Kusum Maurya',headline:'A routine built with consistency',story_text:'Shared that regular wellness routines and consistent support helped her feel more active and better supported in everyday life.',image_path:'img/kusum-me.jpg'},
-        {member_name:'Pinki Devi',headline:'Confidence through consistency',story_text:'Shared a positive experience with greater activity, confidence and consistency during her wellness journey.',image_path:'success/pinki.jpg'},
-        {member_name:'Poonam Maurya',headline:'A more organised wellness routine',story_text:'Shared that following a more organised routine helped her feel healthier, happier and more consistent.',image_path:'success/poonam.jpg'},
-        {member_name:'Ramanand Pandey',headline:'Long-term routine changes',story_text:'Shared a long-term wellness journey involving sustained routine changes and improvements in personally reported well-being.',image_path:'success/Rama.jpg'},
-        {member_name:'Shilpa Singh',headline:'More energy and confidence',story_text:'Shared feeling more energetic and confident after maintaining a consistent wellness routine.',image_path:'success/shilpa.jpg'},
-        {member_name:'Kusum Pandey',headline:'Positive long-term consistency',story_text:'Shared a positive long-term experience focused on greater energy, confidence and everyday consistency.',image_path:'success/Kusum.jpg'}
-      ];
-      let stories=fallback,index=0,timer=null;
-      const photo=document.getElementById('story-photo'),name=document.getElementById('story-name'),headline=document.getElementById('story-headline'),text=document.getElementById('story-text'),current=document.getElementById('story-current'),total=document.getElementById('story-total'),rail=document.getElementById('story-rail'),showcase=document.querySelector('.story-showcase');
-      const asset=(path)=>window.hwcSiteAsset?window.hwcSiteAsset(path):('../'+String(path).replace(/^\/+/,''));
-      const pad=n=>String(n).padStart(2,'0');
-      function buildRail(){
-        rail.replaceChildren();
-        stories.forEach((story,i)=>{
-          const b=document.createElement('button');b.type='button';b.className='story-person';b.dataset.index=String(i);b.setAttribute('aria-label','Show story for '+story.member_name);
-          const img=document.createElement('img');img.src=asset(story.image_path);img.alt='';img.loading='lazy';
-          const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent=story.member_name;const small=document.createElement('small');small.textContent=story.headline||'Member experience';copy.append(strong,small);b.append(img,copy);b.addEventListener('click',()=>{index=i;render(true);restart();});rail.appendChild(b);
+    <script src="../js/bootstrap.bundle.min.js"></script>
+    <script src="../js/site.js"></script>
+    <script>
+      (() => {
+        const fallback = [
+          {
+            member_name: "Kusum Maurya",
+            headline: "A routine built with consistency",
+            story_text:
+              "Shared that regular wellness routines and consistent support helped her feel more active and better supported in everyday life.",
+            image_path: "img/kusum-me.jpg",
+          },
+          {
+            member_name: "Pinki Devi",
+            headline: "Confidence through consistency",
+            story_text:
+              "Shared a positive experience with greater activity, confidence and consistency during her wellness journey.",
+            image_path: "success/pinki.jpg",
+          },
+          {
+            member_name: "Poonam Maurya",
+            headline: "A more organised wellness routine",
+            story_text:
+              "Shared that following a more organised routine helped her feel healthier, happier and more consistent.",
+            image_path: "success/poonam.jpg",
+          },
+          {
+            member_name: "Ramanand Pandey",
+            headline: "Long-term routine changes",
+            story_text:
+              "Shared a long-term wellness journey involving sustained routine changes and improvements in personally reported well-being.",
+            image_path: "success/Rama.jpg",
+          },
+          {
+            member_name: "Shilpa Singh",
+            headline: "More energy and confidence",
+            story_text:
+              "Shared feeling more energetic and confident after maintaining a consistent wellness routine.",
+            image_path: "success/shilpa.jpg",
+          },
+          {
+            member_name: "Kusum Pandey",
+            headline: "Positive long-term consistency",
+            story_text:
+              "Shared a positive long-term experience focused on greater energy, confidence and everyday consistency.",
+            image_path: "success/Kusum.jpg",
+          },
+        ];
+        let stories = fallback,
+          index = 0,
+          timer = null;
+        const photo = document.getElementById("story-photo"),
+          name = document.getElementById("story-name"),
+          headline = document.getElementById("story-headline"),
+          text = document.getElementById("story-text"),
+          current = document.getElementById("story-current"),
+          total = document.getElementById("story-total"),
+          rail = document.getElementById("story-rail"),
+          showcase = document.querySelector(".story-showcase");
+        const asset = (path) =>
+          window.hwcSiteAsset
+            ? window.hwcSiteAsset(path)
+            : "../" + String(path).replace(/^\/+/, "");
+        const pad = (n) => String(n).padStart(2, "0");
+        function buildRail() {
+          rail.replaceChildren();
+          stories.forEach((story, i) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "story-person";
+            b.dataset.index = String(i);
+            b.setAttribute("aria-label", "Show story for " + story.member_name);
+            const img = document.createElement("img");
+            img.src = asset(story.image_path);
+            img.alt = "";
+            img.loading = "lazy";
+            const copy = document.createElement("span");
+            const strong = document.createElement("strong");
+            strong.textContent = story.member_name;
+            const small = document.createElement("small");
+            small.textContent = story.headline || "Member experience";
+            copy.append(strong, small);
+            b.append(img, copy);
+            b.addEventListener("click", () => {
+              index = i;
+              render(true);
+              restart();
+            });
+            rail.appendChild(b);
+          });
+        }
+        function render(animate = false) {
+          if (!stories.length) return;
+          const s = stories[index];
+          if (animate) showcase.classList.add("is-changing");
+          window.setTimeout(
+            () => {
+              photo.src = asset(s.image_path);
+              photo.alt = s.member_name + " member story";
+              name.textContent = s.member_name;
+              headline.textContent = s.headline || "Member experience";
+              text.textContent = s.story_text;
+              current.textContent = pad(index + 1);
+              total.textContent = pad(stories.length);
+              rail
+                .querySelectorAll(".story-person")
+                .forEach((b, i) => b.classList.toggle("active", i === index));
+              showcase.classList.remove("is-changing");
+            },
+            animate ? 140 : 0,
+          );
+        }
+        function next() {
+          index = (index + 1) % stories.length;
+          render(true);
+        }
+        function prev() {
+          index = (index - 1 + stories.length) % stories.length;
+          render(true);
+        }
+        function restart() {
+          clearInterval(timer);
+          if (stories.length > 1) timer = setInterval(next, 6500);
+        }
+        document.getElementById("story-next").addEventListener("click", () => {
+          next();
+          restart();
         });
-      }
-      function render(animate=false){
-        if(!stories.length)return;const s=stories[index];if(animate)showcase.classList.add('is-changing');
-        window.setTimeout(()=>{photo.src=asset(s.image_path);photo.alt=s.member_name+' member story';name.textContent=s.member_name;headline.textContent=s.headline||'Member experience';text.textContent=s.story_text;current.textContent=pad(index+1);total.textContent=pad(stories.length);rail.querySelectorAll('.story-person').forEach((b,i)=>b.classList.toggle('active',i===index));showcase.classList.remove('is-changing');},animate?140:0);
-      }
-      function next(){index=(index+1)%stories.length;render(true)}
-      function prev(){index=(index-1+stories.length)%stories.length;render(true)}
-      function restart(){clearInterval(timer);if(stories.length>1)timer=setInterval(next,6500)}
-      document.getElementById('story-next').addEventListener('click',()=>{next();restart()});document.getElementById('story-prev').addEventListener('click',()=>{prev();restart()});
-      showcase.addEventListener('mouseenter',()=>clearInterval(timer));showcase.addEventListener('mouseleave',restart);showcase.addEventListener('focusin',()=>clearInterval(timer));showcase.addEventListener('focusout',restart);
-      (window.hwcSiteReady||Promise.resolve({stories:[]})).then(data=>{if(Array.isArray(data.stories)&&data.stories.length)stories=data.stories;index=0;buildRail();render();restart();});
-    })();
-  </script>
-</body>
+        document.getElementById("story-prev").addEventListener("click", () => {
+          prev();
+          restart();
+        });
+        showcase.addEventListener("mouseenter", () => clearInterval(timer));
+        showcase.addEventListener("mouseleave", restart);
+        showcase.addEventListener("focusin", () => clearInterval(timer));
+        showcase.addEventListener("focusout", restart);
+        (window.hwcSiteReady || Promise.resolve({ stories: [] })).then(
+          (data) => {
+            if (Array.isArray(data.stories) && data.stories.length)
+              stories = data.stories;
+            index = 0;
+            buildRail();
+            render();
+            restart();
+          },
+        );
+      })();
+    </script>
+  </body>
 </html>

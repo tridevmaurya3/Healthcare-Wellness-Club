@@ -10,6 +10,103 @@
   --pub-line: #dfe9e3;
   --pub-muted: #66776e;
 }
+
+/* Premium Services experience */
+.services-page .pub-hero {
+  overflow: hidden;
+  padding: 70px 0 54px;
+  background:
+    radial-gradient(
+      circle at 86% 18%,
+      rgba(41, 167, 96, 0.18),
+      transparent 27%
+    ),
+    radial-gradient(circle at 8% 88%, rgba(70, 125, 213, 0.1), transparent 28%),
+    linear-gradient(135deg, #f1fbf4, #fff 58%, #f3f7ff);
+}
+.services-page .pub-hero h1 {
+  max-width: 880px;
+  font-size: clamp(2.65rem, 5vw, 4.65rem);
+}
+.service-benefits {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: -58px auto 30px;
+}
+.service-benefits span {
+  padding: 10px 15px;
+  border: 1px solid #d5e7dc;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.97);
+  color: #286044;
+  font-size: 0.76rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(31, 80, 50, 0.08);
+}
+.services-page .pub-services-grid {
+  gap: 22px;
+}
+.services-page .pub-service {
+  position: relative;
+  border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(29, 72, 45, 0.075);
+}
+.services-page .pub-service-media {
+  height: 210px;
+}
+.services-page .pub-service:after {
+  content: "→";
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #edf8f1;
+  color: #167144;
+  font-weight: 900;
+}
+.services-page .pub-service-body {
+  min-height: 160px;
+  padding: 22px 58px 22px 22px;
+}
+.services-page .pub-service-number {
+  background: linear-gradient(135deg, #e7f7ed, #f4fbf7);
+  border: 1px solid #d1e9da;
+}
+.services-page .pub-card-pad {
+  padding: 32px;
+  background:
+    radial-gradient(
+      circle at 95% 10%,
+      rgba(50, 164, 96, 0.14),
+      transparent 30%
+    ),
+    linear-gradient(135deg, #fff, #f2faf5);
+}
+@media (max-width: 680px) {
+  .services-page .pub-hero {
+    padding: 42px 0 58px;
+  }
+  .services-page .pub-hero h1 {
+    font-size: 2.5rem;
+  }
+  .service-benefits {
+    margin-top: -46px;
+  }
+  .services-page .pub-service-media {
+    height: 205px;
+  }
+  .services-page .pub-card-pad {
+    padding: 21px;
+  }
+}
 .public-page {
   background: linear-gradient(180deg, #fbfefc 0%, #f6faf8 100%);
 }
@@ -744,5 +841,31 @@
   }
   .about-page .pub-role {
     min-height: auto;
+  }
+}
+
+/* Services hero final cascade override */
+.services-page .pub-hero {
+  overflow: hidden;
+  padding: 70px 0 54px;
+  background:
+    radial-gradient(
+      circle at 86% 18%,
+      rgba(41, 167, 96, 0.18),
+      transparent 27%
+    ),
+    radial-gradient(circle at 8% 88%, rgba(70, 125, 213, 0.1), transparent 28%),
+    linear-gradient(135deg, #f1fbf4, #fff 58%, #f3f7ff);
+}
+.services-page .pub-hero h1 {
+  max-width: 880px;
+  font-size: clamp(2.65rem, 5vw, 4.65rem);
+}
+@media (max-width: 680px) {
+  .services-page .pub-hero {
+    padding: 42px 0 58px;
+  }
+  .services-page .pub-hero h1 {
+    font-size: 2.5rem;
   }
 }

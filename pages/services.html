@@ -1,71 +1,187 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Explore Healthcare Wellness Club services including wellness guidance, fitness support, workshops, community activities and online support.">
-  <title>Services - Healthcare Wellness Club</title>
-  <link rel="stylesheet" href="../css/bootstrap.min.css">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="design-system.css">
-  <link rel="stylesheet" href="public-pages.css">
-  <link rel="stylesheet" href="xampp-fixes.css">
-</head>
-<body class="public-page">
-  <div id="navbar-placeholder"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore Healthcare Wellness Club services including wellness guidance, fitness support, workshops, community activities and online support."
+    />
+    <title>Services - Healthcare Wellness Club</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="design-system.css" />
+    <link rel="stylesheet" href="public-pages.css" />
+    <link rel="stylesheet" href="xampp-fixes.css" />
+  </head>
+  <body class="public-page services-page">
+    <div id="navbar-placeholder"></div>
 
-  <header class="pub-hero">
-    <div class="pub-shell pub-hero-grid">
-      <div>
-        <div class="pub-kicker" data-cms-key="services_kicker">Wellness services</div>
-        <h1 data-cms-key="services_title">Practical support for healthier everyday routines.</h1>
-        <p data-cms-key="services_intro">Choose from wellness education, guided activities, community support and follow-up options designed to make healthy routines easier to understand and maintain.</p>
-      </div>
-      <div class="pub-hero-chip" data-cms-key="services_chip">Wellness support areas</div>
-    </div>
-  </header>
-
-  <main class="pub-main">
-    <div class="pub-shell">
-      <section class="pub-services-grid" id="services" aria-label="Wellness services"></section>
-      <div class="pub-note" data-cms-key="services_note">These services provide general wellness education and support. They are not a substitute for diagnosis, treatment or personalised medical advice from a qualified healthcare professional.</div>
-
-      <section class="pub-card pub-card-pad mt-4">
-        <div class="pub-kicker">Need help choosing?</div>
-        <h2 class="pub-section-title" data-cms-key="services_cta_title">Talk to the club before you begin.</h2>
-        <p class="pub-section-copy" data-cms-key="services_cta_copy">Share what kind of wellness support you are looking for and the club can explain the available services and how they work.</p>
-        <div class="pub-cta-row">
-          <a class="pub-cta-link primary" href="contact.html">Contact the Club</a>
-          <a class="pub-cta-link" href="about.html">Meet the Coach</a>
+    <header class="pub-hero">
+      <div class="pub-shell pub-hero-grid">
+        <div>
+          <div class="pub-kicker" data-cms-key="services_kicker">
+            Wellness services
+          </div>
+          <h1 data-cms-key="services_title">
+            Practical support for healthier everyday routines.
+          </h1>
+          <p data-cms-key="services_intro">
+            Choose from wellness education, guided activities, community support
+            and follow-up options designed to make healthy routines easier to
+            understand and maintain.
+          </p>
         </div>
-      </section>
+        <div class="pub-hero-chip" data-cms-key="services_chip">
+          Wellness support areas
+        </div>
+      </div>
+    </header>
+
+    <main class="pub-main">
+      <div class="pub-shell">
+        <section class="service-benefits" aria-label="Service benefits">
+          <span>✓ Practical guidance</span><span>✓ Personal support</span
+          ><span>✓ Flexible participation</span
+          ><span>✓ Positive community</span>
+        </section>
+        <section
+          class="pub-services-grid"
+          id="services"
+          aria-label="Wellness services"
+        ></section>
+        <div class="pub-note" data-cms-key="services_note">
+          These services provide general wellness education and support. They
+          are not a substitute for diagnosis, treatment or personalised medical
+          advice from a qualified healthcare professional.
+        </div>
+
+        <section class="pub-card pub-card-pad mt-4">
+          <div class="pub-kicker">Need help choosing?</div>
+          <h2 class="pub-section-title" data-cms-key="services_cta_title">
+            Talk to the club before you begin.
+          </h2>
+          <p class="pub-section-copy" data-cms-key="services_cta_copy">
+            Share what kind of wellness support you are looking for and the club
+            can explain the available services and how they work.
+          </p>
+          <div class="pub-cta-row">
+            <a class="pub-cta-link primary" href="contact.html"
+              >Contact the Club</a
+            >
+            <a class="pub-cta-link" href="about.html">Meet the Coach</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="floating-btns">
+      <a href="https://wa.me/918858302744" target="_blank" rel="noopener"
+        >📱 Chat on WhatsApp</a
+      ><a href="tel:+915483561586" class="call-btn">📞 Call Now</a>
     </div>
-  </main>
+    <div id="footer-placeholder"></div>
 
-  <div class="floating-btns"><a href="https://wa.me/918858302744" target="_blank" rel="noopener">📱 Chat on WhatsApp</a><a href="tel:+915483561586" class="call-btn">📞 Call Now</a></div>
-  <div id="footer-placeholder"></div>
-
-  <script src="../js/bootstrap.bundle.min.js"></script>
-  <script src="../js/site.js"></script>
-  <script>
-    (()=>{
-      const fallback=[
-        {service_name:'Nutrition Consulting',service_text:'Balanced meals, nutrition habits and general product information.',image_path:'img/service1.jpg'},
-        {service_name:'Fitness Sessions',service_text:'Group movement, yoga and guided activity for different ability levels.',image_path:'img/service2.jpg'},
-        {service_name:'Wellness Goal Support',service_text:'Routine planning, progress review and regular check-ins around chosen wellness goals.',image_path:'img/service3.jpg'},
-        {service_name:'Wellness Workshops',service_text:'Hydration, sleep, mindfulness, stress management and everyday healthy habits.',image_path:'img/service4.jpg'},
-        {service_name:'Community Activities',service_text:'Walks and community events that encourage connection, consistency and activity.',image_path:'img/service5.jpg'},
-        {service_name:'Online Support',service_text:'Virtual coaching, webinars and online groups for useful tips and encouragement.',image_path:'img/service6.jpg'},
-        {service_name:'Healthy Habit Challenges',service_text:'Positive challenges around hydration, movement and consistency.',image_path:'img/service7.jpg'},
-        {service_name:'Everyday Motivation',service_text:'Practical encouragement and follow-up for maintaining useful routines.',image_path:'img/service8.jpg'},
-        {service_name:'Mental Well-being Resources',service_text:'General relaxation, mindfulness and stress-management practices.',image_path:'img/service9.jpg'}
-      ];
-      const host=document.getElementById('services');
-      const asset=(path)=>window.hwcSiteAsset?window.hwcSiteAsset(path):('../'+String(path).replace(/^\/+/,''));
-      function render(items){host.replaceChildren();items.forEach((item,index)=>{const card=document.createElement('article');card.className='pub-card pub-service';const media=document.createElement('div');media.className='pub-service-media';const img=document.createElement('img');img.src=asset(item.image_path);img.alt=item.service_name;img.loading='lazy';media.appendChild(img);const body=document.createElement('div');body.className='pub-service-body';const number=document.createElement('span');number.className='pub-service-number';number.textContent='SERVICE '+String(index+1).padStart(2,'0');const h=document.createElement('h2');h.textContent=item.service_name;const p=document.createElement('p');p.textContent=item.service_text;body.append(number,h,p);card.append(media,body);host.appendChild(card);});}
-      render(fallback);
-      (window.hwcSiteReady||Promise.resolve({services:[]})).then(data=>{if(Array.isArray(data.services)&&data.services.length)render(data.services);});
-    })();
-  </script>
-</body>
+    <script src="../js/bootstrap.bundle.min.js"></script>
+    <script src="../js/site.js"></script>
+    <script>
+      (() => {
+        const fallback = [
+          {
+            service_name: "Nutrition Consulting",
+            service_text:
+              "Balanced meals, nutrition habits and general product information.",
+            image_path: "img/service1.jpg",
+          },
+          {
+            service_name: "Fitness Sessions",
+            service_text:
+              "Group movement, yoga and guided activity for different ability levels.",
+            image_path: "img/service2.jpg",
+          },
+          {
+            service_name: "Wellness Goal Support",
+            service_text:
+              "Routine planning, progress review and regular check-ins around chosen wellness goals.",
+            image_path: "img/service3.jpg",
+          },
+          {
+            service_name: "Wellness Workshops",
+            service_text:
+              "Hydration, sleep, mindfulness, stress management and everyday healthy habits.",
+            image_path: "img/service4.jpg",
+          },
+          {
+            service_name: "Community Activities",
+            service_text:
+              "Walks and community events that encourage connection, consistency and activity.",
+            image_path: "img/service5.jpg",
+          },
+          {
+            service_name: "Online Support",
+            service_text:
+              "Virtual coaching, webinars and online groups for useful tips and encouragement.",
+            image_path: "img/service6.jpg",
+          },
+          {
+            service_name: "Healthy Habit Challenges",
+            service_text:
+              "Positive challenges around hydration, movement and consistency.",
+            image_path: "img/service7.jpg",
+          },
+          {
+            service_name: "Everyday Motivation",
+            service_text:
+              "Practical encouragement and follow-up for maintaining useful routines.",
+            image_path: "img/service8.jpg",
+          },
+          {
+            service_name: "Mental Well-being Resources",
+            service_text:
+              "General relaxation, mindfulness and stress-management practices.",
+            image_path: "img/service9.jpg",
+          },
+        ];
+        const host = document.getElementById("services");
+        const asset = (path) =>
+          window.hwcSiteAsset
+            ? window.hwcSiteAsset(path)
+            : "../" + String(path).replace(/^\/+/, "");
+        function render(items) {
+          host.replaceChildren();
+          items.forEach((item, index) => {
+            const card = document.createElement("article");
+            card.className = "pub-card pub-service";
+            const media = document.createElement("div");
+            media.className = "pub-service-media";
+            const img = document.createElement("img");
+            img.src = asset(item.image_path);
+            img.alt = item.service_name;
+            img.loading = "lazy";
+            media.appendChild(img);
+            const body = document.createElement("div");
+            body.className = "pub-service-body";
+            const number = document.createElement("span");
+            number.className = "pub-service-number";
+            number.textContent =
+              "SERVICE " + String(index + 1).padStart(2, "0");
+            const h = document.createElement("h2");
+            h.textContent = item.service_name;
+            const p = document.createElement("p");
+            p.textContent = item.service_text;
+            body.append(number, h, p);
+            card.append(media, body);
+            host.appendChild(card);
+          });
+        }
+        render(fallback);
+        (window.hwcSiteReady || Promise.resolve({ services: [] })).then(
+          (data) => {
+            if (Array.isArray(data.services) && data.services.length)
+              render(data.services);
+          },
+        );
+      })();
+    </script>
+  </body>
 </html>
