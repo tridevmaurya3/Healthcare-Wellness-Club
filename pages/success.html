@@ -13,6 +13,9 @@
     <link rel="stylesheet" href="design-system.css" />
     <link rel="stylesheet" href="public-pages.css" />
     <link rel="stylesheet" href="xampp-fixes.css" />
+    <style>
+      .story-showcase[data-story-loading] { visibility: hidden; }
+    </style>
   </head>
   <body class="public-page stories-page">
     <div id="navbar-placeholder"></div>
@@ -52,7 +55,7 @@
             ><span>Individual results may vary</span>
           </div>
         </section>
-        <section class="story-showcase" aria-label="Featured member story">
+        <section class="story-showcase" data-story-loading aria-label="Featured member story">
           <div class="story-photo-wrap">
             <img
               id="story-photo"
@@ -288,9 +291,22 @@
             if (Array.isArray(data.stories) && data.stories.length)
               stories = data.stories;
             index = 0;
-            buildRail();
-            render();
-            restart();
+            let storiesRevealed = false;
+            const revealStories = () => {
+              if (storiesRevealed) return;
+              storiesRevealed = true;
+              buildRail();
+              render();
+              window.requestAnimationFrame(() =>
+                showcase.removeAttribute("data-story-loading"),
+              );
+              restart();
+            };
+            const firstImage = new Image();
+            firstImage.onload = revealStories;
+            firstImage.onerror = revealStories;
+            firstImage.src = asset(stories[0].image_path);
+            if (firstImage.complete) revealStories();
           },
         );
       })();
