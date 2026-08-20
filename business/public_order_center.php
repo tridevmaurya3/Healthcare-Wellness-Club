@@ -33,6 +33,7 @@ try{
     <meta name="robots" content="noindex,nofollow">
     <title>Public Orders - Healthcare Wellness Club</title>
     <link rel="stylesheet" href="assets/dashboard.css">
+    <link rel="stylesheet" href="assets/step10.css">
     <link rel="stylesheet" href="assets/product_pro.css">
     <link rel="stylesheet" href="assets/workspace_refresh.css">
     <style>.price-label{display:inline-flex;margin-top:4px;padding:4px 7px;border:1px solid #d8e6de;border-radius:999px;background:#eef8f2;color:#176f45;font-size:.55rem;font-weight:900;letter-spacing:.04em}.price-label.regular{background:#f5f7f6;color:#667970}.order-money small{display:block;color:#73847b;margin-top:3px}.order-money b{color:#173c2c}</style>
