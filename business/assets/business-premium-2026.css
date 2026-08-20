@@ -56,8 +56,10 @@ html body .os-link{min-height:62px}
 .bp-collapsible-card{padding-top:13px!important;padding-bottom:13px!important}
 .bp-collapsible-card>.os-title-row{margin:0}
 .os-sidebar>.bp-collapse-heading{display:flex;align-items:center;margin:2px 0;padding:9px 42px 9px 10px!important;border-radius:11px;color:#5d7166;cursor:default}
-.os-sidebar>.bp-collapse-heading .bp-collapse-toggle{right:5px;width:29px;min-height:29px;padding:0;border-radius:9px}
+.os-sidebar>.bp-collapse-heading .bp-collapse-toggle{right:5px;display:grid;place-items:center;width:29px;height:29px;min-height:29px;padding:0;border-radius:9px}
 .os-sidebar>.bp-collapse-heading .bp-collapse-toggle span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.os-sidebar>.bp-collapse-heading .bp-collapse-toggle i{display:block;margin:0;transform:rotate(45deg) translate(-1px,-1px);transform-origin:center}
+.os-sidebar>.bp-collapse-heading .bp-collapse-toggle[aria-expanded=true] i{transform:rotate(225deg) translate(-1px,-1px)}
 .bp-sidebar-group{display:grid;gap:4px;padding-bottom:6px;animation:bp-expand .16s ease both}
 @keyframes bp-expand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media(max-width:680px){html body .os-links{grid-template-columns:1fr}.bp-collapse-heading{padding-right:76px!important}.bp-collapse-toggle{padding:0 9px}.bp-collapse-body{padding-top:11px}}
