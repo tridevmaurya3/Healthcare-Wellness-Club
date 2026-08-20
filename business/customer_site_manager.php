@@ -11,7 +11,7 @@ $groups=[
   'social_facebook'=>'Facebook Page URL','social_instagram'=>'Instagram Profile URL','social_youtube'=>'YouTube Channel URL','social_linkedin'=>'LinkedIn Page URL','social_x'=>'X / Twitter Profile URL','social_telegram'=>'Telegram URL'
  ],
  'AI Wellness Assistant'=>[
-  'global_ai_name'=>'Assistant Name','global_ai_title'=>'Panel Title','global_ai_welcome'=>'Welcome Message','global_ai_handoff_text'=>'WhatsApp Handoff Button Text','global_ai_chat_url'=>'Chatbot Embed URL (HTTPS)'
+  'global_ai_name'=>'Assistant Name','global_ai_title'=>'Panel Title','global_ai_welcome'=>'Welcome Message','global_ai_instructions'=>'AI Behaviour / System Instructions','global_ai_fallback'=>'Verified-answer Fallback Message','global_ai_handoff_text'=>'WhatsApp Handoff Button Text','global_ai_chat_url'=>'Chatbot Embed URL (HTTPS)'
  ],
  'Home page'=>[
   'home_eyebrow'=>'Hero Eyebrow','home_title'=>'Hero Title','home_lead'=>'Hero Introduction','home_primary_cta'=>'Primary Button Text','home_secondary_cta'=>'Secondary Button Text'
@@ -29,7 +29,7 @@ $groups=[
   'contact_kicker'=>'Hero Kicker','contact_title'=>'Hero Title','contact_intro'=>'Hero Introduction','contact_chip'=>'Hero Chip / Location','contact_info_copy'=>'Contact Card Introduction','contact_disclaimer_title'=>'Disclaimer Title','contact_disclaimer_copy'=>'Disclaimer Description'
  ]
 ];
-$longKeys=['global_ai_welcome','home_lead','about_intro','about_mission_copy','about_mission_quote','services_intro','services_note','services_cta_copy','stories_intro','stories_disclaimer','stories_cta_copy','contact_intro','contact_info_copy','contact_disclaimer_copy'];
+$longKeys=['global_ai_welcome','global_ai_instructions','global_ai_fallback','home_lead','about_intro','about_mission_copy','about_mission_quote','services_intro','services_note','services_cta_copy','stories_intro','stories_disclaimer','stories_cta_copy','contact_intro','contact_info_copy','contact_disclaimer_copy'];
 function csm_upload(string $field,string $existing=''): string{
     if(!isset($_FILES[$field])||!is_array($_FILES[$field])||(int)($_FILES[$field]['error']??UPLOAD_ERR_NO_FILE)===UPLOAD_ERR_NO_FILE)return $existing;
     $f=$_FILES[$field];if((int)$f['error']!==UPLOAD_ERR_OK)throw new RuntimeException('Image upload failed.');
