@@ -313,7 +313,7 @@
 
     const feedback = document.createElement("form");
     feedback.className = "chatbot-feedback";
-    feedback.innerHTML = `<p>Did you get a useful answer?</p><div><button type="button" data-ai-helpful>Yes, helpful</button><button type="button" data-ai-not-helpful>No, report question</button></div><label hidden><span>What question was not answered?</span><textarea maxlength="1000" required></textarea><button type="submit">Send for improvement</button></label><small aria-live="polite"></small>`;
+    feedback.innerHTML = `<p>Did you get a useful answer?</p><div><button type="button" data-ai-helpful>Yes, helpful</button><button type="button" data-ai-not-helpful>No, report question</button><button type="button" data-ai-risk>Unsafe or inaccurate</button></div><label hidden><span data-ai-report-label>What question was not answered?</span><textarea maxlength="1000" required></textarea><button type="submit">Send for review</button></label><small aria-live="polite"></small>`;
     let aiSession = sessionStorage.getItem("hwc_ai_session");
     if (!aiSession) {
       aiSession = crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 3 | 8); return v.toString(16); });
@@ -327,8 +327,10 @@
     panel.querySelectorAll(".chatbot-panel-intro nav a").forEach((link) => link.addEventListener("click", () => track("topic_click", { topic: link.textContent.trim() })));
     panel.querySelector("[data-ai-handoff]").addEventListener("click", () => track("human_handoff"));
     feedback.querySelector("[data-ai-helpful]").addEventListener("click", () => { track("answer_helpful"); feedback.querySelector("small").textContent = "Thank you for your feedback."; });
-    feedback.querySelector("[data-ai-not-helpful]").addEventListener("click", () => { feedback.querySelector("label").hidden = false; feedback.querySelector("textarea").focus(); });
-    feedback.addEventListener("submit", (event) => { event.preventDefault(); const question = feedback.querySelector("textarea").value.trim(); if (question.length < 3) return; track("answer_unanswered", { question }); feedback.reset(); feedback.querySelector("label").hidden = true; feedback.querySelector("small").textContent = "Saved for the club team to improve."; });
+    let reportMode = "answer_unanswered";
+    feedback.querySelector("[data-ai-not-helpful]").addEventListener("click", () => { reportMode = "answer_unanswered"; feedback.querySelector("[data-ai-report-label]").textContent = "What question was not answered?"; feedback.querySelector("label").hidden = false; feedback.querySelector("textarea").focus(); });
+    feedback.querySelector("[data-ai-risk]").addEventListener("click", () => { reportMode = "risk_report"; feedback.querySelector("[data-ai-report-label]").textContent = "Briefly describe the unsafe or inaccurate answer"; feedback.querySelector("label").hidden = false; feedback.querySelector("textarea").focus(); });
+    feedback.addEventListener("submit", (event) => { event.preventDefault(); const question = feedback.querySelector("textarea").value.trim(); if (question.length < 3) return; track(reportMode, { question }); feedback.reset(); feedback.querySelector("label").hidden = true; feedback.querySelector("small").textContent = reportMode === "risk_report" ? "Safety report saved for priority review." : "Saved for the club team to improve."; });
 
     const closeChat = () => {
       track("panel_close");
