@@ -42,7 +42,7 @@
 
   function loadPremiumLightTheme() {
     appendStylesheet(
-      "pages/premium-light.css?v=20260820-7",
+      "pages/premium-light.css?v=20260820-8",
       "data-hwc-premium-light",
     );
   }
@@ -250,6 +250,14 @@
         whatsapp.href = contactHref("whatsapp", content.global_whatsapp);
       if (phone && content.global_phone)
         phone.href = contactHref("phone", content.global_phone);
+      const handoff = aiPanel.querySelector("[data-ai-whatsapp]");
+      if (handoff && content.global_whatsapp)
+        handoff.href =
+          contactHref("whatsapp", content.global_whatsapp) +
+          "?text=" +
+          encodeURIComponent(
+            "Hello, I need help from Healthcare Wellness Club.",
+          );
     }
     const aiPanel = document.querySelector(".chatbot-panel");
     if (aiPanel) {
@@ -266,6 +274,9 @@
       aiPanel.querySelector("[data-ai-name]").textContent = name;
       aiPanel.querySelector("[data-ai-title]").textContent = title;
       aiPanel.querySelector("[data-ai-welcome]").textContent = welcome;
+      aiPanel.querySelector("[data-ai-handoff]").textContent =
+        content.global_ai_handoff_text ||
+        "Continue with a person on WhatsApp →";
       const frame = aiPanel.querySelector("#chatbot-frame");
       if (safeUrl && frame.src !== safeUrl) frame.src = safeUrl;
       document.querySelector(".premium-ai-button .ai-label").textContent = name;
@@ -292,7 +303,7 @@
     panel.className = "chatbot-panel";
     panel.setAttribute("aria-label", "AI Wellness Assistant");
     panel.setAttribute("aria-hidden", "true");
-    panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><div class="chatbot-window-actions"><button type="button" class="chatbot-maximize" aria-label="Maximize AI assistant" title="Maximize or restore">□</button><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></div></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}">Contact</a></nav></div><span class="chatbot-resize-hint">Drag corner to resize</span>`;
+    panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><div class="chatbot-window-actions"><button type="button" class="chatbot-maximize" aria-label="Maximize AI assistant" title="Maximize or restore">□</button><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></div></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}?type=wellness">Ask a question</a></nav><div class="chatbot-handoff"><a data-ai-whatsapp data-ai-handoff href="https://wa.me/918858302744" target="_blank" rel="noopener">Continue with a person on WhatsApp →</a></div></div><span class="chatbot-resize-hint">Drag corner to resize</span>`;
     const frame = document.createElement("iframe");
     frame.id = "chatbot-frame";
     frame.className = "chatbot-frame";

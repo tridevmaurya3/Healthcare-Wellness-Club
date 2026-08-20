@@ -11,7 +11,7 @@ $groups=[
   'social_facebook'=>'Facebook Page URL','social_instagram'=>'Instagram Profile URL','social_youtube'=>'YouTube Channel URL','social_linkedin'=>'LinkedIn Page URL','social_x'=>'X / Twitter Profile URL','social_telegram'=>'Telegram URL'
  ],
  'AI Wellness Assistant'=>[
-  'global_ai_name'=>'Assistant Name','global_ai_title'=>'Panel Title','global_ai_welcome'=>'Welcome Message','global_ai_chat_url'=>'Chatbot Embed URL (HTTPS)'
+  'global_ai_name'=>'Assistant Name','global_ai_title'=>'Panel Title','global_ai_welcome'=>'Welcome Message','global_ai_handoff_text'=>'WhatsApp Handoff Button Text','global_ai_chat_url'=>'Chatbot Embed URL (HTTPS)'
  ],
  'Home page'=>[
   'home_eyebrow'=>'Hero Eyebrow','home_title'=>'Hero Title','home_lead'=>'Hero Introduction','home_primary_cta'=>'Primary Button Text','home_secondary_cta'=>'Secondary Button Text'

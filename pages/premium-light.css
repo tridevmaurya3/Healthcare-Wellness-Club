@@ -763,6 +763,19 @@ html body .chatbot-panel.is-open {
   background: #e9f7ef;
   color: #176f45;
 }
+.chatbot-handoff {
+  margin-top: 9px;
+}
+.chatbot-handoff a {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-color: #bfe0cb !important;
+  background: linear-gradient(135deg, #eaf8ef, #eef5ff) !important;
+  color: #176f45 !important;
+  font-size: 0.68rem !important;
+}
 html body .chatbot-panel .chatbot-frame {
   display: block !important;
   position: static !important;

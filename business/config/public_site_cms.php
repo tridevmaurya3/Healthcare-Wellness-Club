@@ -70,6 +70,7 @@ function pscms_ensure(PDO $pdo): void
         'global_ai_name'=>'HWC AI',
         'global_ai_title'=>'Wellness Assistant',
         'global_ai_welcome'=>'Ask about club services, membership, products, orders and general wellness support.',
+        'global_ai_handoff_text'=>'Continue with a person on WhatsApp →',
         'global_ai_chat_url'=>'https://www.chatbase.co/chatbot-iframe/rWYfFJUdA4l7XbwTThmpz',
         'home_eyebrow'=>'Personal wellness. Professional guidance.',
         'home_title'=>'Build a healthier routine with Healthcare Wellness Club.',
