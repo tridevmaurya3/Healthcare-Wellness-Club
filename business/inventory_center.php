@@ -78,7 +78,7 @@ function inv_match(array $row, string $q): bool {
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Inventory Center - Healthcare Wellness Club</title>
-<link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/product_pro.css">
+<link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/step10.css"><link rel="stylesheet" href="assets/product_pro.css">
 </head>
 <body>
 <header class="os-topbar"><div class="os-topbar-inner"><a class="os-brand" href="index.php"><img src="../img/logo.png" alt="logo"><span><strong>Healthcare Wellness Club</strong><small>STEP 13 • Inventory & Stock</small></span></a><div class="os-top-actions"><a class="os-btn" href="inventory_inward.php">+ Stock Inward</a><a class="os-btn" href="inventory_adjustments.php">Adjust</a><a class="os-btn primary" href="step13_audit.php">STEP 13 Audit</a></div></div></header>
