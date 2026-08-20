@@ -121,6 +121,7 @@ try{
 <a href="ai_training_health.php"><i class="dot"></i>AI Training Health</a>
 <a href="ai_quality_trends.php"><i class="dot"></i>AI Quality Trends</a>
 <a href="ai_topic_gaps.php"><i class="dot"></i>AI Topic Gaps</a>
+<a href="ai_training_control_center.php"><i class="dot"></i>AI Training Control Center</a>
 <a href="product_image_manager.php">
 <i class="dot">
 </i>Product Images</a>
