@@ -46,6 +46,15 @@ function admin_global_menu_markup(bool $insideBusiness, string $script): string
             [$business.'public_order_center.php','Customer Orders',['public_order_center.php','public_order_detail.php'],'▤'],
             [$business.'lead_center.php','Leads & Enquiries',['lead_center.php','lead_followups.php','lead_appointments.php'],'↗'],
         ]],
+        ['Daily Data Entry', [
+            [$business.'data_entry_center.php','Data Entry Center',['data_entry_center.php'],'✎'],
+            [$business.'data_entry_center.php?tab=new_ums','New UMS',['data_entry_center.php'],'＋'],
+            [$business.'data_entry_center.php?tab=vp','Volume Points',['data_entry_center.php'],'VP'],
+            [$business.'data_entry_center.php?tab=order','Orders',['data_entry_center.php'],'▤'],
+            [$business.'data_entry_center.php?tab=renewal','Renewal',['data_entry_center.php'],'↻'],
+            [$business.'data_entry_center.php?tab=income','Income',['data_entry_center.php'],'₹'],
+            [$business.'data_entry_center.php?tab=royalty','Royalty',['data_entry_center.php'],'◆'],
+        ]],
         ['Products & Sales', [
             [$business.'product_catalog.php','Product Catalog',['product_catalog.php','product_detail.php'],'□'],
             [$business.'product_master_manager.php','New / Update Product',['product_master_manager.php'],'＋'],
