@@ -42,7 +42,7 @@
 
   function loadPremiumLightTheme() {
     appendStylesheet(
-      "pages/premium-light.css?v=20260820-4",
+      "pages/premium-light.css?v=20260820-5",
       "data-hwc-premium-light",
     );
   }
@@ -251,6 +251,25 @@
       if (phone && content.global_phone)
         phone.href = contactHref("phone", content.global_phone);
     }
+    const aiPanel = document.querySelector(".chatbot-panel");
+    if (aiPanel) {
+      const safeUrl = /^https:\/\//i.test(
+        String(content.global_ai_chat_url || ""),
+      )
+        ? String(content.global_ai_chat_url).trim()
+        : "";
+      const name = content.global_ai_name || "HWC AI";
+      const title = content.global_ai_title || "Wellness Assistant";
+      const welcome =
+        content.global_ai_welcome ||
+        "Ask about club services, membership, products and general wellness support.";
+      aiPanel.querySelector("[data-ai-name]").textContent = name;
+      aiPanel.querySelector("[data-ai-title]").textContent = title;
+      aiPanel.querySelector("[data-ai-welcome]").textContent = welcome;
+      const frame = aiPanel.querySelector("#chatbot-frame");
+      if (safeUrl && frame.src !== safeUrl) frame.src = safeUrl;
+      document.querySelector(".premium-ai-button .ai-label").textContent = name;
+    }
     document.dispatchEvent(
       new CustomEvent("hwc-site-content", { detail: data }),
     );
@@ -266,6 +285,14 @@
     button.setAttribute("aria-expanded", "false");
     button.innerHTML = `<span class="ai-orbit" aria-hidden="true"></span><span class="ai-glow" aria-hidden="true"></span><img src="${fromRoot("chat.png")}" alt="" width="60" height="60"><span class="ai-status" aria-hidden="true"></span><span class="ai-label">AI Wellness</span>`;
 
+    const backdrop = document.createElement("div");
+    backdrop.className = "chatbot-backdrop";
+    backdrop.hidden = true;
+    const panel = document.createElement("section");
+    panel.className = "chatbot-panel";
+    panel.setAttribute("aria-label", "AI Wellness Assistant");
+    panel.setAttribute("aria-hidden", "true");
+    panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}">Contact</a></nav></div>`;
     const frame = document.createElement("iframe");
     frame.id = "chatbot-frame";
     frame.className = "chatbot-frame";
@@ -273,9 +300,34 @@
     frame.title = "Healthcare Wellness Club chat";
     frame.loading = "lazy";
 
-    button.addEventListener("click", () => {
-      const isOpen = frame.classList.toggle("is-open");
-      button.setAttribute("aria-expanded", String(isOpen));
+    const closeChat = () => {
+      panel.classList.remove("is-open");
+      backdrop.classList.remove("is-open");
+      backdrop.hidden = true;
+      panel.setAttribute("aria-hidden", "true");
+      button.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("chatbot-open");
+      button.focus({ preventScroll: true });
+    };
+    const openChat = () => {
+      backdrop.hidden = false;
+      window.requestAnimationFrame(() => {
+        panel.classList.add("is-open");
+        backdrop.classList.add("is-open");
+      });
+      panel.setAttribute("aria-hidden", "false");
+      button.setAttribute("aria-expanded", "true");
+      document.body.classList.add("chatbot-open");
+      panel.querySelector(".chatbot-close").focus({ preventScroll: true });
+    };
+    button.addEventListener("click", () =>
+      panel.classList.contains("is-open") ? closeChat() : openChat(),
+    );
+    backdrop.addEventListener("click", closeChat);
+    panel.querySelector(".chatbot-close").addEventListener("click", closeChat);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && panel.classList.contains("is-open"))
+        closeChat();
     });
 
     const dock = document.createElement("aside");
@@ -298,8 +350,8 @@
     document
       .querySelectorAll(".floating-btns,.home-quick-contact")
       .forEach((element) => (element.hidden = true));
-    document.body.appendChild(dock);
-    document.body.appendChild(frame);
+    panel.appendChild(frame);
+    document.body.append(dock, backdrop, panel);
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
