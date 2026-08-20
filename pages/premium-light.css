@@ -717,3 +717,112 @@ html body.chatbot-open {
     transition: none;
   }
 }
+
+/* Floating, draggable and resizable assistant workspace */
+html body .chatbot-panel {
+  left: auto;
+  top: auto;
+  right: 20px;
+  bottom: 225px;
+  width: 390px;
+  height: 520px;
+  min-width: 320px;
+  min-height: 360px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 245px);
+  resize: both;
+  overflow: hidden;
+  border: 1px solid #cfddd5;
+  border-radius: 24px;
+  box-shadow: 0 26px 72px rgba(16, 48, 30, 0.27);
+  transform: translateY(24px) scale(0.96);
+  transform-origin: bottom right;
+}
+.chatbot-panel.is-open {
+  transform: translateY(0) scale(1);
+}
+.chatbot-panel.is-maximized {
+  left: 18px !important;
+  top: 18px !important;
+  right: 18px !important;
+  bottom: 18px !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  resize: none;
+  border-radius: 22px;
+}
+.chatbot-panel-head {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.chatbot-panel.is-dragging .chatbot-panel-head {
+  cursor: grabbing;
+}
+.chatbot-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.chatbot-window-actions button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #d4e1da;
+  border-radius: 11px;
+  background: #fff;
+  color: #456052;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.chatbot-window-actions button:hover {
+  background: #edf7f1;
+}
+.chatbot-window-actions .chatbot-close {
+  font-size: 1.4rem;
+}
+.chatbot-resize-hint {
+  position: absolute;
+  right: 13px;
+  bottom: 7px;
+  z-index: 4;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(31, 70, 48, 0.72);
+  color: #fff;
+  font-size: 0.52rem;
+  font-weight: 750;
+  pointer-events: none;
+  opacity: 0.72;
+}
+@media (max-width: 600px) {
+  html body .chatbot-panel {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 198px;
+    width: auto;
+    height: min(520px, calc(100vh - 218px));
+    min-width: 0;
+    min-height: 320px;
+    max-width: none;
+    max-height: none;
+    resize: none;
+    border-radius: 20px;
+  }
+  .chatbot-resize-hint {
+    display: none;
+  }
+  .chatbot-panel-head {
+    cursor: default;
+  }
+  .chatbot-panel.is-maximized {
+    inset: 8px !important;
+    border-radius: 18px;
+  }
+}

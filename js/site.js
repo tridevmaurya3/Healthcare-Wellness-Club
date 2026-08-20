@@ -42,7 +42,7 @@
 
   function loadPremiumLightTheme() {
     appendStylesheet(
-      "pages/premium-light.css?v=20260820-5",
+      "pages/premium-light.css?v=20260820-6",
       "data-hwc-premium-light",
     );
   }
@@ -292,7 +292,7 @@
     panel.className = "chatbot-panel";
     panel.setAttribute("aria-label", "AI Wellness Assistant");
     panel.setAttribute("aria-hidden", "true");
-    panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}">Contact</a></nav></div>`;
+    panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><div class="chatbot-window-actions"><button type="button" class="chatbot-maximize" aria-label="Maximize AI assistant" title="Maximize or restore">□</button><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></div></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}">Contact</a></nav></div><span class="chatbot-resize-hint">Drag corner to resize</span>`;
     const frame = document.createElement("iframe");
     frame.id = "chatbot-frame";
     frame.className = "chatbot-frame";
@@ -325,6 +325,54 @@
     );
     backdrop.addEventListener("click", closeChat);
     panel.querySelector(".chatbot-close").addEventListener("click", closeChat);
+    const maximize = panel.querySelector(".chatbot-maximize");
+    maximize.addEventListener("click", () => {
+      const expanded = panel.classList.toggle("is-maximized");
+      maximize.textContent = expanded ? "❐" : "□";
+      maximize.setAttribute(
+        "aria-label",
+        expanded ? "Restore AI assistant" : "Maximize AI assistant",
+      );
+      panel.style.left = "";
+      panel.style.top = "";
+    });
+    const dragHandle = panel.querySelector(".chatbot-panel-head");
+    dragHandle.addEventListener("pointerdown", (event) => {
+      if (
+        event.target.closest("button") ||
+        panel.classList.contains("is-maximized") ||
+        window.innerWidth <= 600
+      )
+        return;
+      const rect = panel.getBoundingClientRect(),
+        startX = event.clientX,
+        startY = event.clientY;
+      panel.style.left = rect.left + "px";
+      panel.style.top = rect.top + "px";
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      dragHandle.setPointerCapture(event.pointerId);
+      panel.classList.add("is-dragging");
+      const move = (moveEvent) => {
+        const maxX = Math.max(0, window.innerWidth - panel.offsetWidth),
+          maxY = Math.max(0, window.innerHeight - panel.offsetHeight);
+        panel.style.left =
+          Math.min(maxX, Math.max(0, rect.left + moveEvent.clientX - startX)) +
+          "px";
+        panel.style.top =
+          Math.min(maxY, Math.max(0, rect.top + moveEvent.clientY - startY)) +
+          "px";
+      };
+      const end = () => {
+        panel.classList.remove("is-dragging");
+        dragHandle.removeEventListener("pointermove", move);
+        dragHandle.removeEventListener("pointerup", end);
+        dragHandle.removeEventListener("pointercancel", end);
+      };
+      dragHandle.addEventListener("pointermove", move);
+      dragHandle.addEventListener("pointerup", end);
+      dragHandle.addEventListener("pointercancel", end);
+    });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && panel.classList.contains("is-open"))
         closeChat();
