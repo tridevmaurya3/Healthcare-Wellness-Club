@@ -66,6 +66,7 @@ function pscms_ensure(PDO $pdo): void
         'global_phone'=>'+91-5483561586',
         'global_email'=>'healthcare.wellnessclub@gmail.com',
         'global_location'=>'Wellness Center, Ghazipur, Uttar Pradesh, India',
+        'social_facebook'=>'','social_instagram'=>'','social_youtube'=>'','social_linkedin'=>'','social_x'=>'','social_telegram'=>'',
         'home_eyebrow'=>'Personal wellness. Professional guidance.',
         'home_title'=>'Build a healthier routine with Healthcare Wellness Club.',
         'home_lead'=>'A modern wellness space for personalised guidance, healthy routine support, community motivation and easy access to services — designed to keep your wellness journey simple, organised and consistent.',

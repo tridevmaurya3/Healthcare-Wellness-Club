@@ -7,6 +7,9 @@ $groups=[
  'Global contact & brand'=>[
   'global_brand_name'=>'Brand / Club Name','global_whatsapp'=>'WhatsApp Number (country code + number, digits only)','global_phone'=>'Phone Number','global_email'=>'Email Address','global_location'=>'Club Location'
  ],
+ 'Social media links'=>[
+  'social_facebook'=>'Facebook Page URL','social_instagram'=>'Instagram Profile URL','social_youtube'=>'YouTube Channel URL','social_linkedin'=>'LinkedIn Page URL','social_x'=>'X / Twitter Profile URL','social_telegram'=>'Telegram URL'
+ ],
  'Home page'=>[
   'home_eyebrow'=>'Hero Eyebrow','home_title'=>'Hero Title','home_lead'=>'Hero Introduction','home_primary_cta'=>'Primary Button Text','home_secondary_cta'=>'Secondary Button Text'
  ],
