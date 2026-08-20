@@ -811,6 +811,7 @@ html body.chatbot-open {
     height: 42px;
   }
 }
+.chatbot-feedback{padding:10px 14px;border-top:1px solid #e3ebe6;background:#fbfdfc}.chatbot-feedback p{margin:0 0 7px;color:#385446;font-size:.7rem;font-weight:800}.chatbot-feedback>div{display:flex;gap:7px}.chatbot-feedback button{border:1px solid #cfe0d6;border-radius:8px;background:#fff;color:#17623c;padding:7px 9px;font-size:.66rem;font-weight:800;cursor:pointer}.chatbot-feedback label{display:grid;gap:6px;margin-top:8px;color:#52685c;font-size:.66rem;font-weight:750}.chatbot-feedback label[hidden]{display:none}.chatbot-feedback textarea{width:100%;min-height:58px;resize:vertical;border:1px solid #d5e2da;border-radius:8px;padding:8px;font:inherit}.chatbot-feedback small{display:block;margin-top:6px;color:#177044;font-size:.64rem}
 @media (prefers-reduced-motion: reduce) {
   html body .chatbot-panel,
   html body .chatbot-backdrop {
