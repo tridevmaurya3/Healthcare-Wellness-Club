@@ -42,6 +42,7 @@ function admin_global_menu_markup(bool $insideBusiness, string $script): string
         ['Customers', [
             [$business.'customer_center.php','Customer Center',['customer_center.php','customer_detail.php'],'◎'],
             [$business.'customer_membership_manager.php','Club Members & Offers',['customer_membership_manager.php'],'★'],
+            [$business.'coach_network_manager.php','Coach Network & Levels',['coach_network_manager.php'],'♟'],
             [$business.'public_order_center.php','Customer Orders',['public_order_center.php','public_order_detail.php'],'▤'],
             [$business.'lead_center.php','Leads & Enquiries',['lead_center.php','lead_followups.php','lead_appointments.php'],'↗'],
         ]],
