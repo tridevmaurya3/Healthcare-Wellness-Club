@@ -42,7 +42,7 @@
 
   function loadPremiumLightTheme() {
     appendStylesheet(
-      "pages/premium-light.css?v=20260820-6",
+      "pages/premium-light.css?v=20260820-7",
       "data-hwc-premium-light",
     );
   }
