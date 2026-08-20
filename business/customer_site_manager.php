@@ -7,6 +7,9 @@ $groups=[
  'Global contact & brand'=>[
   'global_brand_name'=>'Brand / Club Name','global_whatsapp'=>'WhatsApp Number (country code + number, digits only)','global_phone'=>'Phone Number','global_email'=>'Email Address','global_location'=>'Club Location'
  ],
+ 'Contact page — Google Map'=>[
+  'global_map_query'=>'Google Map Search Address','global_map_embed_url'=>'Google Map Embed URL (optional)','global_map_zoom'=>'Map Zoom Level (1–20)','global_map_link'=>'Open in Google Maps URL (optional)'
+ ],
  'Social media links'=>[
   'social_facebook'=>'Facebook Page URL','social_instagram'=>'Instagram Profile URL','social_youtube'=>'YouTube Channel URL','social_linkedin'=>'LinkedIn Page URL','social_x'=>'X / Twitter Profile URL','social_telegram'=>'Telegram URL'
  ],
@@ -55,6 +58,8 @@ try{
         security_step17_verify_csrf((string)($_POST['csrf']??''));$action=(string)($_POST['action']??'');
         if($action==='save_content'){
             $posted=is_array($_POST['content']??null)?$_POST['content']:[];$allowed=[];foreach($groups as $fields)foreach($fields as $k=>$v)$allowed[$k]=true;
+            if(isset($posted['global_map_zoom'])){$zoom=(int)$posted['global_map_zoom'];if($zoom<1||$zoom>20)throw new RuntimeException('Map zoom level must be between 1 and 20.');}
+            foreach(['global_map_embed_url','global_map_link'] as $mapUrlKey){$mapUrl=trim((string)($posted[$mapUrlKey]??''));if($mapUrl!==''&&(!filter_var($mapUrl,FILTER_VALIDATE_URL)||strtolower((string)parse_url($mapUrl,PHP_URL_SCHEME))!=='https'))throw new RuntimeException('Google Map URLs must be valid HTTPS links.');if($mapUrl!==''&&!preg_match('/(^|\.)google\.[a-z.]+$|(^|\.)googleapis\.com$|^maps\.app\.goo\.gl$/i',(string)parse_url($mapUrl,PHP_URL_HOST)))throw new RuntimeException('Only Google Maps URLs are allowed in map fields.');}
             if(isset($posted['combo_discount_percent'])){$discount=(float)$posted['combo_discount_percent'];if($discount<0||$discount>100)throw new RuntimeException('Combo discount must be between 0 and 100 percent.');$ids=array_values(array_unique(array_filter(array_map('intval',is_array($posted['combo_product_ids']??null)?$posted['combo_product_ids']:[]))));if(count($ids)<2)throw new RuntimeException('Choose at least two active products for the combo.');$marks=implode(',',array_fill(0,count($ids),'?'));$check=$pdo->prepare("SELECT COUNT(*) FROM products WHERE organization_id=? AND status='active' AND id IN ($marks)");$check->execute([$orgId,...$ids]);if((int)$check->fetchColumn()!==count($ids))throw new RuntimeException('One or more combo products are not active.');$posted['combo_product_ids']=json_encode($ids);}
             $s=$pdo->prepare("INSERT INTO public_site_content(organization_id,content_key,content_value,updated_by) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE content_value=VALUES(content_value),updated_by=VALUES(updated_by),updated_at=NOW()");
             foreach($posted as $k=>$v){if(!isset($allowed[$k]))continue;$value=trim((string)$v);if(strlen($value)>8000)throw new RuntimeException('A content field is too long.');$s->execute([$orgId,$k,$value,(int)$user['id']]);}
@@ -181,6 +186,8 @@ try{
 </span>
 <?php if($key==='combo_enabled'):?>
 <select name="content[<?=security_step17_h($key)?>]"><option value="1" <?=($content[$key]??'1')==='1'?'selected':''?>>Visible / Active</option><option value="0" <?=($content[$key]??'1')==='0'?'selected':''?>>Hidden / Inactive</option></select>
+<?php elseif($key==='global_map_zoom'):?>
+<select name="content[global_map_zoom]"><?php for($zoomOption=1;$zoomOption<=20;$zoomOption++):?><option value="<?=$zoomOption?>" <?=(int)($content[$key]??13)===$zoomOption?'selected':''?>><?=$zoomOption?><?=$zoomOption===13?' • Recommended':''?></option><?php endfor;?></select>
 <?php elseif($key==='combo_product_ids'):$chosen=json_decode((string)($content[$key]??''),true);if(!is_array($chosen))$chosen=[];$chosen=array_map('intval',$chosen);?>
 <select name="content[combo_product_ids][]" multiple size="8" required aria-describedby="combo-product-help"><?php foreach($productOptions as $product):?><option value="<?=(int)$product['id']?>" <?=in_array((int)$product['id'],$chosen,true)?'selected':''?>><?=security_step17_h($product['product_name'].' • '.$product['sku'].($product['pack_size']?' • '.$product['pack_size'].' '.$product['pack_unit']:''))?></option><?php endforeach;?></select><small id="combo-product-help">Select any 2 or more products. Use Ctrl/Command to select or remove multiple items. Only selected products are calculated and displayed.</small>
 <?php elseif($key==='combo_discount_percent'):?>

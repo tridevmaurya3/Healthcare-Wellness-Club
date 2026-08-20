@@ -214,6 +214,24 @@
           element.textContent = value;
       }
     });
+    const mapFrame = container.querySelector("[data-google-map]");
+    if (mapFrame) {
+      const query = String(content.global_map_query || content.global_location || "Ghazipur, Uttar Pradesh, India").trim();
+      const zoom = Math.max(1, Math.min(20, Number(content.global_map_zoom) || 13));
+      const configuredEmbed = String(content.global_map_embed_url || "").trim();
+      const googleEmbed = /^https:\/\/(?:www\.)?(?:google\.[a-z.]+\/maps\/embed|maps\.google\.[a-z.]+\/maps)/i.test(configuredEmbed);
+      mapFrame.src = googleEmbed
+        ? configuredEmbed
+        : `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+      mapFrame.title = `Map showing ${query}`;
+      const mapLink = container.querySelector("[data-google-map-link]");
+      if (mapLink) {
+        const configuredLink = String(content.global_map_link || "").trim();
+        mapLink.href = /^https:\/\/(?:(?:www\.)?google\.[a-z.]+\/maps|maps\.app\.goo\.gl\/)/i.test(configuredLink)
+          ? configuredLink
+          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      }
+    }
 
     applyHomeContent(content);
     if (content.global_whatsapp) {
