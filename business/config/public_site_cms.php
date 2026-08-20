@@ -79,6 +79,16 @@ function pscms_ensure(PDO $pdo): void
         'home_lead'=>'A modern wellness space for personalised guidance, healthy routine support, community motivation and easy access to services — designed to keep your wellness journey simple, organised and consistent.',
         'home_primary_cta'=>'Explore Wellness Services',
         'home_secondary_cta'=>'Contact the Club',
+        'combo_enabled'=>'1',
+        'combo_badge'=>'25% COMBO OFFER',
+        'combo_title'=>'Daily Wellness Combo',
+        'combo_subtitle'=>'Formula 1 + Afresh + Protein 200g',
+        'combo_description'=>'Three selected products together in one convenient combo. Final availability is confirmed by the club.',
+        'combo_discount_percent'=>'25',
+        'combo_product_1'=>'',
+        'combo_product_2'=>'',
+        'combo_product_3'=>'',
+        'combo_button_text'=>'Add Complete Combo',
         'about_kicker'=>'About the coach',
         'about_title'=>'Guidance built around consistency, support and healthier everyday habits.',
         'about_intro'=>'Healthcare Wellness Club is designed as a welcoming space where people can receive practical wellness guidance, stay motivated and build routines that fit their everyday life.',
@@ -111,6 +121,13 @@ function pscms_ensure(PDO $pdo): void
     ];
     $ins=$pdo->prepare("INSERT IGNORE INTO public_site_content(organization_id,content_key,content_value) VALUES(?,?,?)");
     foreach($defaults as $k=>$v)$ins->execute([$orgId,$k,$v]);
+    if (business_table_exists($pdo,'products')) {
+        $find=$pdo->prepare("SELECT id FROM products WHERE organization_id=? AND status='active' AND product_name LIKE ? ORDER BY product_name,id LIMIT 1");
+        foreach(['combo_product_1'=>'%Formula 1%','combo_product_2'=>'%Afresh%','combo_product_3'=>'%Protein%200%'] as $key=>$pattern){
+            $find->execute([$orgId,$pattern]);$productId=(int)$find->fetchColumn();
+            if($productId>0)$pdo->prepare("UPDATE public_site_content SET content_value=? WHERE organization_id=? AND content_key=? AND content_value=''")->execute([(string)$productId,$orgId,$key]);
+        }
+    }
 
     $s=$pdo->prepare("SELECT COUNT(*) FROM public_site_stories WHERE organization_id=?");$s->execute([$orgId]);
     if((int)$s->fetchColumn()===0){

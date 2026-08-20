@@ -269,9 +269,14 @@ function cm_cart_quote(PDO $pdo, int $orgId, array $cart, string $mode): array
     }
     if(!$rawItems)throw new RuntimeException('Add at least one valid product.');
 
-    $customer=cm_customer_context($pdo,$orgId);$items=[];$subtotalMrp=0.0;$subtotalCustomer=0.0;
+    $customer=cm_customer_context($pdo,$orgId);$items=[];$subtotalMrp=0.0;$subtotalCustomer=0.0;$comboIds=[];$comboPercent=0.0;$comboEligible=false;
+    if(business_table_exists($pdo,'public_site_content')){
+        $s=$pdo->prepare("SELECT content_key,content_value FROM public_site_content WHERE organization_id=? AND content_key IN ('combo_enabled','combo_discount_percent','combo_product_1','combo_product_2','combo_product_3')");$s->execute([$orgId]);$cfg=[];foreach($s->fetchAll() as $r)$cfg[(string)$r['content_key']]=(string)$r['content_value'];
+        if(($cfg['combo_enabled']??'0')==='1'){$comboIds=array_values(array_unique(array_filter([(int)($cfg['combo_product_1']??0),(int)($cfg['combo_product_2']??0),(int)($cfg['combo_product_3']??0)])));$comboPercent=max(0,min(100,(float)($cfg['combo_discount_percent']??0)));$cartQty=[];foreach($rawItems as $raw)$cartQty[(int)$raw['product']['id']]=(int)$raw['qty'];$comboEligible=count($comboIds)===3&&$comboPercent>0&&!array_filter($comboIds,static fn(int $id):bool=>($cartQty[$id]??0)<1);}
+    }
     foreach($rawItems as $raw){
         $p=$raw['product'];$qty=(int)$raw['qty'];$price=cm_catalog_price($pdo,$orgId,$p,$customer,$qty,$totalVp);
+        if($comboEligible&&in_array((int)$p['id'],$comboIds,true)){$comboUnit=round((float)$p['mrp']*(1-$comboPercent/100),2);if($comboUnit<(float)$price['unit_price']){$price['unit_price']=$comboUnit;$price['saving']=round((float)$p['mrp']-$comboUnit,2);$price['pricing_source']='COMBO:PUBLIC-COMBO';$price['promotion']=['promotion_code'=>'PUBLIC-COMBO'];}}
         $lineMrp=round((float)$p['mrp']*$qty,2);$lineCustomer=round((float)$price['unit_price']*$qty,2);
         $subtotalMrp+=$lineMrp;$subtotalCustomer+=$lineCustomer;
         $items[]=$p+[
