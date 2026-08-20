@@ -322,6 +322,7 @@
     backdrop.hidden = true;
     const panel = document.createElement("section");
     panel.className = "chatbot-panel";
+    panel.hidden = true;
     panel.setAttribute("aria-label", "AI Wellness Assistant");
     panel.setAttribute("aria-hidden", "true");
     panel.innerHTML = `<header class="chatbot-panel-head"><div class="chatbot-panel-brand"><img src="${fromRoot("chat.png")}" alt=""><span><small data-ai-name>HWC AI</small><strong data-ai-title>Wellness Assistant</strong></span></div><div class="chatbot-window-actions"><button type="button" class="chatbot-maximize" aria-label="Maximize AI assistant" title="Maximize or restore">□</button><button type="button" class="chatbot-close" aria-label="Close AI assistant">×</button></div></header><div class="chatbot-panel-intro"><span>ONLINE • SECURE ASSISTANT</span><p data-ai-welcome>Ask about club services, membership, products and general wellness support.</p><nav aria-label="AI quick topics"><a href="${fromRoot("pages/services.html")}">Services</a><a href="${fromRoot("membership.php")}">Membership</a><a href="${fromRoot("shop/index.php")}">Products</a><a href="${fromRoot("pages/contact.html")}?type=wellness">Ask a question</a></nav><div class="chatbot-handoff"><a data-ai-whatsapp data-ai-handoff href="https://wa.me/918858302744" target="_blank" rel="noopener">Continue with a person on WhatsApp →</a></div></div><span class="chatbot-resize-hint">Drag corner to resize</span>`;
@@ -359,12 +360,14 @@
       backdrop.classList.remove("is-open");
       backdrop.hidden = true;
       panel.setAttribute("aria-hidden", "true");
+      panel.hidden = true;
       button.setAttribute("aria-expanded", "false");
       document.body.classList.remove("chatbot-open");
       button.focus({ preventScroll: true });
     };
     const openChat = () => {
       track("panel_open");
+      panel.hidden = false;
       backdrop.hidden = false;
       window.requestAnimationFrame(() => {
         panel.classList.add("is-open");
