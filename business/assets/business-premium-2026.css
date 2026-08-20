@@ -63,3 +63,46 @@ html body .os-link{min-height:62px}
 .bp-sidebar-group{display:grid;gap:4px;padding-bottom:6px;animation:bp-expand .16s ease both}
 @keyframes bp-expand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media(max-width:680px){html body .os-links{grid-template-columns:1fr}.bp-collapse-heading{padding-right:76px!important}.bp-collapse-toggle{padding:0 9px}.bp-collapse-body{padding-top:11px}}
+
+/* Business OS Concept 2.0 — clean indigo workspace matching the approved visual. */
+:root{--concept-indigo:#5746d9;--concept-indigo-dark:#3829a8;--concept-indigo-soft:#f0edff;--concept-blue-soft:#f2f6ff;--concept-mint:#effaf5;--concept-amber:#fff9e9;--concept-rose:#fff2f3;--concept-ink:#222a3a;--concept-muted:#72798a;--concept-line:#e2e5ef}
+html body{color:var(--concept-ink);background:radial-gradient(circle at 92% 0,rgba(93,75,219,.08),transparent 32rem),linear-gradient(180deg,#f8f9ff,#f5f7fb)!important}
+html body .os-topbar{background:rgba(255,255,255,.94)!important;border-bottom:1px solid #e5e7f0!important;box-shadow:0 5px 22px rgba(55,49,112,.06)!important}
+html body .os-brand img{border:1px solid #dedcf2!important;box-shadow:0 5px 16px rgba(72,56,172,.13)!important}
+html body .os-brand strong{color:#29214f!important}
+html body .os-brand small{color:#7b7c8d!important}
+html body .os-btn{border-color:#dedfeb!important;background:#fff!important;color:#4d5262!important;box-shadow:0 3px 10px rgba(55,49,112,.04)!important}
+html body .os-btn:hover{border-color:#bdb6ef!important;background:#f7f5ff!important;color:#4332bd!important}
+html body .os-btn.primary,html body button:not(.bp-collapse-toggle):not(.hwc-admin-nav-title):not(.hwc-admin-menu-toggle):not(.hwc-admin-menu-backdrop){border-color:var(--concept-indigo)!important;background:linear-gradient(135deg,#6553e6,#4d3ac8)!important;color:#fff!important;box-shadow:0 7px 18px rgba(83,67,205,.18)!important}
+html body .os-hero{border-color:#e2e3ef!important;background:radial-gradient(circle at 90% 10%,rgba(89,71,215,.13),transparent 31%),linear-gradient(135deg,#fff,#f7f8ff)!important;box-shadow:0 12px 34px rgba(55,49,112,.07)!important}
+html body .os-kicker{color:#4d3fc1!important}
+html body .os-kicker:before{background:#6251dc!important;box-shadow:0 0 0 5px rgba(98,81,220,.11)!important}
+html body .os-hero h1{color:#262044!important}
+html body .os-hero p{color:#73798a!important}
+html body .os-chip{border-color:#e0e1eb!important;background:#fff!important;color:#5b6070!important}
+html body .os-chip.good{border-color:#d5e9df!important;background:#eff9f4!important;color:#27724d!important}
+html body .os-card,html body .s10-card,html body .s10-kpi,html body .bi-card,html body .bi-kpi,html body .pp-card{border:1px solid var(--concept-line)!important;border-radius:15px!important;background:#fff!important;box-shadow:0 5px 18px rgba(43,39,89,.045)!important}
+html body .os-card:hover,html body .s10-card:hover,html body .s10-kpi:hover,html body .bi-card:hover,html body .bi-kpi:hover{border-color:#cbc7ec!important;box-shadow:0 10px 26px rgba(61,49,139,.08)!important}
+html body .s10-kpis>*,html body .os-grid>.os-kpi{position:relative;overflow:hidden}
+html body .s10-kpis>*:nth-child(4n+1),html body .os-grid>.os-kpi:nth-child(4n+1){background:linear-gradient(180deg,#fff,var(--concept-mint))!important}
+html body .s10-kpis>*:nth-child(4n+2),html body .os-grid>.os-kpi:nth-child(4n+2){background:linear-gradient(180deg,#fff,var(--concept-blue-soft))!important}
+html body .s10-kpis>*:nth-child(4n+3),html body .os-grid>.os-kpi:nth-child(4n+3){background:linear-gradient(180deg,#fff,var(--concept-indigo-soft))!important}
+html body .s10-kpis>*:nth-child(4n+4),html body .os-grid>.os-kpi:nth-child(4n+4){background:linear-gradient(180deg,#fff,var(--concept-amber))!important}
+html body .s10-kpi:before,html body .os-kpi:before{background:linear-gradient(#6754e5,#8f7df0)!important}
+html body .s10-kpi small,html body .os-kpi small{color:#85899a!important}
+html body .s10-kpi strong,html body .os-kpi strong{color:#29234a!important}
+html body .s10-kpi span,html body .os-kpi span{color:#7b8090!important}
+html body .os-main table,html body .pp-table{border-color:#e5e7ef!important;font-size:.72rem!important}
+html body .os-main table thead th,html body .pp-table th{border-bottom-color:#dedfea!important;background:#f7f7fc!important;color:#737789!important}
+html body .os-main table tbody td,html body .pp-table td{border-bottom-color:#ececf3!important;color:#3d4250!important}
+html body .os-main table tbody tr:hover{background:#f7f6ff!important;box-shadow:inset 3px 0 #6553dc!important}
+html body .pp-table-wrap,html body .table-wrap,html body .os-table-wrap{border-color:#e2e4ed!important;border-radius:13px!important;box-shadow:none!important}
+html body .os-main input:not([type=checkbox]):not([type=radio]),html body .os-main select,html body .os-main textarea{border-color:#dfe1e9!important;border-radius:9px!important;background:#fff!important;color:#353a48!important}
+html body .os-main input:focus,html body .os-main select:focus,html body .os-main textarea:focus{border-color:#7464df!important;box-shadow:0 0 0 3px rgba(97,78,215,.11)!important}
+html body .pp-badge{background:#f0edff!important;color:#5140c2!important}
+html body .pp-badge.warn{background:#fff1f2!important;color:#b44750!important}
+html body .os-link,html body .os-report,html body .os-list-row{border-color:#e4e5ed!important;background:#fbfbfe!important}
+html body .os-link:hover,html body .os-report:hover{border-color:#c9c5eb!important;background:#f7f5ff!important}
+html body .bp-collapse-toggle{border-color:#d9d7e9!important;background:#fff!important;color:#5347ae!important;box-shadow:0 3px 10px rgba(58,47,129,.06)!important}
+html body .bp-collapse-toggle:hover{border-color:#bcb5ec!important;background:#f5f2ff!important}
+@media(max-width:680px){html body .os-hero{border-radius:16px!important}html body .os-card,html body .s10-card,html body .s10-kpi,html body .bi-card,html body .bi-kpi,html body .pp-card{border-radius:13px!important}}
