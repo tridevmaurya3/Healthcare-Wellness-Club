@@ -51,7 +51,8 @@ try{
             $posted=is_array($_POST['content']??null)?$_POST['content']:[];$allowed=[];foreach($groups as $fields)foreach($fields as $k=>$v)$allowed[$k]=true;
             $s=$pdo->prepare("INSERT INTO public_site_content(organization_id,content_key,content_value,updated_by) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE content_value=VALUES(content_value),updated_by=VALUES(updated_by),updated_at=NOW()");
             foreach($posted as $k=>$v){if(!isset($allowed[$k]))continue;$value=trim((string)$v);if(strlen($value)>8000)throw new RuntimeException('A content field is too long.');$s->execute([$orgId,$k,$value,(int)$user['id']]);}
-            security_step17_audit($pdo,(int)$user['id'],'public_site_content_updated','public_site',null,['keys'=>array_keys($posted)]);$success='Customer-site text and contact details updated.';
+            $section=trim((string)($_POST['content_section']??''));
+            security_step17_audit($pdo,(int)$user['id'],'public_site_content_updated','public_site',null,['keys'=>array_keys($posted),'section'=>$section]);$success=($section!==''?$section:'Selected customer-site section').' updated successfully.';
         }elseif($action==='save_story'){
             $id=(int)($_POST['story_id']??0);$name=trim((string)($_POST['member_name']??''));$headline=trim((string)($_POST['headline']??''));$text=trim((string)($_POST['story_text']??''));$order=max(0,min(9999,(int)($_POST['sort_order']??100)));$status=in_array((string)($_POST['status']??'active'),['active','hidden'],true)?(string)$_POST['status']:'active';$featured=isset($_POST['is_featured'])?1:0;
             if(strlen($name)<2||strlen($text)<10)throw new RuntimeException('Story needs a member name and meaningful story text.');
@@ -73,6 +74,280 @@ try{
     $s=$pdo->prepare("SELECT * FROM public_site_stories WHERE organization_id=? ORDER BY is_featured DESC,sort_order,id");$s->execute([$orgId]);$stories=$s->fetchAll();
     $s=$pdo->prepare("SELECT * FROM public_site_services WHERE organization_id=? ORDER BY sort_order,id");$s->execute([$orgId]);$services=$s->fetchAll();
 }catch(Throwable $e){$error=$e->getMessage();}
-?><!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Customer Site Manager - Healthcare Wellness Club</title><link rel="stylesheet" href="assets/dashboard.css"><link rel="stylesheet" href="assets/product_pro.css"><link rel="stylesheet" href="assets/workspace_refresh.css"><style>
-.csm-shell{display:grid;gap:15px}.csm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.csm-section{padding:18px;border:1px solid #dce7e0;border-radius:17px;background:#fff}.csm-section h2{margin:0 0 12px;font-size:1rem}.csm-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.csm-field{display:grid;gap:5px;color:#53675d;font-size:.7rem;font-weight:750}.csm-field.wide{grid-column:1/-1}.csm-field input,.csm-field textarea,.csm-field select{width:100%;border:1px solid #d9e4de;border-radius:10px;padding:10px;background:#fbfdfc;font:inherit;color:#203d30}.csm-field textarea{min-height:92px;resize:vertical}.csm-item{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:13px;border:1px solid #e1e9e5;border-radius:14px;background:#fbfdfc;margin-top:10px}.csm-thumb{width:90px;height:90px;object-fit:cover;border-radius:12px;background:#eef5f1}.csm-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.csm-save{border:0;border-radius:10px;background:#177a4a;color:#fff;padding:10px 14px;font-weight:800}.csm-new{background:linear-gradient(135deg,#f1faf5,#edf4ff)}details summary{cursor:pointer;font-weight:850;color:#244738}.csm-help{padding:14px;border:1px solid #d8e7df;border-radius:14px;background:#f5fbf7;color:#5d7166;font-size:.73rem;line-height:1.6}@media(max-width:900px){.csm-grid,.csm-fields{grid-template-columns:1fr}.csm-field.wide{grid-column:auto}}@media(max-width:620px){.csm-item{grid-template-columns:1fr}.csm-thumb{width:100%;height:180px}}
-</style></head><body><header class="os-topbar"><div class="os-topbar-inner"><a class="os-brand" href="index.php"><img src="../img/logo.png" alt="Healthcare Wellness Club"><span><strong>Healthcare Wellness Club</strong><small>Customer Site Content Manager</small></span></a><div class="os-top-actions"><a class="os-btn" href="../feature_hub.php">All Features</a><a class="os-btn" href="product_image_manager.php">Product Images</a><a class="os-btn primary" href="../index.html" target="_blank" rel="noopener">Open Customer Site</a></div></div></header><div class="os-layout"><aside class="os-sidebar"><div class="os-nav-label">Customer Site</div><nav class="os-nav"><a class="active" href="customer_site_manager.php"><i class="dot"></i>Site Content Manager</a><a href="product_image_manager.php"><i class="dot"></i>Product Images</a><a href="../pages/success.html" target="_blank"><i class="dot"></i>Stories Preview</a><a href="../pages/services.html" target="_blank"><i class="dot"></i>Services Preview</a><a href="../shop/index.php" target="_blank"><i class="dot"></i>Product Store</a></nav><div class="os-sidebar-status"><b>Admin-controlled publishing</b><span>Change public text, contact information, services and member stories without editing HTML files.</span></div></aside><main class="os-main"><section class="os-hero"><div class="os-kicker">DYNAMIC CUSTOMER SITE</div><h1>Update the public website from one control panel.</h1><p>Home, About, Services, Stories and Contact page content is database-backed. Stories and services can be added, hidden, reordered and have their images replaced at any time.</p></section><?php if($error):?><div class="pp-alert bad" style="margin-top:14px"><?=security_step17_h($error)?></div><?php endif;?><?php if($success):?><div class="pp-alert good" style="margin-top:14px"><?=security_step17_h($success)?></div><?php endif;?><div class="csm-shell" style="margin-top:14px"><div class="csm-help"><b>How publishing works:</b> Save here → refresh the customer page → the new content appears. Static page text stays as a safe fallback if the content API is temporarily unavailable. Member experiences should remain personal accounts and not promise a medical or guaranteed result.</div><form method="post" class="csm-section"><input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>"><input type="hidden" name="action" value="save_content"><h2>Page Text, Brand & Contact</h2><div class="csm-grid"><?php foreach($groups as $group=>$fields):?><details class="csm-section" open><summary><?=security_step17_h($group)?></summary><div class="csm-fields" style="margin-top:12px"><?php foreach($fields as $key=>$label):?><label class="csm-field <?=in_array($key,$longKeys,true)?'wide':''?>"><span><?=security_step17_h($label)?></span><?php if(in_array($key,$longKeys,true)):?><textarea name="content[<?=security_step17_h($key)?>]"><?=security_step17_h((string)($content[$key]??''))?></textarea><?php else:?><input name="content[<?=security_step17_h($key)?>]" value="<?=security_step17_h((string)($content[$key]??''))?>"><?php endif;?></label><?php endforeach;?></div></details><?php endforeach;?></div><div class="csm-actions"><button class="csm-save" type="submit">Save Customer Site Text</button></div></form><section class="csm-section"><h2>Member Stories — Dynamic Spotlight</h2><form method="post" enctype="multipart/form-data" class="csm-section csm-new"><input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>"><input type="hidden" name="action" value="save_story"><div class="csm-fields"><label class="csm-field"><span>Member Name</span><input name="member_name" required></label><label class="csm-field"><span>Short Headline</span><input name="headline"></label><label class="csm-field wide"><span>Story</span><textarea name="story_text" required></textarea></label><label class="csm-field"><span>Photo</span><input type="file" name="story_image" accept="image/jpeg,image/png,image/webp" required></label><label class="csm-field"><span>Display Order</span><input type="number" name="sort_order" value="100" min="0" max="9999"></label><label class="csm-field"><span>Status</span><select name="status"><option value="active">Published</option><option value="hidden">Hidden</option></select></label><label class="csm-field"><span><input type="checkbox" name="is_featured" value="1"> Make this the first featured story</span></label></div><div class="csm-actions"><button class="csm-save" type="submit">Add New Story</button></div></form><?php foreach($stories as $r):?><form method="post" enctype="multipart/form-data" class="csm-item"><input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>"><input type="hidden" name="action" value="save_story"><input type="hidden" name="story_id" value="<?=(int)$r['id']?>"><input type="hidden" name="current_image" value="<?=security_step17_h((string)$r['image_path'])?>"><img class="csm-thumb" src="<?=security_step17_h(csm_media_src((string)$r['image_path']))?>" alt=""><div class="csm-fields"><label class="csm-field"><span>Member Name</span><input name="member_name" value="<?=security_step17_h((string)$r['member_name'])?>" required></label><label class="csm-field"><span>Headline</span><input name="headline" value="<?=security_step17_h((string)($r['headline']??''))?>"></label><label class="csm-field wide"><span>Story</span><textarea name="story_text" required><?=security_step17_h((string)$r['story_text'])?></textarea></label><label class="csm-field"><span>Replace Photo</span><input type="file" name="story_image" accept="image/jpeg,image/png,image/webp"></label><label class="csm-field"><span>Order</span><input type="number" name="sort_order" value="<?=(int)$r['sort_order']?>"></label><label class="csm-field"><span>Status</span><select name="status"><option value="active" <?=$r['status']==='active'?'selected':''?>>Published</option><option value="hidden" <?=$r['status']==='hidden'?'selected':''?>>Hidden</option></select></label><label class="csm-field"><span><input type="checkbox" name="is_featured" value="1" <?=!empty($r['is_featured'])?'checked':''?>> Featured first</span></label><div class="csm-actions"><button class="csm-save" type="submit">Save Story</button></div></div></form><?php endforeach;?></section><section class="csm-section"><h2>Services — Add, Hide, Reorder & Replace Images</h2><form method="post" enctype="multipart/form-data" class="csm-section csm-new"><input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>"><input type="hidden" name="action" value="save_service"><div class="csm-fields"><label class="csm-field"><span>Service Name</span><input name="service_name" required></label><label class="csm-field"><span>Display Order</span><input type="number" name="sort_order" value="100"></label><label class="csm-field wide"><span>Description</span><textarea name="service_text" required></textarea></label><label class="csm-field"><span>Image</span><input type="file" name="service_image" accept="image/jpeg,image/png,image/webp" required></label><label class="csm-field"><span>Status</span><select name="status"><option value="active">Published</option><option value="hidden">Hidden</option></select></label></div><div class="csm-actions"><button class="csm-save" type="submit">Add New Service</button></div></form><?php foreach($services as $r):?><form method="post" enctype="multipart/form-data" class="csm-item"><input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>"><input type="hidden" name="action" value="save_service"><input type="hidden" name="service_id" value="<?=(int)$r['id']?>"><input type="hidden" name="current_image" value="<?=security_step17_h((string)$r['image_path'])?>"><img class="csm-thumb" src="<?=security_step17_h(csm_media_src((string)$r['image_path']))?>" alt=""><div class="csm-fields"><label class="csm-field"><span>Service Name</span><input name="service_name" value="<?=security_step17_h((string)$r['service_name'])?>" required></label><label class="csm-field"><span>Order</span><input type="number" name="sort_order" value="<?=(int)$r['sort_order']?>"></label><label class="csm-field wide"><span>Description</span><textarea name="service_text" required><?=security_step17_h((string)$r['service_text'])?></textarea></label><label class="csm-field"><span>Replace Image</span><input type="file" name="service_image" accept="image/jpeg,image/png,image/webp"></label><label class="csm-field"><span>Status</span><select name="status"><option value="active" <?=$r['status']==='active'?'selected':''?>>Published</option><option value="hidden" <?=$r['status']==='hidden'?'selected':''?>>Hidden</option></select></label><div class="csm-actions"><button class="csm-save" type="submit">Save Service</button></div></div></form><?php endforeach;?></section></div></main></div></body></html>
+?>
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Customer Site Manager - Healthcare Wellness Club</title>
+<link rel="stylesheet" href="assets/dashboard.css">
+<link rel="stylesheet" href="assets/product_pro.css">
+<link rel="stylesheet" href="assets/workspace_refresh.css">
+<style>
+.csm-shell{display:grid;gap:15px}.csm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.csm-section{padding:18px;border:1px solid #dce7e0;border-radius:17px;background:#fff}.csm-section h2{margin:0 0 12px;font-size:1rem}.csm-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.csm-field{display:grid;gap:5px;color:#53675d;font-size:.7rem;font-weight:750}.csm-field.wide{grid-column:1/-1}.csm-field input,.csm-field textarea,.csm-field select{width:100%;border:1px solid #d9e4de;border-radius:10px;padding:10px;background:#fbfdfc;font:inherit;color:#203d30}.csm-field textarea{min-height:92px;resize:vertical}.csm-item{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;padding:13px;border:1px solid #e1e9e5;border-radius:14px;background:#fbfdfc;margin-top:10px}.csm-thumb{width:90px;height:90px;object-fit:cover;border-radius:12px;background:#eef5f1}.csm-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}.csm-save{border:0;border-radius:10px;background:#177a4a;color:#fff;padding:10px 14px;font-weight:800;cursor:pointer}.csm-new{background:linear-gradient(135deg,#f1faf5,#edf4ff)}details summary{cursor:pointer;font-weight:850;color:#244738}.csm-help{padding:14px;border:1px solid #d8e7df;border-radius:14px;background:#f5fbf7;color:#5d7166;font-size:.73rem;line-height:1.6}.csm-content-card{display:flex;flex-direction:column;margin:0;background:linear-gradient(145deg,#fff,#f8fcfa);box-shadow:0 8px 22px rgba(28,70,45,.045)}.csm-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:11px;border-bottom:1px solid #e6ede9}.csm-card-head h3{margin:0;color:#244738;font-size:.9rem}.csm-card-head span{padding:4px 7px;border-radius:999px;background:#eaf8ef;color:#177044;font-size:.58rem;font-weight:850}.csm-content-card .csm-actions{justify-content:flex-end;margin-top:auto;padding-top:14px}.csm-content-card .csm-save{min-width:148px}@media(max-width:900px){.csm-grid,.csm-fields{grid-template-columns:1fr}.csm-field.wide{grid-column:auto}}@media(max-width:620px){.csm-item{grid-template-columns:1fr}.csm-thumb{width:100%;height:180px}.csm-card-head{align-items:flex-start;flex-direction:column}.csm-content-card .csm-save{width:100%}}
+</style>
+</head>
+<body>
+<header class="os-topbar">
+<div class="os-topbar-inner">
+<a class="os-brand" href="index.php">
+<img src="../img/logo.png" alt="Healthcare Wellness Club">
+<span>
+<strong>Healthcare Wellness Club</strong>
+<small>Customer Site Content Manager</small>
+</span>
+</a>
+<div class="os-top-actions">
+<a class="os-btn" href="../feature_hub.php">All Features</a>
+<a class="os-btn" href="product_image_manager.php">Product Images</a>
+<a class="os-btn primary" href="../index.html" target="_blank" rel="noopener">Open Customer Site</a>
+</div>
+</div>
+</header>
+<div class="os-layout">
+<aside class="os-sidebar">
+<div class="os-nav-label">Customer Site</div>
+<nav class="os-nav">
+<a class="active" href="customer_site_manager.php">
+<i class="dot">
+</i>Site Content Manager</a>
+<a href="product_image_manager.php">
+<i class="dot">
+</i>Product Images</a>
+<a href="../pages/success.html" target="_blank">
+<i class="dot">
+</i>Stories Preview</a>
+<a href="../pages/services.html" target="_blank">
+<i class="dot">
+</i>Services Preview</a>
+<a href="../shop/index.php" target="_blank">
+<i class="dot">
+</i>Product Store</a>
+</nav>
+<div class="os-sidebar-status">
+<b>Admin-controlled publishing</b>
+<span>Change public text, contact information, services and member stories without editing HTML files.</span>
+</div>
+</aside>
+<main class="os-main">
+<section class="os-hero">
+<div class="os-kicker">DYNAMIC CUSTOMER SITE</div>
+<h1>Update the public website from one control panel.</h1>
+<p>Home, About, Services, Stories and Contact page content is database-backed. Stories and services can be added, hidden, reordered and have their images replaced at any time.</p>
+</section>
+<?php if($error):?>
+<div class="pp-alert bad" style="margin-top:14px">
+<?=security_step17_h($error)?>
+</div>
+<?php endif;?>
+<?php if($success):?>
+<div class="pp-alert good" style="margin-top:14px">
+<?=security_step17_h($success)?>
+</div>
+<?php endif;?>
+<div class="csm-shell" style="margin-top:14px">
+<div class="csm-help">
+<b>How publishing works:</b> Update only the required card and select <b>Save This Section</b>. Other page sections remain unchanged. Refresh the customer page to see the update. Every new editable public-site feature will also receive its matching control in this manager.</div>
+<section class="csm-section">
+<h2>Page Text, Brand & Contact</h2>
+<div class="csm-grid">
+<?php foreach($groups as $group=>$fields):?>
+<form method="post" class="csm-section csm-content-card">
+<input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>">
+<input type="hidden" name="action" value="save_content">
+<input type="hidden" name="content_section" value="<?=security_step17_h($group)?>">
+<div class="csm-card-head"><h3><?=security_step17_h($group)?></h3><span>Independent update</span></div>
+<div class="csm-fields" style="margin-top:12px">
+<?php foreach($fields as $key=>$label):?>
+<label class="csm-field <?=in_array($key,$longKeys,true)?'wide':''?>">
+<span>
+<?=security_step17_h($label)?>
+</span>
+<?php if(in_array($key,$longKeys,true)):?>
+<textarea name="content[<?=security_step17_h($key)?>]">
+<?=security_step17_h((string)($content[$key]??''))?>
+</textarea>
+<?php else:?>
+<input name="content[<?=security_step17_h($key)?>]" value="<?=security_step17_h((string)($content[$key]??''))?>">
+<?php endif;?>
+</label>
+<?php endforeach;?>
+</div>
+<div class="csm-actions"><button class="csm-save" type="submit">Save This Section</button></div>
+</form>
+<?php endforeach;?>
+</div>
+</section>
+<section class="csm-section">
+<h2>Member Stories — Dynamic Spotlight</h2>
+<form method="post" enctype="multipart/form-data" class="csm-section csm-new">
+<input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>">
+<input type="hidden" name="action" value="save_story">
+<div class="csm-fields">
+<label class="csm-field">
+<span>Member Name</span>
+<input name="member_name" required>
+</label>
+<label class="csm-field">
+<span>Short Headline</span>
+<input name="headline">
+</label>
+<label class="csm-field wide">
+<span>Story</span>
+<textarea name="story_text" required>
+</textarea>
+</label>
+<label class="csm-field">
+<span>Photo</span>
+<input type="file" name="story_image" accept="image/jpeg,image/png,image/webp" required>
+</label>
+<label class="csm-field">
+<span>Display Order</span>
+<input type="number" name="sort_order" value="100" min="0" max="9999">
+</label>
+<label class="csm-field">
+<span>Status</span>
+<select name="status">
+<option value="active">Published</option>
+<option value="hidden">Hidden</option>
+</select>
+</label>
+<label class="csm-field">
+<span>
+<input type="checkbox" name="is_featured" value="1"> Make this the first featured story</span>
+</label>
+</div>
+<div class="csm-actions">
+<button class="csm-save" type="submit">Add New Story</button>
+</div>
+</form>
+<?php foreach($stories as $r):?>
+<form method="post" enctype="multipart/form-data" class="csm-item">
+<input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>">
+<input type="hidden" name="action" value="save_story">
+<input type="hidden" name="story_id" value="<?=(int)$r['id']?>">
+<input type="hidden" name="current_image" value="<?=security_step17_h((string)$r['image_path'])?>">
+<img class="csm-thumb" src="<?=security_step17_h(csm_media_src((string)$r['image_path']))?>" alt="">
+<div class="csm-fields">
+<label class="csm-field">
+<span>Member Name</span>
+<input name="member_name" value="<?=security_step17_h((string)$r['member_name'])?>" required>
+</label>
+<label class="csm-field">
+<span>Headline</span>
+<input name="headline" value="<?=security_step17_h((string)($r['headline']??''))?>">
+</label>
+<label class="csm-field wide">
+<span>Story</span>
+<textarea name="story_text" required>
+<?=security_step17_h((string)$r['story_text'])?>
+</textarea>
+</label>
+<label class="csm-field">
+<span>Replace Photo</span>
+<input type="file" name="story_image" accept="image/jpeg,image/png,image/webp">
+</label>
+<label class="csm-field">
+<span>Order</span>
+<input type="number" name="sort_order" value="<?=(int)$r['sort_order']?>">
+</label>
+<label class="csm-field">
+<span>Status</span>
+<select name="status">
+<option value="active" <?=$r['status']==='active'?'selected':''?>>Published</option>
+<option value="hidden" <?=$r['status']==='hidden'?'selected':''?>>Hidden</option>
+</select>
+</label>
+<label class="csm-field">
+<span>
+<input type="checkbox" name="is_featured" value="1" <?=!empty($r['is_featured'])?'checked':''?>> Featured first</span>
+</label>
+<div class="csm-actions">
+<button class="csm-save" type="submit">Save Story</button>
+</div>
+</div>
+</form>
+<?php endforeach;?>
+</section>
+<section class="csm-section">
+<h2>Services — Add, Hide, Reorder & Replace Images</h2>
+<form method="post" enctype="multipart/form-data" class="csm-section csm-new">
+<input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>">
+<input type="hidden" name="action" value="save_service">
+<div class="csm-fields">
+<label class="csm-field">
+<span>Service Name</span>
+<input name="service_name" required>
+</label>
+<label class="csm-field">
+<span>Display Order</span>
+<input type="number" name="sort_order" value="100">
+</label>
+<label class="csm-field wide">
+<span>Description</span>
+<textarea name="service_text" required>
+</textarea>
+</label>
+<label class="csm-field">
+<span>Image</span>
+<input type="file" name="service_image" accept="image/jpeg,image/png,image/webp" required>
+</label>
+<label class="csm-field">
+<span>Status</span>
+<select name="status">
+<option value="active">Published</option>
+<option value="hidden">Hidden</option>
+</select>
+</label>
+</div>
+<div class="csm-actions">
+<button class="csm-save" type="submit">Add New Service</button>
+</div>
+</form>
+<?php foreach($services as $r):?>
+<form method="post" enctype="multipart/form-data" class="csm-item">
+<input type="hidden" name="csrf" value="<?=security_step17_h($csrf)?>">
+<input type="hidden" name="action" value="save_service">
+<input type="hidden" name="service_id" value="<?=(int)$r['id']?>">
+<input type="hidden" name="current_image" value="<?=security_step17_h((string)$r['image_path'])?>">
+<img class="csm-thumb" src="<?=security_step17_h(csm_media_src((string)$r['image_path']))?>" alt="">
+<div class="csm-fields">
+<label class="csm-field">
+<span>Service Name</span>
+<input name="service_name" value="<?=security_step17_h((string)$r['service_name'])?>" required>
+</label>
+<label class="csm-field">
+<span>Order</span>
+<input type="number" name="sort_order" value="<?=(int)$r['sort_order']?>">
+</label>
+<label class="csm-field wide">
+<span>Description</span>
+<textarea name="service_text" required>
+<?=security_step17_h((string)$r['service_text'])?>
+</textarea>
+</label>
+<label class="csm-field">
+<span>Replace Image</span>
+<input type="file" name="service_image" accept="image/jpeg,image/png,image/webp">
+</label>
+<label class="csm-field">
+<span>Status</span>
+<select name="status">
+<option value="active" <?=$r['status']==='active'?'selected':''?>>Published</option>
+<option value="hidden" <?=$r['status']==='hidden'?'selected':''?>>Hidden</option>
+</select>
+</label>
+<div class="csm-actions">
+<button class="csm-save" type="submit">Save Service</button>
+</div>
+</div>
+</form>
+<?php endforeach;?>
+</section>
+</div>
+</main>
+</div>
+</body>
+</html>
