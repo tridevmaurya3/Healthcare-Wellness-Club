@@ -43,11 +43,11 @@
   }
 
   function collapseCards() {
-    var selector = '.os-main .os-card, .os-main .s10-card, .os-main .pp-card, .os-main .bi-card';
+    var selector = '.os-main .os-card, .os-main .s10-card, .os-main .pp-card, .os-main .bi-card, .os-main .csm-section, .os-main .csm-content-card';
     document.querySelectorAll(selector).forEach(function (card, index) {
       if (card.dataset.noCollapse === 'true' || card.closest('[data-no-collapse="true"]')) return;
       if (card.classList.contains('s10-kpi') || card.classList.contains('os-kpi')) return;
-      var heading = card.querySelector(':scope > h2, :scope > h3, :scope > .os-title-row');
+      var heading = card.querySelector(':scope > h2, :scope > h3, :scope > .os-title-row, :scope > .csm-card-head');
       if (!heading) return;
       var body = document.createElement('div');
       body.className = 'bp-collapse-body';
