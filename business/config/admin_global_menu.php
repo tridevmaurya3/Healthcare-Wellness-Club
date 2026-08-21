@@ -68,6 +68,7 @@ function admin_global_menu_markup(bool $insideBusiness, string $script): string
             [$business.'finance_center.php','Finance',['finance_center.php','finance_cashbook.php','finance_profit_loss.php','finance_cash_flow.php','finance_reconciliation.php'],'₹'],
         ]],
         ['Administration', [
+            [$business.'form_designer.php','Smart Form Designer',['form_designer.php'],'✎'],
             [$business.'customer_site_manager.php','Customer Site Manager',['customer_site_manager.php'],'◉'],
             [$business.'security_center.php','Security Center',['security_center.php','security_audit.php','security_sessions.php','account_security.php'],'◆'],
             [$business.'user_management.php','Users & Roles',['user_management.php','permission_matrix.php','role_accounts.php'],'♙'],
@@ -119,6 +120,34 @@ function admin_global_menu_script(): string
     return <<<'HTML'
 <script id="hwc-admin-global-menu-js">
 (()=>{const b=document.body,t=document.getElementById('hwcAdminMenuToggle'),d=document.getElementById('hwcAdminMenuBackdrop');if(!b||!t)return;const close=()=>{b.classList.remove('hwc-admin-menu-open');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=!b.classList.contains('hwc-admin-menu-open');b.classList.toggle('hwc-admin-menu-open',open);t.setAttribute('aria-expanded',open?'true':'false')});d?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.getElementById('hwcAdminGlobalSidebar')?.addEventListener('click',e=>{const group=e.target.closest('.hwc-admin-nav-title');if(group){const items=document.getElementById(group.getAttribute('aria-controls')||'');if(items){const open=group.getAttribute('aria-expanded')==='true';group.setAttribute('aria-expanded',open?'false':'true');items.hidden=open}return}if(e.target.closest('a')&&matchMedia('(max-width:1100px)').matches)close()});document.addEventListener('click',e=>{const btn=e.target.closest('[data-hwc-membership-user]');if(!btn)return;const select=document.querySelector('select[name="user_id"]');if(!select)return;select.value=btn.getAttribute('data-hwc-membership-user')||'';select.dispatchEvent(new Event('change',{bubbles:true}));select.focus();select.scrollIntoView({behavior:'smooth',block:'center'})})})();
+</script>
+HTML;
+}
+
+function admin_global_forms_markup(bool $insideBusiness, string $role): string
+{
+    $base=$insideBusiness?'':'business/';
+    $forms=['new_ums'=>'New UMS','volume_points'=>'Volume Points','orders'=>'Orders','renewal'=>'Renewal','income'=>'Income','royalty'=>'Royalty','customers'=>'Customer Management','memberships'=>'Club Membership','leads'=>'Leads & Enquiries','appointments'=>'Appointments','products'=>'Product Master','inventory'=>'Inventory','purchases'=>'Purchases & Suppliers'];
+    $html='<div class="hwc-form-hub" data-designer="'.$base.'form_designer.php" data-schema="'.$base.'dynamic_form_schema.php"><button class="hwc-form-fab" type="button" aria-expanded="false"><b>＋</b><span>Forms</span></button><section class="hwc-form-drawer" hidden><header><div><small>SMART FORM CENTER</small><strong>'.($role==='admin'?'Forms & Option Designer':'Coach Forms').'</strong></div><button type="button" data-form-close aria-label="Close forms">×</button></header><div class="hwc-form-list">';
+    foreach($forms as $key=>$label)$html.='<button type="button" data-form-key="'.htmlspecialchars($key,ENT_QUOTES,'UTF-8').'">'.htmlspecialchars($label,ENT_QUOTES,'UTF-8').'<i>→</i></button>';
+    return $html.'</div></section><div class="hwc-form-modal" hidden><button class="hwc-form-modal-bg" type="button" aria-label="Close designer"></button><section><header><strong>Smart Form Designer</strong><button type="button" data-form-modal-close>×</button></header><iframe title="Smart Form Designer"></iframe></section></div></div>';
+}
+
+function admin_global_forms_styles(): string
+{
+    return <<<'HTML'
+<style id="hwc-global-form-hub-css">
+.hwc-form-hub{font-family:Inter,Segoe UI,Arial,sans-serif}.hwc-form-fab{position:fixed;z-index:2147483010;right:18px;top:82px;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #cfc8fa;border-radius:14px;background:linear-gradient(135deg,#5c49df,#4934c3);color:#fff;box-shadow:0 12px 30px rgba(77,57,190,.25);font-weight:900;cursor:pointer}.hwc-form-fab b{font-size:1rem}.hwc-form-drawer{position:fixed;z-index:2147483011;right:18px;top:132px;width:min(330px,calc(100vw - 28px));max-height:calc(100vh - 152px);overflow:auto;padding:12px;border:1px solid #dedbed;border-radius:18px;background:rgba(255,255,255,.98);box-shadow:0 22px 56px rgba(36,28,87,.2)}.hwc-form-drawer[hidden],.hwc-form-modal[hidden]{display:none!important}.hwc-form-drawer header,.hwc-form-modal section>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 4px 11px}.hwc-form-drawer header small,.hwc-form-drawer header strong{display:block}.hwc-form-drawer header small{color:#7567d6;font-size:.55rem;font-weight:900;letter-spacing:.1em}.hwc-form-drawer header strong{color:#263b31;font-size:.9rem;margin-top:3px}.hwc-form-drawer header button,.hwc-form-modal header button{width:30px;height:30px;border:1px solid #dedbea;border-radius:9px;background:#fff;color:#5547b9;font-size:1rem;cursor:pointer}.hwc-form-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.hwc-form-list button{display:flex;justify-content:space-between;align-items:center;gap:7px;min-height:47px;padding:9px;border:1px solid #e1e5e2;border-radius:11px;background:linear-gradient(145deg,#fbfdfc,#f4f3ff);color:#40534a;text-align:left;font-size:.66rem;font-weight:800;cursor:pointer}.hwc-form-list button:hover{border-color:#bdb5ef;color:#4939be}.hwc-form-list i{font-style:normal}.hwc-form-modal{position:fixed;inset:0;z-index:2147483020;display:grid;place-items:center;padding:18px}.hwc-form-modal-bg{position:absolute;inset:0;border:0;background:rgba(27,23,52,.42);backdrop-filter:blur(4px)}.hwc-form-modal>section{position:relative;width:min(1080px,96vw);height:min(780px,92vh);display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid #dcd9ed;border-radius:20px;background:#fff;box-shadow:0 30px 90px rgba(28,22,68,.3)}.hwc-form-modal iframe{width:100%;height:100%;border:0;background:#f7f8fd}@media(max-width:680px){.hwc-form-fab{top:auto;bottom:18px;right:12px}.hwc-form-drawer{top:auto;bottom:70px;right:12px;max-height:70vh}.hwc-form-list{grid-template-columns:1fr}.hwc-form-modal{padding:5px}.hwc-form-modal>section{width:100%;height:96vh;border-radius:15px}}@media print{.hwc-form-hub{display:none!important}}
+</style>
+HTML;
+}
+
+function admin_global_forms_script(): string
+{
+    return <<<'HTML'
+<script id="hwc-global-form-hub-js">
+(()=>{const hub=document.querySelector('.hwc-form-hub');if(!hub)return;const fab=hub.querySelector('.hwc-form-fab'),drawer=hub.querySelector('.hwc-form-drawer'),modal=hub.querySelector('.hwc-form-modal'),frame=modal.querySelector('iframe');const closeDrawer=()=>{drawer.hidden=true;fab.setAttribute('aria-expanded','false')};const closeModal=()=>{modal.hidden=true;frame.src='about:blank'};fab.addEventListener('click',()=>{drawer.hidden=!drawer.hidden;fab.setAttribute('aria-expanded',drawer.hidden?'false':'true')});hub.querySelector('[data-form-close]').addEventListener('click',closeDrawer);hub.querySelector('[data-form-modal-close]').addEventListener('click',closeModal);hub.querySelector('.hwc-form-modal-bg').addEventListener('click',closeModal);hub.querySelectorAll('[data-form-key]').forEach(b=>b.addEventListener('click',()=>{frame.src=hub.dataset.designer+'?form='+encodeURIComponent(b.dataset.formKey);modal.hidden=false;closeDrawer()}));document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!modal.hidden)closeModal();else closeDrawer()}});
+const page=location.pathname.split('/').pop()||'';fetch(hub.dataset.schema+'?page='+encodeURIComponent(page),{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(data=>{if(!data?.ok)return;(data.forms||[]).forEach(form=>{const byId={};(form.fields||[]).forEach(f=>{byId[String(f.id)]=f});(form.fields||[]).forEach(field=>{const control=document.querySelector('[name="'+CSS.escape(field.field_key)+'"]');if(!control)return;control.dataset.dynamicField=field.id;if(control.tagName==='SELECT'&&field.options?.length){const old=control.value,blank=control.querySelector('option[value=""]')?.textContent||'Choose option';control.replaceChildren(new Option(blank,''));field.options.forEach(o=>control.add(new Option(o.option_label,o.option_value)));if([...control.options].some(o=>o.value===old))control.value=old}const parent=field.parent_field_id?byId[String(field.parent_field_id)]:null;if(parent){const parentControl=document.querySelector('[name="'+CSS.escape(parent.field_key)+'"]');if(parentControl&&control.tagName==='SELECT'){const all=field.options||[];const refresh=()=>{const chosen=parentControl.value,old=control.value,blank=control.options[0]?.textContent||'Choose option';control.replaceChildren(new Option(blank,''));all.filter(o=>!o.parent_option_value||o.parent_option_value===chosen).forEach(o=>control.add(new Option(o.option_label,o.option_value)));if([...control.options].some(o=>o.value===old))control.value=old};parentControl.addEventListener('change',refresh);refresh()}}})})}).catch(()=>{})})();
 </script>
 HTML;
 }
@@ -182,24 +211,27 @@ function admin_global_menu_membership_candidates_panel(): string
 
 function admin_global_menu_inject(string $html): string
 {
+    if (defined('HWC_SKIP_GLOBAL_SHELL') && HWC_SKIP_GLOBAL_SHELL) return $html;
     if ($html === '' || stripos($html, '<html') === false || stripos($html, '<body') === false) return $html;
 
     if (session_status() !== PHP_SESSION_ACTIVE) {
         @session_start();
     }
-    if ((string)($_SESSION['hwc_role'] ?? '') !== 'admin' || (int)($_SESSION['hwc_user_id'] ?? 0) <= 0) return $html;
+    $role=(string)($_SESSION['hwc_role'] ?? '');
+    if (!in_array($role,['admin','coach'],true) || (int)($_SESSION['hwc_user_id'] ?? 0) <= 0) return $html;
 
     $path = str_replace('\\','/',(string)($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? ''));
     $script = basename($path);
     $insideBusiness = str_contains($path, '/business/');
-    $allowedRoot = ['feature_hub.php','account.php','security_alerts.php','trusted_devices.php','trusted_device_diagnostics.php','mfa_settings.php','change_password.php'];
+    $allowedRoot = ['feature_hub.php','coach_portal.php','account.php','security_alerts.php','trusted_devices.php','trusted_device_diagnostics.php','mfa_settings.php','change_password.php'];
     if (!$insideBusiness && !in_array($script, $allowedRoot, true)) return $html;
     if (str_contains($path, '/shop/')) return $html;
 
-    if (str_contains($html, 'id="hwcAdminGlobalSidebar"')) return $html;
+    if (str_contains($html, 'class="hwc-form-hub"')) return $html;
 
-    $html = preg_replace('/<\/head>/i', admin_global_menu_styles().'</head>', $html, 1) ?? $html;
-    $markup = admin_global_menu_markup($insideBusiness, $script);
+    $styles=admin_global_forms_styles().($role==='admin'?admin_global_menu_styles():'');
+    $html = preg_replace('/<\/head>/i', $styles.'</head>', $html, 1) ?? $html;
+    $markup=($role==='admin'?admin_global_menu_markup($insideBusiness,$script):'').admin_global_forms_markup($insideBusiness,$role);
     $html = preg_replace('/<body([^>]*)>/i', '<body$1>'.$markup, $html, 1) ?? $html;
 
     if ($script === 'customer_membership_manager.php' && str_contains($html, '<section class="cm-grid">')) {
@@ -207,6 +239,7 @@ function admin_global_menu_inject(string $html): string
         if ($panel !== '') $html = preg_replace('/<section class="cm-grid">/', $panel.'<section class="cm-grid">', $html, 1) ?? $html;
     }
 
-    $html = preg_replace('/<\/body>/i', admin_global_menu_script().'</body>', $html, 1) ?? $html;
+    $scripts=($role==='admin'?admin_global_menu_script():'').admin_global_forms_script();
+    $html = preg_replace('/<\/body>/i', $scripts.'</body>', $html, 1) ?? $html;
     return $html;
 }
