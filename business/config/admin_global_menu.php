@@ -113,6 +113,7 @@ function admin_global_menu_styles(): string
 @media(max-width:1100px){.hwc-admin-global-sidebar{transform:translateX(-103%);transition:transform .2s ease;width:min(86vw,285px)}.hwc-admin-menu-toggle{display:block}.hwc-admin-menu-open .hwc-admin-global-sidebar{transform:translateX(0)}.hwc-admin-menu-open .hwc-admin-menu-backdrop{display:block}.hwc-admin-menu-open{overflow:hidden}.os-layout>.os-sidebar{display:none!important}.os-layout{grid-template-columns:minmax(0,1fr)!important}body{padding-left:0!important}.hwc-membership-candidate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.hwc-membership-candidate-grid{grid-template-columns:1fr}.hwc-membership-candidates-head{align-items:flex-start;flex-direction:column}}
 @media print{.hwc-admin-global-sidebar,.hwc-admin-menu-toggle,.hwc-admin-menu-backdrop{display:none!important}body{padding-left:0!important}}
+.hwc-form-fab{top:auto!important;bottom:22px!important;right:18px!important}.hwc-form-drawer{top:auto!important;bottom:76px!important;right:18px!important;max-height:calc(100vh - 104px)!important}
 </style>
 HTML;
 }
@@ -260,6 +261,7 @@ function admin_global_menu_inject(string $html): string
     if (str_contains($html, 'class="hwc-form-hub"')) return $html;
 
     $styles=admin_global_forms_styles().($role==='admin'?admin_global_menu_styles():'');
+    $styles.='<style id="hwc-form-bottom-position">.hwc-form-fab{top:auto!important;bottom:22px!important;right:18px!important}.hwc-form-drawer{top:auto!important;bottom:76px!important;right:18px!important;max-height:calc(100vh - 104px)!important}@media(max-width:680px){.hwc-form-fab{bottom:16px!important;right:12px!important}.hwc-form-drawer{bottom:68px!important;right:12px!important;max-height:72vh!important}}</style>';
     if($script==='business_help_center.php')$styles.='<style id="hwc-help-sticky-nav">.quick{position:sticky!important;top:0!important;z-index:80!important;overflow-x:auto!important;overflow-y:hidden!important;margin:0 -4px 13px!important;padding:11px 4px!important;background:rgba(246,248,253,.96)!important;border-bottom:1px solid #dfe6e2!important;box-shadow:0 8px 18px rgba(39,61,50,.07)!important;backdrop-filter:blur(12px)}.quick a{flex:0 0 auto!important;padding:8px 11px!important}.quick a:hover,.quick a:focus{background:#5744db!important;color:#fff!important;border-color:#5744db!important}.guide{scroll-margin-top:76px!important}</style>';
     $html = preg_replace('/<\/head>/i', $styles.'</head>', $html, 1) ?? $html;
     $markup=($role==='admin'?admin_global_menu_markup($insideBusiness,$script):'').admin_global_forms_markup($insideBusiness,$role);
