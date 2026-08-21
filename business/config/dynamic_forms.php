@@ -29,6 +29,19 @@ function dynamic_forms_ensure(PDO $pdo): void
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY uq_dynamic_option (field_id,option_value), KEY idx_dynamic_options (organization_id,field_id,status,sort_order)
     ) ENGINE=InnoDB");
+    if(!business_column_exists($pdo,'dynamic_form_definitions','is_custom'))$pdo->exec("ALTER TABLE dynamic_form_definitions ADD COLUMN is_custom TINYINT(1) NOT NULL DEFAULT 0 AFTER status");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dynamic_form_submissions (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id BIGINT UNSIGNED NOT NULL, form_id BIGINT UNSIGNED NOT NULL,
+        submission_code VARCHAR(60) NOT NULL, submitted_by BIGINT UNSIGNED NOT NULL, submitted_role VARCHAR(30) NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'submitted', submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_dynamic_submission_code (organization_id,submission_code), KEY idx_dynamic_submissions (organization_id,form_id,submitted_at)
+    ) ENGINE=InnoDB");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS dynamic_form_submission_values (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id BIGINT UNSIGNED NOT NULL, submission_id BIGINT UNSIGNED NOT NULL,
+        field_id BIGINT UNSIGNED NOT NULL, field_key VARCHAR(120) NOT NULL, field_label VARCHAR(190) NOT NULL, field_value TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_dynamic_submission_value (submission_id,field_id),
+        KEY idx_dynamic_submission_values (organization_id,submission_id)
+    ) ENGINE=InnoDB");
     $ctx=security_step17_context($pdo);$orgId=(int)$ctx['organization_id'];
     $seed=[
       ['new_ums','New UMS','data_entry_center.php','New member/UMS entry options'],['volume_points','Volume Points','data_entry_center.php','Personal and team VP entry options'],
@@ -102,6 +115,11 @@ function dynamic_forms_seed_entry_fields(PDO $pdo,int $orgId): void
 function dynamic_forms_catalog(PDO $pdo,int $orgId): array
 {
     dynamic_forms_ensure($pdo);$s=$pdo->prepare("SELECT id,form_key,form_name,target_page,description,sort_order FROM dynamic_form_definitions WHERE organization_id=? AND status='active' ORDER BY sort_order,form_name");$s->execute([$orgId]);return $s->fetchAll();
+}
+
+function dynamic_forms_custom_catalog(PDO $pdo,int $orgId): array
+{
+    dynamic_forms_ensure($pdo);$s=$pdo->prepare("SELECT d.*,(SELECT COUNT(*) FROM dynamic_form_fields f WHERE f.form_id=d.id AND f.organization_id=d.organization_id AND f.status='active') field_count,(SELECT COUNT(*) FROM dynamic_form_submissions x WHERE x.form_id=d.id AND x.organization_id=d.organization_id) submission_count FROM dynamic_form_definitions d WHERE d.organization_id=? AND d.is_custom=1 AND d.status='active' ORDER BY d.sort_order,d.form_name");$s->execute([$orgId]);return $s->fetchAll();
 }
 
 function dynamic_forms_schema(PDO $pdo,int $orgId,string $page): array

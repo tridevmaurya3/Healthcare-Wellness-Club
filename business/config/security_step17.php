@@ -474,7 +474,7 @@ function security_step17_guard_request(PDO $pdo): void
     $coachEntryRoutes=[
         'data_entry_center.php','customer_center.php','customer_membership_manager.php',
         'lead_center.php','lead_appointments.php','product_master_manager.php',
-        'inventory_inward.php','purchase_orders.php',
+        'inventory_inward.php','purchase_orders.php','custom_forms_center.php','dynamic_form_entry.php',
     ];
     if((string)$user['role_code']==='coach'
         && (string)($_GET['form_modal']??'')==='1'
