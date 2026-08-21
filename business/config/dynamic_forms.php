@@ -41,7 +41,62 @@ function dynamic_forms_ensure(PDO $pdo): void
     ];
     $s=$pdo->prepare("INSERT IGNORE INTO dynamic_form_definitions(organization_id,form_key,form_name,target_page,description,sort_order,status) VALUES(?,?,?,?,?,?,'active')");
     $n=10;foreach($seed as $row){$s->execute([$orgId,$row[0],$row[1],$row[2],$row[3],$n]);$n+=10;}
+    dynamic_forms_seed_entry_fields($pdo,$orgId);
     $done=true;
+}
+
+/**
+ * Register the fields that already exist in the six Master Tracking entry
+ * forms. INSERT IGNORE preserves every Administrator edit while ensuring a
+ * newly-added Designer tab is never empty before it has been opened once.
+ */
+function dynamic_forms_seed_entry_fields(PDO $pdo,int $orgId): void
+{
+    $catalog=[
+      'new_ums'=>[
+        ['full_name','Member Name','text',1],['mobile','Mobile','text',0],['ums_date','UMS Date','text',1],
+        ['ums_type','UMS Type','select',0,['New UMS'=>'New UMS','First Set'=>'First Set','Second Set'=>'Second Set','Active UMS'=>'Active UMS']],
+        ['status','Status','select',0,['active'=>'Active','inactive'=>'Inactive']],['team','Team / Managed By','select',0],['sponsor_member_id','Verified Sponsor','select',0],
+      ],
+      'volume_points'=>[
+        ['member_id','Member','select',1],['entry_date','Date','text',1],['volume_points','Volume Points','text',1],
+        ['order_type','Order Type','select',0,['Personal Order'=>'Personal Order','New UMS'=>'New UMS','Renewal UMS'=>'Renewal UMS','Extra Customer Order'=>'Extra Customer Order','Customer Order'=>'Customer Order','Team Order'=>'Team Order']],
+        ['vp_from','VP From','select',0,['UMS'=>'UMS','Personal Order'=>'Personal Order','Customer Order'=>'Customer Order','1st Line'=>'1st Line','Downline'=>'Downline','Renewal'=>'Renewal']],
+        ['ordered_by','Ordered / Managed By','select',0],
+        ['vp_type','VP Type','select',0,['Personal VP'=>'Personal VP','Team VP'=>'Team VP','Customer VP'=>'Customer VP','Renewal VP'=>'Renewal VP','Order VP'=>'Order VP']],
+        ['level_label','Coach Level','select',0],['week_label','Week','select',0,['Week-1'=>'Week 1','Week-2'=>'Week 2','Week-3'=>'Week 3','Week-4'=>'Week 4']],
+      ],
+      'orders'=>[
+        ['member_id','Member','select',1],['order_date','Order Date','text',1],
+        ['order_type','Order Type','select',1,['regular'=>'Regular Order','extra_customer'=>'Extra Customer Order','personal'=>'Personal Order','new_ums'=>'New UMS Order','renewal'=>'Renewal Order','team'=>'Team Order']],
+        ['description','Description','text',0],['gross_amount','Gross Amount','text',1],['discount_amount','Discount','text',1],['net_amount','Net Amount','text',0],['profit_amount','Profit','text',1],['volume_points','Volume Points','text',1],
+      ],
+      'renewal'=>[
+        ['member_id','Member','select',1],['renewal_date','Renewal Date','text',1],
+        ['period_months','Period','select',0,['1'=>'1 Month','3'=>'3 Months','6'=>'6 Months','12'=>'12 Months','18'=>'18 Months','24'=>'24 Months','36'=>'36 Months']],
+        ['amount','Amount','text',1],['volume_points','Volume Points','text',1],
+      ],
+      'income'=>[
+        ['income_date','Income Date','text',1],['income_type','Income Type','select',1,['retail'=>'Retail','check'=>'Check','club'=>'Club','other'=>'Other']],['amount','Amount','text',1],['notes','Notes','text',0],
+      ],
+      'royalty'=>[
+        ['royalty_date','Royalty Date','text',1],['period_label','Period','select',0,['Week-1'=>'Week 1','Week-2'=>'Week 2','Week-3'=>'Week 3','Week-4'=>'Week 4']],['amount','Amount','text',1],['volume_points','Volume Points','text',1],['notes','Notes','text',0],
+      ],
+    ];
+    $findForm=$pdo->prepare("SELECT id FROM dynamic_form_definitions WHERE organization_id=? AND form_key=? LIMIT 1");
+    $addField=$pdo->prepare("INSERT IGNORE INTO dynamic_form_fields(organization_id,form_id,field_key,field_label,field_type,help_text,is_required,sort_order,status) VALUES(?,?,?,?,?,'Connected to the existing Business OS entry form.',?,?,'active')");
+    $findField=$pdo->prepare("SELECT id FROM dynamic_form_fields WHERE organization_id=? AND form_id=? AND field_key=? LIMIT 1");
+    $addOption=$pdo->prepare("INSERT IGNORE INTO dynamic_form_options(organization_id,field_id,option_value,option_label,sort_order,status) VALUES(?,?,?,?,?,'active')");
+    foreach($catalog as $formKey=>$fields){
+        $findForm->execute([$orgId,$formKey]);$formId=(int)$findForm->fetchColumn();if($formId<=0)continue;
+        $order=10;
+        foreach($fields as $field){
+            [$key,$label,$type,$required]=$field;$addField->execute([$orgId,$formId,$key,$label,$type,$required,$order]);
+            $findField->execute([$orgId,$formId,$key]);$fieldId=(int)$findField->fetchColumn();
+            $optionOrder=10;foreach(($field[4]??[]) as $value=>$optionLabel){$addOption->execute([$orgId,$fieldId,(string)$value,(string)$optionLabel,$optionOrder]);$optionOrder+=10;}
+            $order+=10;
+        }
+    }
 }
 
 function dynamic_forms_catalog(PDO $pdo,int $orgId): array
