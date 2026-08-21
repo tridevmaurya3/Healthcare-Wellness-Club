@@ -467,6 +467,18 @@ function security_step17_guard_request(PDO $pdo): void
     if(!$user){security_step17_destroy_php_session();security_step17_redirect_login();}
     if((int)$user['must_change_password']===1 && !in_array($script,['password_change.php','logout.php'],true)){header('Location: password_change.php?required=1');exit;}
     if($script==='password_change.php')return;
+    // The floating Coach Form Center is an assigned operational workspace, not
+    // an Administrator permission screen. Keep this narrowly scoped to the
+    // modal entry routes exposed by admin_global_menu.php; normal page routes
+    // and every design/security route continue through RBAC below.
+    $coachEntryRoutes=[
+        'data_entry_center.php','customer_center.php','customer_membership_manager.php',
+        'lead_center.php','lead_appointments.php','product_master_manager.php',
+        'inventory_inward.php','purchase_orders.php',
+    ];
+    if((string)$user['role_code']==='coach'
+        && (string)($_GET['form_modal']??'')==='1'
+        && in_array($script,$coachEntryRoutes,true))return;
     $permission=security_step17_route_permission($script,(string)($_SERVER['REQUEST_METHOD']??'GET'));
     if(!security_step17_has_permission($pdo,$permission,$user)){
         header('Location: access_denied.php?permission='.rawurlencode($permission));exit;
