@@ -95,6 +95,45 @@ function dynamic_forms_seed_entry_fields(PDO $pdo,int $orgId): void
       'royalty'=>[
         ['royalty_date','Royalty Date','text',1],['period_label','Period','select',0,['Week-1'=>'Week 1','Week-2'=>'Week 2','Week-3'=>'Week 3','Week-4'=>'Week 4']],['amount','Amount','text',1],['volume_points','Volume Points','text',1],['notes','Notes','text',0],
       ],
+      'customers'=>[
+        ['customer_name','Customer Name','text',1],['mobile','Mobile','text',0],['email','Email','text',0],
+        ['customer_type','Customer Type','select',0,['retail'=>'Retail','preferred'=>'Preferred Customer','associate'=>'Associate','member'=>'Member Customer','other'=>'Other']],
+        ['member_id','Verified Member Link','select',0],['status','Status','select',0,['active'=>'Active','inactive'=>'Inactive']],['notes','Notes','text',0],
+      ],
+      'memberships'=>[
+        ['user_id','Customer Login Account','select',1],['member_code','Club Member ID','text',0],['discount_label_id','Discount Label','select',0],
+        ['coach_user_id','Assigned Coach','select',0],['crm_customer_id','CRM Customer Link','select',0],
+        ['membership_status','Membership Status','select',0,['pending'=>'Pending','active'=>'Active','inactive'=>'Inactive','expired'=>'Expired']],
+        ['joined_at','Joined Date','text',0],['notes','Internal Membership Note','text',0],
+        ['label_name','Label Name','text',0],['label_code','Label Code','text',0],['pricing_tier_code','Pricing Tier','select',0],
+        ['discount_type','Discount Type','select',0,['percentage'=>'Percentage','fixed'=>'Fixed Amount','tier_price'=>'Exact Tier Price']],['discount_value','Discount Value','text',0],
+        ['title','Offer Title','text',0],['subtitle','Offer Subtitle','text',0],['promotion_type','Promotion Type','select',0],['product_id','Product','select',0],['starts_at','Starts At','text',0],['ends_at','Ends At','text',0],
+      ],
+      'leads'=>[
+        ['q','Search','text',0],['stage','Stage','select',0,['all'=>'All Stages','new'=>'New','contacted'=>'Contacted','qualified'=>'Qualified','appointment'=>'Appointment','converted'=>'Converted','closed'=>'Closed']],
+        ['full_name','Lead Name','text',1],['mobile','Mobile','text',0],['email','Email','text',0],['lead_type','Lead Type','select',0,['contact'=>'Contact','wellness'=>'Wellness','join'=>'Join','appointment'=>'Appointment','product'=>'Product']],
+        ['priority','Priority','select',0,['normal'=>'Normal','high'=>'High','urgent'=>'Urgent']],['assigned_user_id','Assigned Coach / Administrator','select',0],['message','Message','text',0],
+      ],
+      'appointments'=>[
+        ['appointment_id','Appointment','select',1],['status','Status','select',0,['scheduled'=>'Scheduled','completed'=>'Completed','cancelled'=>'Cancelled','no_show'=>'No Show','rescheduled'=>'Rescheduled']],['notes','Notes','text',0],
+        ['start_at','Appointment Date & Time','text',0],['mode','Mode','select',0,['club'=>'Club Visit','phone'=>'Phone','video'=>'Video','home'=>'Home Visit']],['purpose','Purpose','text',0],['assigned_user_id','Assigned Coach / Administrator','select',0],
+      ],
+      'products'=>[
+        ['sku','Stock / SKU','text',1],['product_name','Product Name','text',1],['short_name','Short Name','text',0],['brand_name','Brand','text',0],
+        ['category_id','Existing Category','select',1],['new_category','Create New Category','text',0],['pack_size','Pack Size','text',0],['pack_unit','Pack Unit','text',0],
+        ['description','Description / Product Detail','text',0],['status','Status','select',0,['active'=>'Active','inactive'=>'Inactive']],['product_image','Product Image','text',0],
+        ['effective_from','Price Effective Date','text',1],['mrp','MRP','text',1],['volume_points','Volume Points','text',1],['source_reference','Authoritative Source / Reference','text',1],
+      ],
+      'inventory'=>[
+        ['movement_type','Movement Type','select',0,['purchase'=>'Purchase Receipt','opening'=>'Opening Stock','customer_return'=>'Customer Return to Stock','adjustment_plus'=>'Positive Adjustment']],
+        ['product_id','Product','select',1],['quantity','Quantity','text',1],['movement_date','Movement Date','text',1],['batch_code','Batch / Lot No.','text',0],
+        ['manufacture_date','Manufacture Date','text',0],['expiry_date','Expiry Date','text',0],['unit_cost','Actual Unit Cost','text',0],['supplier_name','Supplier','text',0],['purchase_reference','Bill / Purchase Reference','text',0],['notes','Notes','text',0],['use_as_profit_cost','Use as Profit Cost','checkbox',0,['1'=>'Yes']],
+      ],
+      'purchases'=>[
+        ['supplier_id','Supplier','select',1],['order_date','Order Date','text',1],['expected_date','Expected Date','text',0],['notes','Notes','text',0],
+        ['product_id','Product','select',0],['quantity','Quantity','text',0],['estimated_unit_cost','Estimated Unit Cost','text',0],
+        ['status','PO Status','select',0,['draft'=>'Draft','ordered'=>'Ordered','closed'=>'Closed','cancelled'=>'Cancelled']],
+      ],
     ];
     $findForm=$pdo->prepare("SELECT id FROM dynamic_form_definitions WHERE organization_id=? AND form_key=? LIMIT 1");
     $addField=$pdo->prepare("INSERT IGNORE INTO dynamic_form_fields(organization_id,form_id,field_key,field_label,field_type,help_text,is_required,sort_order,status) VALUES(?,?,?,?,?,'Connected to the existing Business OS entry form.',?,?,'active')");
