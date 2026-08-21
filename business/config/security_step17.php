@@ -401,6 +401,7 @@ function security_step17_has_permission(PDO $pdo,string $permission,?array $user
 function security_step17_route_permission(string $script,string $method='GET'): string
 {
     $write=strtoupper($method)==='POST';
+    if($script==='business_help_center.php')return 'portal.coach';
     if(in_array($script,['user_management.php'],true))return $write?'security.users.manage':'security.users.view';
     if(in_array($script,['permission_matrix.php','security_settings.php'],true))return 'security.roles.manage';
     if(in_array($script,['security_center.php','security_audit.php','step17_audit.php'],true))return 'security.audit.view';
@@ -467,6 +468,7 @@ function security_step17_guard_request(PDO $pdo): void
     if(!$user){security_step17_destroy_php_session();security_step17_redirect_login();}
     if((int)$user['must_change_password']===1 && !in_array($script,['password_change.php','logout.php'],true)){header('Location: password_change.php?required=1');exit;}
     if($script==='password_change.php')return;
+    if($script==='business_help_center.php')return;
     // The floating Coach Form Center is an assigned operational workspace, not
     // an Administrator permission screen. Keep this narrowly scoped to the
     // modal entry routes exposed by admin_global_menu.php; normal page routes

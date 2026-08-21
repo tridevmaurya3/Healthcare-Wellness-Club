@@ -38,6 +38,7 @@ function admin_global_menu_markup(bool $insideBusiness, string $script): string
         ['Workspace', [
             [$business.'index.php','Dashboard',['index.php','dashboard_step25.php'],'⌂'],
             [$root.'feature_hub.php','All Features',['feature_hub.php'],'▦'],
+            [$business.'business_help_center.php','Help & User Guide',['business_help_center.php'],'?'],
         ]],
         ['Customers', [
             [$business.'customer_center.php','Customer Center',['customer_center.php','customer_detail.php'],'◎'],
@@ -120,6 +121,22 @@ function admin_global_menu_script(): string
     return <<<'HTML'
 <script id="hwc-admin-global-menu-js">
 (()=>{const b=document.body,t=document.getElementById('hwcAdminMenuToggle'),d=document.getElementById('hwcAdminMenuBackdrop');if(!b||!t)return;const close=()=>{b.classList.remove('hwc-admin-menu-open');t.setAttribute('aria-expanded','false')};t.addEventListener('click',()=>{const open=!b.classList.contains('hwc-admin-menu-open');b.classList.toggle('hwc-admin-menu-open',open);t.setAttribute('aria-expanded',open?'true':'false')});d?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});document.getElementById('hwcAdminGlobalSidebar')?.addEventListener('click',e=>{const group=e.target.closest('.hwc-admin-nav-title');if(group){const items=document.getElementById(group.getAttribute('aria-controls')||'');if(items){const open=group.getAttribute('aria-expanded')==='true';group.setAttribute('aria-expanded',open?'false':'true');items.hidden=open}return}if(e.target.closest('a')&&matchMedia('(max-width:1100px)').matches)close()});document.addEventListener('click',e=>{const btn=e.target.closest('[data-hwc-membership-user]');if(!btn)return;const select=document.querySelector('select[name="user_id"]');if(!select)return;select.value=btn.getAttribute('data-hwc-membership-user')||'';select.dispatchEvent(new Event('change',{bubbles:true}));select.focus();select.scrollIntoView({behavior:'smooth',block:'center'})})})();
+</script>
+HTML;
+}
+
+function business_professional_labels_script(): string
+{
+    return <<<'HTML'
+<script id="hwc-professional-labels-js">
+(()=>{const clean=value=>value
+ .replace(/\bBUSINESS\s+OS\s*[•·]\s*(?:THROUGH\s+)?STEP\s*\d+[A-Z]?(?:\s*[→–-]\s*\d+[A-Z]?)?/gi,'Business Management Platform')
+ .replace(/\b(?:THROUGH\s+)?STEP\s*\d+[A-Z]?(?:\s*[→–-]\s*\d+[A-Z]?)?\s*[•·:–-]?\s*/gi,'')
+ .replace(/^\s*[•·:–-]\s*/,'').replace(/\s{2,}/g,' ').trim();
+ const selectors='.os-kicker,.os-brand small,.auth-brand small,.portal-head .role-badge,.os-footer-note strong,.s10-card>h2,.os-card>h2,.pp-hero h1,.os-hero h1';
+ document.querySelectorAll(selectors).forEach(node=>{if(node.children.length)return;const next=clean(node.textContent||'');if(next&&next!==node.textContent.trim())node.textContent=next});
+ document.title=clean(document.title);
+})();
 </script>
 HTML;
 }
@@ -251,7 +268,7 @@ function admin_global_menu_inject(string $html): string
         if ($panel !== '') $html = preg_replace('/<section class="cm-grid">/', $panel.'<section class="cm-grid">', $html, 1) ?? $html;
     }
 
-    $scripts=($role==='admin'?admin_global_menu_script():'').admin_global_forms_script();
+    $scripts=($role==='admin'?admin_global_menu_script():'').admin_global_forms_script().business_professional_labels_script();
     $html = preg_replace('/<\/body>/i', $scripts.'</body>', $html, 1) ?? $html;
     return $html;
 }
